@@ -1,0 +1,1034 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FieldVision — Capstone Presentation Guide</title>
+<style>
+  :root {
+    --navy: #002147;
+    --red: #C8102E;
+    --white: #ffffff;
+    --light: #f4f6f9;
+    --muted: #5a6478;
+    --border: #d0d7e3;
+    --accent: #e8edf5;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Georgia', serif;
+    font-size: 11pt;
+    line-height: 1.7;
+    color: #1a2235;
+    background: #fff;
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 40px 48px;
+  }
+
+  /* ── Cover ── */
+  .cover {
+    text-align: center;
+    padding: 60px 0 40px;
+    border-bottom: 4px solid var(--navy);
+    margin-bottom: 48px;
+  }
+  .cover .badge {
+    display: inline-block;
+    background: var(--red);
+    color: white;
+    font-family: 'Arial', sans-serif;
+    font-size: 9pt;
+    font-weight: bold;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    padding: 4px 14px;
+    border-radius: 2px;
+    margin-bottom: 20px;
+  }
+  .cover h1 {
+    font-size: 32pt;
+    color: var(--navy);
+    font-weight: bold;
+    letter-spacing: -0.5px;
+    line-height: 1.2;
+    margin-bottom: 10px;
+  }
+  .cover .subtitle {
+    font-size: 14pt;
+    color: var(--red);
+    font-style: italic;
+    margin-bottom: 32px;
+  }
+  .cover .meta {
+    font-family: 'Arial', sans-serif;
+    font-size: 10pt;
+    color: var(--muted);
+    line-height: 2;
+  }
+  .cover .meta strong {
+    color: var(--navy);
+  }
+
+  /* ── How to Use ── */
+  .how-to-use {
+    background: var(--accent);
+    border-left: 4px solid var(--navy);
+    padding: 18px 22px;
+    border-radius: 0 6px 6px 0;
+    margin-bottom: 48px;
+    font-family: 'Arial', sans-serif;
+    font-size: 10pt;
+  }
+  .how-to-use h3 {
+    color: var(--navy);
+    font-size: 11pt;
+    margin-bottom: 8px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+  .how-to-use ul {
+    padding-left: 20px;
+  }
+  .how-to-use li {
+    margin-bottom: 4px;
+    color: #2a3550;
+  }
+
+  /* ── Slide Sections ── */
+  .slide-section {
+    margin-bottom: 52px;
+    page-break-inside: avoid;
+  }
+
+  .slide-header {
+    display: flex;
+    align-items: baseline;
+    gap: 14px;
+    margin-bottom: 16px;
+    padding-bottom: 10px;
+    border-bottom: 2px solid var(--navy);
+  }
+  .slide-number {
+    background: var(--navy);
+    color: white;
+    font-family: 'Arial', sans-serif;
+    font-size: 10pt;
+    font-weight: bold;
+    padding: 3px 10px;
+    border-radius: 2px;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+  .slide-title {
+    font-family: 'Arial', sans-serif;
+    font-size: 16pt;
+    font-weight: bold;
+    color: var(--navy);
+    line-height: 1.2;
+  }
+  .slide-meta {
+    font-family: 'Arial', sans-serif;
+    font-size: 9pt;
+    color: var(--muted);
+    margin-bottom: 18px;
+    letter-spacing: 0.5px;
+  }
+
+  /* ── Content blocks ── */
+  .content-block {
+    background: var(--light);
+    border-radius: 6px;
+    padding: 18px 22px;
+    margin-bottom: 14px;
+  }
+  .content-block h4 {
+    font-family: 'Arial', sans-serif;
+    font-size: 10pt;
+    font-weight: bold;
+    color: var(--red);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 8px;
+  }
+  .content-block p {
+    margin-bottom: 8px;
+  }
+  .content-block p:last-child {
+    margin-bottom: 0;
+  }
+
+  .bullet-block {
+    background: var(--accent);
+    border-left: 3px solid var(--red);
+    padding: 14px 20px;
+    margin-bottom: 14px;
+    border-radius: 0 6px 6px 0;
+  }
+  .bullet-block h4 {
+    font-family: 'Arial', sans-serif;
+    font-size: 10pt;
+    font-weight: bold;
+    color: var(--navy);
+    margin-bottom: 8px;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+  }
+  .bullet-block ul {
+    padding-left: 18px;
+  }
+  .bullet-block li {
+    margin-bottom: 5px;
+  }
+  .bullet-block li strong {
+    color: var(--navy);
+  }
+
+  .speaker-note {
+    background: #fffbec;
+    border: 1px solid #e8d87a;
+    border-radius: 6px;
+    padding: 14px 18px;
+    margin-bottom: 14px;
+    font-family: 'Arial', sans-serif;
+    font-size: 9.5pt;
+    color: #5a4a00;
+  }
+  .speaker-note::before {
+    content: "SPEAKER NOTE  |  ";
+    font-weight: bold;
+    font-size: 8.5pt;
+    letter-spacing: 1px;
+    color: #a08700;
+  }
+
+  .two-col {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+    margin-bottom: 14px;
+  }
+  .two-col .content-block {
+    margin-bottom: 0;
+  }
+
+  .stat-row {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+    margin-bottom: 14px;
+  }
+  .stat-box {
+    background: var(--navy);
+    color: white;
+    text-align: center;
+    padding: 16px 12px;
+    border-radius: 6px;
+  }
+  .stat-box .stat-num {
+    font-size: 24pt;
+    font-weight: bold;
+    font-family: 'Arial', sans-serif;
+    line-height: 1.1;
+    color: #ffd700;
+  }
+  .stat-box .stat-label {
+    font-family: 'Arial', sans-serif;
+    font-size: 8.5pt;
+    line-height: 1.3;
+    margin-top: 4px;
+    opacity: 0.9;
+  }
+
+  .tech-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 14px;
+    font-family: 'Arial', sans-serif;
+    font-size: 9.5pt;
+  }
+  .tech-table th {
+    background: var(--navy);
+    color: white;
+    padding: 8px 12px;
+    text-align: left;
+    font-size: 9pt;
+    letter-spacing: 0.5px;
+  }
+  .tech-table td {
+    padding: 8px 12px;
+    border-bottom: 1px solid var(--border);
+    vertical-align: top;
+  }
+  .tech-table tr:nth-child(even) td {
+    background: var(--light);
+  }
+  .tech-table td:first-child {
+    font-weight: bold;
+    color: var(--navy);
+    width: 30%;
+  }
+
+  .flow-diagram {
+    background: var(--navy);
+    border-radius: 8px;
+    padding: 20px;
+    margin-bottom: 14px;
+    color: white;
+    font-family: 'Arial', sans-serif;
+    font-size: 9pt;
+  }
+  .flow-diagram h4 {
+    color: #ffd700;
+    font-size: 10pt;
+    margin-bottom: 14px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+  .flow-steps {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .flow-step {
+    background: rgba(255,255,255,0.15);
+    border: 1px solid rgba(255,255,255,0.3);
+    border-radius: 4px;
+    padding: 8px 12px;
+    text-align: center;
+    font-size: 9pt;
+    line-height: 1.3;
+    min-width: 90px;
+  }
+  .flow-step .step-label {
+    font-size: 7.5pt;
+    color: #ffd700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    display: block;
+    margin-bottom: 2px;
+  }
+  .flow-arrow {
+    color: #ffd700;
+    font-size: 14pt;
+    font-weight: bold;
+  }
+
+  .grade-table {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-bottom: 14px;
+  }
+  .grade-chip {
+    border-radius: 4px;
+    padding: 4px 10px;
+    font-family: 'Arial', sans-serif;
+    font-size: 9pt;
+    font-weight: bold;
+    white-space: nowrap;
+  }
+  .grade-A  { background: #e8f5e9; color: #1b5e20; border: 1px solid #4caf50; }
+  .grade-B  { background: #e3f2fd; color: #0d47a1; border: 1px solid #2196f3; }
+  .grade-C  { background: #fff8e1; color: #e65100; border: 1px solid #ff9800; }
+  .grade-D  { background: #fce4ec; color: #b71c1c; border: 1px solid #f44336; }
+  .grade-F  { background: #f3e5f5; color: #4a148c; border: 1px solid #9c27b0; }
+
+  .callout {
+    background: var(--red);
+    color: white;
+    border-radius: 6px;
+    padding: 16px 20px;
+    margin-bottom: 14px;
+    font-family: 'Arial', sans-serif;
+    font-size: 10pt;
+  }
+  .callout strong {
+    font-size: 11pt;
+    display: block;
+    margin-bottom: 4px;
+  }
+
+  /* ── Dividers ── */
+  .section-divider {
+    border: none;
+    border-top: 1px dashed var(--border);
+    margin: 36px 0;
+  }
+
+  /* ── Footer ── */
+  .doc-footer {
+    margin-top: 60px;
+    padding-top: 20px;
+    border-top: 2px solid var(--navy);
+    font-family: 'Arial', sans-serif;
+    font-size: 9pt;
+    color: var(--muted);
+    text-align: center;
+  }
+
+  /* ── Print ── */
+  @media print {
+    body { padding: 20px 30px; font-size: 10pt; }
+    .slide-section { page-break-after: always; }
+    .slide-section:last-of-type { page-break-after: avoid; }
+    .two-col { display: grid; }
+    .stat-row { display: grid; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ════════════════════════════════════════════ COVER ════════ -->
+<div class="cover">
+  <div class="badge">Data Science Capstone Practicum</div>
+  <h1>FieldVision</h1>
+  <div class="subtitle">AI-Powered Baseball Scouting Intelligence</div>
+  <div class="meta">
+    <strong>Institution:</strong> Saint Mary's College of California<br>
+    <strong>Course:</strong> Data Science Capstone Practicum<br>
+    <strong>Presentation Format:</strong> 10–12 Slides &nbsp;|&nbsp; 15–20 Minutes<br>
+    <strong>Audience:</strong> Faculty &amp; Industry Professionals<br>
+    <strong>Live Application:</strong> fieldvision.onrender.com<br>
+    <strong>Prepared:</strong> Spring 2026
+  </div>
+</div>
+
+<!-- ════════════════════ HOW TO USE THIS DOC ════════════════════ -->
+<div class="how-to-use">
+  <h3>How to Use This Document</h3>
+  <ul>
+    <li>Each section below corresponds to one slide (or one slide pair for Methodology).</li>
+    <li><strong>Slide Objective</strong> tells you what that slide must convey to the audience.</li>
+    <li><strong>Key Points</strong> are your bullet content — choose 3–5 per slide maximum.</li>
+    <li><strong>Speaker Notes</strong> provide talking-track guidance; do not read them verbatim.</li>
+    <li>Visual suggestions are in <em>italics</em> — screenshot, diagram, or live demo cue.</li>
+    <li>Print this file (Cmd+P → Save as PDF) for a clean portable reference.</li>
+  </ul>
+</div>
+
+<!-- ════════════════════════ SLIDE 1 ════════════════════════════ -->
+<div class="slide-section">
+  <div class="slide-header">
+    <span class="slide-number">Slide 1 of 11</span>
+    <span class="slide-title">Title &amp; Team</span>
+  </div>
+  <div class="slide-meta">SECTION: OPENING &nbsp;|&nbsp; SUGGESTED TIME: 1 min</div>
+
+  <div class="content-block">
+    <h4>Slide Objective</h4>
+    <p>Introduce the project name, team, and institutional affiliation. Set a professional first impression with the sports-tech branding.</p>
+  </div>
+
+  <div class="bullet-block">
+    <h4>Required Elements on Slide</h4>
+    <ul>
+      <li><strong>Project name:</strong> FieldVision</li>
+      <li><strong>Tagline:</strong> AI-Powered Baseball Scouting Intelligence</li>
+      <li><strong>Team / presenter name(s)</strong></li>
+      <li><strong>Course:</strong> Data Science Capstone Practicum — Saint Mary's College of California</li>
+      <li><strong>Date:</strong> Spring 2026</li>
+      <li><em>Visual: FieldVision logo (navy/red/white) on a dark background. Files at /Users/jakel/FieldVision/static/logo.svg and logo-share-card.png</em></li>
+    </ul>
+  </div>
+
+  <div class="speaker-note">
+    Open with energy: "What if a coach could get a structured, AI-generated scouting report from a handwritten note in under 30 seconds?" That's FieldVision. Brief self-intro, then transition immediately to the problem.
+  </div>
+</div>
+
+<hr class="section-divider">
+
+<!-- ════════════════════════ SLIDE 2 ════════════════════════════ -->
+<div class="slide-section">
+  <div class="slide-header">
+    <span class="slide-number">Slide 2 of 11</span>
+    <span class="slide-title">Problem &amp; Business Context</span>
+  </div>
+  <div class="slide-meta">SECTION: PROBLEM &nbsp;|&nbsp; SUGGESTED TIME: 2–3 min</div>
+
+  <div class="content-block">
+    <h4>Slide Objective</h4>
+    <p>Establish the pain point clearly. The audience — including industry professionals — should feel the friction coaches face before FieldVision.</p>
+  </div>
+
+  <div class="bullet-block">
+    <h4>The Problem (Slide Bullets)</h4>
+    <ul>
+      <li><strong>Handwritten scouting notes are unstructured</strong> — no consistent format, difficult to search, compare, or archive.</li>
+      <li><strong>Analysis is slow and manual</strong> — a scout or coach must read every page, identify strengths/weaknesses, and assign a grade by memory.</li>
+      <li><strong>Institutional knowledge is siloed</strong> — notes from one scout rarely inform decisions by another; historical benchmarks are locked in paper files.</li>
+      <li><strong>Trackman data exists but lacks interpretation</strong> — coaches receive raw pitch velocity and spin numbers without narrative context.</li>
+      <li><strong>The opportunity:</strong> 70+ years of Branch Rickey's professional scouting wisdom exists in digitized form, untapped as a reference corpus.</li>
+    </ul>
+  </div>
+
+  <div class="content-block">
+    <h4>Business Context</h4>
+    <p><strong>Client:</strong> Saint Mary's College of California baseball coaching staff.</p>
+    <p><strong>Stakes:</strong> Recruiting decisions, player development planning, in-game strategy. Coaches make consequential decisions based on qualitative data — errors in interpretation have real competitive costs.</p>
+    <p><strong>Scope:</strong> This is not a toy demo. The tool is deployed to a live production URL used by the coaching staff, handling real player files uploaded this season.</p>
+  </div>
+
+  <div class="content-block">
+    <h4>The Specific Ask</h4>
+    <p>Build a system that: (1) ingests handwritten or typed scouting notes as PDF/TXT files, (2) produces structured analysis reports benchmarked against historical professional scouting, (3) integrates Trackman pitch data for post-game analytics, and (4) maintains a persistent talent pool across sessions.</p>
+  </div>
+
+  <div class="speaker-note">
+    Ground this in a real scenario: "Coach uploads a scanned PDF from a road trip. It's three pages of handwriting. They need a report before tomorrow's film session." Show how the current workflow (type it manually, Google by memory) fails vs. what FieldVision does in one upload. Don't rush past this slide — the audience needs to feel the problem to appreciate the solution.
+  </div>
+</div>
+
+<hr class="section-divider">
+
+<!-- ════════════════════════ SLIDE 3 ════════════════════════════ -->
+<div class="slide-section">
+  <div class="slide-header">
+    <span class="slide-number">Slide 3 of 11</span>
+    <span class="slide-title">Data Overview</span>
+  </div>
+  <div class="slide-meta">SECTION: DATA &nbsp;|&nbsp; SUGGESTED TIME: 2–3 min</div>
+
+  <div class="content-block">
+    <h4>Slide Objective</h4>
+    <p>Describe the three distinct data sources and explain what makes each challenging and valuable. Demonstrate data literacy.</p>
+  </div>
+
+  <div class="stat-row">
+    <div class="stat-box">
+      <div class="stat-num">1,919</div>
+      <div class="stat-label">Branch Rickey Historical Scouting Documents</div>
+    </div>
+    <div class="stat-box">
+      <div class="stat-num">20K</div>
+      <div class="stat-label">TF-IDF Features in Knowledge Base</div>
+    </div>
+    <div class="stat-box">
+      <div class="stat-num">3</div>
+      <div class="stat-label">Supported Input Formats: PDF, TXT, MD</div>
+    </div>
+  </div>
+
+  <div class="two-col">
+    <div class="content-block">
+      <h4>Source 1: Branch Rickey Corpus</h4>
+      <p><strong>What it is:</strong> 1,919 digitized scouting transcriptions from Branch Rickey's professional career, stored as a CSV knowledge base (<code>data/branch-rickey-scouting.csv</code>).</p>
+      <p><strong>Why it matters:</strong> Rickey is considered the architect of modern baseball scouting — his frameworks for evaluating speed, arm, bat, and character remain foundational. This corpus gives FieldVision's AI historical grounding unavailable anywhere else.</p>
+      <p><strong>Characteristics:</strong> Free-form text, highly domain-specific vocabulary, pre-1960s baseball terminology. Required custom TF-IDF indexing — general-purpose embeddings underperform on this register.</p>
+    </div>
+    <div class="content-block">
+      <h4>Source 2: Uploaded Scouting Notes</h4>
+      <p><strong>What it is:</strong> PDF, TXT, or Markdown files uploaded by coaches or scouts in real time.</p>
+      <p><strong>Why it matters:</strong> Primary user-generated data. Every analysis session revolves around this input.</p>
+      <p><strong>Challenges:</strong> Handwritten PDFs are the hardest case — text extraction libraries (pdfplumber, pypdf) fail on scanned images. Required a Vision OCR fallback using Claude Opus 4.5 to read pages as images. Multi-page PDFs are grouped by player name to build unified player files.</p>
+    </div>
+  </div>
+
+  <div class="content-block">
+    <h4>Source 3: Trackman CSV Exports</h4>
+    <p><strong>What it is:</strong> Machine-generated CSV files from Trackman ball-tracking hardware, used at college and professional games. Each row is one pitch; key columns include <code>Pitcher</code>, <code>PitcherTeam</code>, <code>PitchType</code>, <code>RelSpeed</code>, <code>SpinRate</code>, <code>InducedVertBreak</code>, <code>HorzBreak</code>, <code>PlateLocHeight</code>, <code>PlateLocSide</code>.</p>
+    <p><strong>Processing:</strong> Per-pitcher aggregations (avg/max velocity, avg spin rate, pitch mix). Team separation extracted via <code>PitcherTeam</code> column. Outputs feed an AI narrative interpretation. Data is multi-team (both home and away pitchers in same file) — neutral, objective framing required.</p>
+  </div>
+
+  <div class="content-block">
+    <h4>Data Challenges Summary</h4>
+    <ul style="padding-left:18px;">
+      <li><strong>Handwriting recognition:</strong> Scanned PDFs require Vision-model OCR — no standard library handles this.</li>
+      <li><strong>Domain vocabulary:</strong> Baseball scouting terminology is narrow and specialized; general NLP models lose nuance.</li>
+      <li><strong>Multi-player documents:</strong> Single uploads often contain notes on 3–5 players; automatic player segmentation by name was required.</li>
+      <li><strong>Unstructured → structured:</strong> The end goal is turning free-form prose into grade, strengths list, concerns list, and summary — a non-trivial extraction task.</li>
+    </ul>
+  </div>
+
+  <div class="speaker-note">
+    Walk through each data source with its real-world origin story. The Branch Rickey angle is a compelling narrative hook — emphasize that this isn't generic sports data, it's historically significant scouting methodology. For Trackman, you can reference that MLB, MiLB, and many college programs use this exact hardware — it's industry standard data.
+  </div>
+</div>
+
+<hr class="section-divider">
+
+<!-- ════════════════════ SLIDE 4 ════════════════════════════════ -->
+<div class="slide-section">
+  <div class="slide-header">
+    <span class="slide-number">Slide 4 of 11</span>
+    <span class="slide-title">Methodology — Part 1: Ingestion &amp; Retrieval</span>
+  </div>
+  <div class="slide-meta">SECTION: METHODOLOGY &nbsp;|&nbsp; SUGGESTED TIME: 3 min</div>
+
+  <div class="content-block">
+    <h4>Slide Objective</h4>
+    <p>Explain how data enters the system and how relevant historical context is retrieved. Cover OCR fallback chain and TF-IDF RAG.</p>
+  </div>
+
+  <div class="flow-diagram">
+    <h4>File Ingestion Pipeline</h4>
+    <div class="flow-steps">
+      <div class="flow-step"><span class="step-label">Input</span>PDF / TXT / MD Upload</div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-step"><span class="step-label">Step 1</span>pdfplumber text extract</div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-step"><span class="step-label">Fallback</span>pypdf (if pdfplumber empty)</div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-step"><span class="step-label">Final Fallback</span>Claude Opus 4.5 Vision OCR (page-as-image)</div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-step"><span class="step-label">Output</span>Clean text string per player</div>
+    </div>
+  </div>
+
+  <div class="bullet-block">
+    <h4>OCR Fallback Chain — Why Three Layers?</h4>
+    <ul>
+      <li><strong>pdfplumber</strong> — Fast, accurate for digitally-generated PDFs. Fails silently on image-only scans.</li>
+      <li><strong>pypdf</strong> — Secondary text extractor, handles some edge cases pdfplumber misses. Also fails on handwriting.</li>
+      <li><strong>Claude Opus 4.5 Vision</strong> — Final fallback: renders each PDF page as a base64 image, sends to Claude's vision model. Handles handwriting, stamps, diagrams. Only invoked when both text extractors return empty strings.</li>
+      <li><em>Implementation: backend/services/files.py — three-function cascade with empty-string detection at each stage.</em></li>
+    </ul>
+  </div>
+
+  <div class="flow-diagram">
+    <h4>RAG: TF-IDF Retrieval from Branch Rickey Corpus</h4>
+    <div class="flow-steps">
+      <div class="flow-step"><span class="step-label">Input</span>First 500 chars of player text</div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-step"><span class="step-label">Vectorize</span>TF-IDF transform (sklearn, 20K features)</div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-step"><span class="step-label">Retrieve</span>Cosine similarity vs. 1,919 Rickey docs</div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-step"><span class="step-label">Output</span>Top-k context block injected into Claude prompt</div>
+    </div>
+  </div>
+
+  <div class="bullet-block">
+    <h4>Why TF-IDF, Not Neural Embeddings?</h4>
+    <ul>
+      <li><strong>Domain fit:</strong> Baseball scouting vocabulary is narrow. Term frequency over a domain-specific corpus outperforms general-purpose sentence embeddings (all-MiniLM, etc.) on exact keyword matching (e.g., "tools," "arm strength," "bat speed").</li>
+      <li><strong>Speed &amp; zero runtime cost:</strong> sklearn TF-IDF fits in RAM at startup, returns results in milliseconds. No GPU, no vector database (FAISS), no embedding API calls.</li>
+      <li><strong>Interpretability:</strong> TF-IDF weights are explainable — we can show which Rickey document matched and why. Neural similarity scores are opaque.</li>
+      <li><strong>Practical tradeoff:</strong> For semantic search over general text, neural embeddings win. For keyword-heavy, domain-specific matching, TF-IDF is competitive and cheaper.</li>
+    </ul>
+  </div>
+
+  <div class="speaker-note">
+    The RAG design choice is a great place to demonstrate technical depth. Acknowledge that neural embeddings (FAISS + all-MiniLM) were considered and evaluated — they were outperformed on this specific domain because baseball scouting language is lexically consistent (the same words appear repeatedly). You chose the right tool for the task rather than the trendy tool.
+  </div>
+</div>
+
+<hr class="section-divider">
+
+<!-- ════════════════════ SLIDE 5 ════════════════════════════════ -->
+<div class="slide-section">
+  <div class="slide-header">
+    <span class="slide-number">Slide 5 of 11</span>
+    <span class="slide-title">Methodology — Part 2: AI Analysis &amp; Architecture</span>
+  </div>
+  <div class="slide-meta">SECTION: METHODOLOGY &nbsp;|&nbsp; SUGGESTED TIME: 3 min</div>
+
+  <div class="content-block">
+    <h4>Slide Objective</h4>
+    <p>Show how the Claude API is used for report generation, player profiling, and grade extraction. Cover system architecture end-to-end.</p>
+  </div>
+
+  <div class="flow-diagram">
+    <h4>Full System Architecture</h4>
+    <div class="flow-steps">
+      <div class="flow-step"><span class="step-label">Frontend</span>HTML/Tailwind/Vanilla JS (index.html)</div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-step"><span class="step-label">API Layer</span>FastAPI (Python 3.11)</div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-step"><span class="step-label">Services</span>claude.py · rag.py · files.py</div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-step"><span class="step-label">AI Models</span>Claude Sonnet 4.5 + Opus 4.5</div>
+    </div>
+  </div>
+
+  <div class="two-col">
+    <div class="content-block">
+      <h4>Claude API Calls — What Each Does</h4>
+      <p><strong>analyze_notes(text, context):</strong> Main report generation. Takes raw scouting text + RAG context. Returns structured Markdown: Player Overview, Key Strengths, Areas of Concern, Historical Comparison, Recommendation &amp; Grade. System prompt: SYSTEM_SCOUT (FieldVision scout persona trained on Rickey).</p>
+      <p><strong>extract_player_profile(label, insights):</strong> Parses the Markdown report into a structured JSON object with keys: name, position, grade, strengths[], concerns[], summary. Used to populate the Players tab.</p>
+      <p><strong>extract_players_from_chat(reply, context):</strong> Given a chat reply that mentions players, extracts a JSON array of profiles for any player that is meaningfully evaluated — not just named. Enforces grade differentiation and locks against existing grades from the scouting context.</p>
+      <p><strong>interpret_pitch_metrics(summary, focus):</strong> Translates Trackman stats into plain-language coach narrative. Neutral third-person. System prompt: SYSTEM_COACH.</p>
+    </div>
+    <div class="content-block">
+      <h4>Grade Scale — Full Plus/Minus</h4>
+      <div class="grade-table">
+        <span class="grade-chip grade-A">A — Elite prospect</span>
+        <span class="grade-chip grade-A">A– — Near-elite</span>
+        <span class="grade-chip grade-B">B+ — Above avg</span>
+        <span class="grade-chip grade-B">B — Solid</span>
+        <span class="grade-chip grade-B">B– — Above avg, questions</span>
+        <span class="grade-chip grade-C">C+ — Avg with upside</span>
+        <span class="grade-chip grade-C">C — Average (baseline)</span>
+        <span class="grade-chip grade-C">C– — Below avg, watching</span>
+        <span class="grade-chip grade-D">D+ — One redeeming tool</span>
+        <span class="grade-chip grade-D">D — Significant issues</span>
+        <span class="grade-chip grade-F">F — Not recommended</span>
+      </div>
+      <p style="font-size:9.5pt;color:var(--muted);margin-top:8px;">C is calibrated as the baseline for an average player at this competitive level. B indicates above-average performance. A grades are reserved for elite/standout performers.</p>
+    </div>
+  </div>
+
+  <table class="tech-table">
+    <thead>
+      <tr><th>Layer</th><th>Technology</th><th>Why This Choice</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>Frontend</td><td>HTML + Tailwind CSS + Vanilla JS</td><td>Zero framework overhead, instant load on Render free tier, full session state in JS variables</td></tr>
+      <tr><td>Backend</td><td>FastAPI (Python 3.11)</td><td>Async I/O handles file uploads efficiently; automatic OpenAPI docs; clean dependency injection</td></tr>
+      <tr><td>AI / LLM</td><td>Anthropic Claude Sonnet 4.5 (chat/analysis) + Opus 4.5 (Vision OCR)</td><td>Sonnet: best cost/quality for structured output. Opus: only model with strong handwriting vision.</td></tr>
+      <tr><td>RAG</td><td>sklearn TF-IDF (20K features, cosine similarity)</td><td>Domain-matched, zero inference cost, in-memory — outperforms neural embeddings on specialist vocabulary</td></tr>
+      <tr><td>PDF Extraction</td><td>pdfplumber → pypdf → Claude Vision (fallback chain)</td><td>Progressive degradation handles all PDF types including scanned handwriting</td></tr>
+      <tr><td>Data Processing</td><td>Pandas + NumPy</td><td>Standard Trackman CSV aggregation: groupby pitcher, compute velocity/spin stats</td></tr>
+      <tr><td>Deployment</td><td>Render (Docker, free tier)</td><td>Persistent container, custom domain ready, UptimeRobot keep-alive prevents sleep</td></tr>
+    </tbody>
+  </table>
+
+  <div class="speaker-note">
+    This slide may need 3–4 minutes. Walk through one real request cycle: coach uploads a PDF → pdfplumber extracts text → TF-IDF finds two relevant Rickey documents → Claude generates a report grounded in both the PDF and the historical context → JSON profile extracted → Players tab updates. If you have a live internet connection, consider a brief live demo here.
+  </div>
+</div>
+
+<hr class="section-divider">
+
+<!-- ════════════════════ SLIDE 6 ════════════════════════════════ -->
+<div class="slide-section">
+  <div class="slide-header">
+    <span class="slide-number">Slide 6 of 11</span>
+    <span class="slide-title">System Demo / Screenshots</span>
+  </div>
+  <div class="slide-meta">SECTION: DEMO &nbsp;|&nbsp; SUGGESTED TIME: 2 min (live demo) or 1.5 min (screenshots)</div>
+
+  <div class="content-block">
+    <h4>Slide Objective</h4>
+    <p>Show the live product. This is the most persuasive slide in the deck — a working system beats any diagram. Choose live demo OR screenshots depending on venue internet reliability.</p>
+  </div>
+
+  <div class="bullet-block">
+    <h4>What to Show (Demo Script — 2 min)</h4>
+    <ul>
+      <li><strong>Step 1:</strong> Open <code>fieldvision.onrender.com</code> — show the dark-mode landing page with FieldVision branding.</li>
+      <li><strong>Step 2:</strong> Upload a sample scouting PDF (prepare a 1-page test file in advance). Watch report generate in real time.</li>
+      <li><strong>Step 3:</strong> Switch to Players tab — show the auto-populated player card with grade badge.</li>
+      <li><strong>Step 4:</strong> Ask a follow-up question in chat (e.g., "How does his arm strength compare to Rickey's top prospects?"). Show Players tab updating with any newly mentioned players.</li>
+      <li><strong>Step 5 (optional):</strong> Upload a sample Trackman CSV — show per-pitcher stats + AI narrative interpretation.</li>
+    </ul>
+  </div>
+
+  <div class="two-col">
+    <div class="content-block">
+      <h4>If Doing Screenshots Instead</h4>
+      <p>Capture and include these screens:</p>
+      <ul style="padding-left:16px;font-size:10pt;">
+        <li>Homepage / analysis tab with a completed report open</li>
+        <li>Players tab showing multiple player cards with grade badges (A through C range)</li>
+        <li>Trackman tab with per-pitcher stats panel open</li>
+        <li>Chat interface showing a multi-turn conversation with session context pills</li>
+      </ul>
+    </div>
+    <div class="content-block">
+      <h4>Key Features to Highlight</h4>
+      <ul style="padding-left:16px;font-size:10pt;">
+        <li>Real-time report generation (typically 3–8 seconds)</li>
+        <li>Vision OCR on handwritten notes (live on production)</li>
+        <li>Plus/minus grade scale (not just A/B/C)</li>
+        <li>Session memory — all uploads accumulate as context</li>
+        <li>PDF export of any report</li>
+        <li>Team separation in Trackman Players view</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="speaker-note">
+    This is your strongest moment. If demoing live, have a backup plan (screenshots saved locally, browser cache pre-warmed). Render's free tier has a ~30-second cold start — open the URL before your presentation begins so it's already warm. If anything breaks live, pivot to screenshots without panic: "The live app is at fieldvision.onrender.com — let me show you the screenshots instead."
+  </div>
+</div>
+
+<hr class="section-divider">
+
+<!-- ════════════════════ SLIDE 7 ════════════════════════════════ -->
+<div class="slide-section">
+  <div class="slide-header">
+    <span class="slide-number">Slide 7 of 11</span>
+    <span class="slide-title">Results &amp; Evaluation</span>
+  </div>
+  <div class="slide-meta">SECTION: RESULTS &nbsp;|&nbsp; SUGGESTED TIME: 2–3 min</div>
+
+  <div class="content-block">
+    <h4>Slide Objective</h4>
+    <p>Quantify and qualify what the system can do. Be honest about what was formally evaluated vs. what was validated through usage. Evaluation for LLM-integrated systems is qualitative — acknowledge this directly.</p>
+  </div>
+
+  <div class="stat-row">
+    <div class="stat-box">
+      <div class="stat-num">100%</div>
+      <div class="stat-label">Handwritten PDF coverage via Vision OCR fallback</div>
+    </div>
+    <div class="stat-box">
+      <div class="stat-num">5</div>
+      <div class="stat-label">API endpoints, all tested and deployed</div>
+    </div>
+    <div class="stat-box">
+      <div class="stat-num">11</div>
+      <div class="stat-label">Grade values (A through F, full plus/minus scale)</div>
+    </div>
+  </div>
+
+  <div class="two-col">
+    <div class="content-block">
+      <h4>What Was Validated</h4>
+      <ul style="padding-left:16px;font-size:10pt;">
+        <li><strong>Functional correctness:</strong> All five API endpoints return expected schemas on valid inputs and appropriate error codes (400, 422, 500) on invalid inputs.</li>
+        <li><strong>OCR accuracy:</strong> Vision fallback correctly extracted text from handwritten test PDFs where pdfplumber returned empty strings.</li>
+        <li><strong>Grade differentiation:</strong> After prompt engineering, chat-extracted profiles assign different grades to players in the same reply when language implies ranking. (Resolved "everyone gets B" bug.)</li>
+        <li><strong>Grade consistency:</strong> Grade lock mechanism prevents a player's grade from changing after their first profile entry unless explicitly requested.</li>
+        <li><strong>Trackman team separation:</strong> PitcherTeam grouping correctly separates pitchers from two teams in the same CSV file.</li>
+      </ul>
+    </div>
+    <div class="content-block">
+      <h4>Evaluation Approach &amp; Limitations</h4>
+      <ul style="padding-left:16px;font-size:10pt;">
+        <li><strong>No ground-truth grades:</strong> LLM-assigned grades cannot be objectively measured — evaluation was qualitative, based on coaching staff feedback and face validity.</li>
+        <li><strong>RAG relevance:</strong> TF-IDF retrieval was validated by spot-checking retrieved Rickey documents for thematic relevance to input notes — not formally measured with NDCG or MRR.</li>
+        <li><strong>Scale:</strong> Tested on 10–15 real player notes. Large-scale load testing not performed on Render free tier.</li>
+        <li><strong>Bias risk:</strong> Rickey's documents reflect 1930s–50s scouting norms, including outdated characterizations. Historical context is clearly labeled as reference, not ground truth.</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="content-block">
+    <h4>System Capabilities Delivered</h4>
+    <ul style="padding-left:16px;">
+      <li>End-to-end pipeline from raw file upload to structured player profile — no manual data entry.</li>
+      <li>Handwritten PDF scouting notes successfully processed via Claude Vision OCR (novel capability; standard NLP pipelines cannot do this).</li>
+      <li>Persistent Players tab auto-populated across three input channels: direct upload, scouting chat, combined chat.</li>
+      <li>Trackman CSV → per-pitcher stats + AI narrative interpretation, with team-level grouping.</li>
+      <li>Session memory: all uploads accumulate as context for follow-up chat queries.</li>
+      <li>PDF export of all reports (client-side, no server roundtrip).</li>
+    </ul>
+  </div>
+
+  <div class="speaker-note">
+    Be candid about evaluation limitations — faculty will respect intellectual honesty. The right framing: "Evaluation of LLM-integrated systems is an open research problem. We validated functional correctness through unit testing and qualitative output review, and iterated with the coaching staff on grade calibration. Formal IR metrics were not appropriate here given the lack of ground-truth annotations." This is the truth and it's a sophisticated answer.
+  </div>
+</div>
+
+<hr class="section-divider">
+
+<!-- ════════════════════ SLIDE 8 ════════════════════════════════ -->
+<div class="slide-section">
+  <div class="slide-header">
+    <span class="slide-number">Slide 8 of 11</span>
+    <span class="slide-title">Recommendations &amp; Business Impact</span>
+  </div>
+  <div class="slide-meta">SECTION: IMPACT &nbsp;|&nbsp; SUGGESTED TIME: 2 min</div>
+
+  <div class="content-block">
+    <h4>Slide Objective</h4>
+    <p>Translate technical results into business value. Speak to industry professionals — ROI, efficiency gains, competitive advantage. Then present the near-term roadmap.</p>
+  </div>
+
+  <div class="two-col">
+    <div class="content-block">
+      <h4>Current Business Impact</h4>
+      <ul style="padding-left:16px;font-size:10pt;">
+        <li><strong>Time savings:</strong> Manual note digitization estimated at 15–30 min per player. FieldVision: 10–30 seconds. For a 20-player scouting trip, ~5–8 hours saved per event.</li>
+        <li><strong>Consistency:</strong> Every report follows the same structured format (Overview, Strengths, Concerns, Historical Comparison, Grade). Eliminates scout-to-scout format variance.</li>
+        <li><strong>Historical benchmarking:</strong> Coaches can ask "how does this player compare to Rickey's top college prospects?" — a question previously unanswerable without hours of archival research.</li>
+        <li><strong>Trackman interpretation:</strong> Raw Trackman numbers (e.g., 2,200 RPM four-seam) are meaningful only with context. FieldVision turns data rows into coaching-ready narratives.</li>
+        <li><strong>Searchable talent pool:</strong> All session players accumulate in one filterable interface. No lost notes, no spreadsheet juggling.</li>
+      </ul>
+    </div>
+    <div class="content-block">
+      <h4>Roadmap (Near-Term)</h4>
+      <ul style="padding-left:16px;font-size:10pt;">
+        <li><strong>Mass upload:</strong> Batch process 20+ player files simultaneously — coach uploads an entire scouting trip folder at once.</li>
+        <li><strong>Player comparison:</strong> Side-by-side grade and tool comparison view for recruiting decisions (e.g., "Compare Johnson and Martinez").</li>
+        <li><strong>Talent pool filtering:</strong> Filter by position, grade range, and Trackman metrics simultaneously.</li>
+        <li><strong>Custom domain:</strong> fieldvision.smcga.edu or similar for institutional branding.</li>
+        <li><strong>Export to recruiting report:</strong> Generate a PDF talent summary across all scouted players for staff distribution.</li>
+        <li><strong>Mobile-responsive upload:</strong> Allow coaches to upload photos of handwritten notes directly from iPhone camera.</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="callout">
+    <strong>Broader Applicability</strong>
+    The FieldVision architecture — OCR fallback chain + TF-IDF RAG over a domain corpus + LLM analysis + structured JSON extraction — is replicable to any sport or organization with: (1) handwritten evaluation documents and (2) a historical reference corpus. Basketball recruiting, football scouting, talent agency evaluation. The pattern generalizes.
+  </div>
+
+  <div class="speaker-note">
+    Industry professionals in the audience will respond to the ROI angle. Put the time savings number on the slide itself — concrete numbers are memorable. The roadmap signals that this is a maintained, growing product, not a one-time class project. Coach Costanza's specific asks (mass upload, player comparison, filtering, Trackman integration) came from an actual stakeholder meeting on April 2nd — you can reference that this roadmap came directly from client feedback.
+  </div>
+</div>
+
+<hr class="section-divider">
+
+<!-- ════════════════════ SLIDE 9 ════════════════════════════════ -->
+<div class="slide-section">
+  <div class="slide-header">
+    <span class="slide-number">Slide 9 of 11</span>
+    <span class="slide-title">Challenges &amp; What We'd Do Differently</span>
+  </div>
+  <div class="slide-meta">SECTION: REFLECTION &nbsp;|&nbsp; SUGGESTED TIME: 1.5–2 min</div>
+
+  <div class="content-block">
+    <h4>Slide Objective</h4>
+    <p>Demonstrate technical maturity and self-awareness. Every strong project has obstacles — naming them honestly builds credibility with faculty evaluators.</p>
+  </div>
+
+  <div class="two-col">
+    <div class="content-block">
+      <h4>Hard Problems Encountered</h4>
+      <ul style="padding-left:16px;font-size:10pt;">
+        <li><strong>Grade inflation in LLM output:</strong> Initial prompts caused all extracted players to receive a "B" regardless of language. Required careful prompt engineering — explicit baseline calibration (C = average), mandatory grade differentiation, and strict anchoring language tied to specific grades.</li>
+        <li><strong>CSS class name constraints:</strong> Grade badges like "B+" can't become CSS class names (invalid characters). Solved with a <code>gradeClass()</code> helper that maps to letter-family color classes.</li>
+        <li><strong>Grade lock consistency:</strong> Preventing grade drift across chat turns required a two-level lock: (1) skip players already in the pool on extraction, (2) only update grades when the user explicitly uses re-grade language.</li>
+        <li><strong>Handwritten PDF coverage:</strong> Standard libraries fail completely on scanned handwriting. The Vision OCR fallback was essential but added latency and API cost.</li>
+        <li><strong>Render cold starts:</strong> Free-tier deployment sleeps after 15 min inactivity. Implemented UptimeRobot keep-alive ping on <code>/api/health</code>.</li>
+      </ul>
+    </div>
+    <div class="content-block">
+      <h4>What We'd Do Differently</h4>
+      <ul style="padding-left:16px;font-size:10pt;">
+        <li><strong>Formal evaluation dataset:</strong> Build a ground-truth set of scouting notes with known player grades, validated by coaching staff, to enable quantitative RAG precision measurement.</li>
+        <li><strong>Database layer:</strong> Current state is in-memory (session-scoped). Adding a lightweight database (SQLite → PostgreSQL) would enable cross-session player history, search, and analytics.</li>
+        <li><strong>Fine-tuning vs. prompting:</strong> Evaluate whether fine-tuning a smaller model on domain-specific scouting reports would reduce API cost and improve grading consistency over pure prompt engineering.</li>
+        <li><strong>User authentication:</strong> Multi-coach support requires user accounts, role-based access (head coach vs. assistant scout), and note ownership.</li>
+        <li><strong>Comprehensive testing:</strong> End-to-end integration tests for each API route. Property-based testing for grade extraction edge cases.</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="speaker-note">
+    The "grade inflation" bug is a great story — walk through it briefly: "Our first extraction prompt produced a 'B' for every single player, regardless of the language used. We realized the model was anchoring to the letter grade examples and treating B as a safe default. We fixed this by rewriting the prompt to: (1) set C as the explicit baseline for an average player, (2) require that players in the same reply receive different grades if the language implies ranking, (3) provide specific linguistic anchors for each grade level." This shows you understand LLM behavior deeply.
+  </div>
+</div>
+
+<hr class="section-divider">
+
+<!-- ════════════════════ SLIDE 10 ════════════════════════════════ -->
+<div class="slide-section">
+  <div class="slide-header">
+    <span class="slide-number">Slide 10 of 11</span>
+    <span class="slide-title">What We Learned</span>
+  </div>
+  <div class="slide-meta">SECTION: REFLECTION &nbsp;|&nbsp; SUGGESTED TIME: 1.5 min</div>
+
+  <div class="content-block">
+    <h4>Slide Objective</h4>
+    <p>Articulate growth — technical, professional, and methodological. This slide shows the capstone experience had substance beyond just "building a thing."</p>
+  </div>
+
+  <div class="bullet-block">
+    <h4>Key Learnings</h4>
+    <ul>
+      <li><strong>Prompt engineering is engineering:</strong> LLM output quality is as sensitive to prompt design as code is to algorithm design. The difference between "assign a grade" and "C is average; B is above average; differentiate grades when language implies ranking" produced dramatically different results. This is a real engineering discipline.</li>
+      <li><strong>RAG design is domain-specific:</strong> The decision between TF-IDF and neural embeddings is not "newer is better." It depends on your corpus vocabulary, query distribution, and computational constraints. Domain knowledge drove a better architectural choice.</li>
+      <li><strong>Production infrastructure matters from Day 1:</strong> Designing for Render deployment shaped decisions about statelessness, cold starts, and keep-alive patterns from the beginning. Building for localhost first created technical debt we had to refactor.</li>
+      <li><strong>Stakeholder alignment is ongoing:</strong> The April 2 coaching staff meeting revealed requirements (mass upload, player comparison) that weren't in the original spec. Real clients have evolving needs — building extensible architecture rather than hardcoded solutions paid off.</li>
+      <li><strong>LLMs are powerful orchestrators:</strong> The most architecturally interesting insight: Claude isn't just generating text. It's functioning as a structured data extraction engine (JSON output), an OCR model (Vision), a retrieval re-ranker (chat grounding), and a reasoning layer — all through a single API with prompt-controlled behavior.</li>
+    </ul>
+  </div>
+
+  <div class="speaker-note">
+    Pick 2–3 of these learnings that feel most personally resonant and expand on them with a brief anecdote. The "prompt engineering is engineering" point is the most original and will land well with a technical audience. Avoid generic statements like "I learned a lot about teamwork" — be specific and technical.
+  </div>
+</div>
+
+<hr class="section-divider">
+
+<!-- ════════════════════ SLIDE 11 ════════════════════════════════ -->
+<div class="slide-section">
+  <div class="slide-header">
+    <span class="slide-number">Slide 11 of 11</span>
+    <span class="slide-title">Closing &amp; Q&amp;A</span>
+  </div>
+  <div class="slide-meta">SECTION: CLOSE &nbsp;|&nbsp; SUGGESTED TIME: 1 min + Q&amp;A</div>
+
+  <div class="content-block">
+    <h4>Slide Objective</h4>
+    <p>Land the key message, leave the audience with the URL, and open for questions. Confident and concise.</p>
+  </div>
+
+  <div class="bullet-block">
+    <h4>Closing Statement (Say This, or Something Like It)</h4>
+    <ul>
+      <li><em>"FieldVision turns a coach's handwritten notes into a structured scouting report in under 30 seconds, benchmarked against Branch Rickey's professional evaluation frameworks. The system is live, deployed, and already in use this season."</em></li>
+      <li><strong>Live URL:</strong> fieldvision.onrender.com</li>
+      <li><strong>GitHub:</strong> github.com/jakeyoung1/FieldVision</li>
+      <li>Thank the coaching staff, faculty advisor, and audience.</li>
+    </ul>
+  </div>
+
+  <div class="two-col">
+    <div class="content-block">
+      <h4>Likely Q&amp;A Questions &amp; Answers</h4>
+      <p><strong>Q: How accurate are the AI-assigned grades?</strong><br>
+      A: Grades are calibrated through prompt engineering with C as average baseline. Validated qualitatively with coaching staff — no formal ground-truth dataset exists yet; that's the next step.</p>
+      <p><strong>Q: Could this replace a human scout?</strong><br>
+      A: No — it augments scouts, not replaces them. The AI structures and contextualizes human observations; it doesn't generate evaluations from objective data alone.</p>
+    </div>
+    <div class="content-block">
+      <h4>More Q&amp;A</h4>
+      <p><strong>Q: Why not use OpenAI / GPT?</strong><br>
+      A: Anthropic's Claude was chosen for its strong instruction-following on structured JSON output and superior Vision model performance on handwriting — benchmarked informally on the same test PDFs.</p>
+      <p><strong>Q: What does it cost to run?</strong><br>
+      A: Render free tier (zero infrastructure cost). Claude API costs approximately $0.003–0.005 per scouting note analysis. Total cost for a 20-player scouting trip: under $0.10.</p>
+      <p><strong>Q: Is Branch Rickey's data licensed for this use?</strong><br>
+      A: Documents are historical (pre-1940s) and used as a reference knowledge base only. No full text is reproduced — only cosine-similarity matches inform the prompt.</p>
+    </div>
+  </div>
+
+  <div class="speaker-note">
+    Finish strong and direct. After the closing statement, don't add filler ("so yeah, that's basically it..."). Say "I'm happy to take questions," and wait. Silence is fine. If someone asks something you don't know, say "Great question — I'd want to test that before committing to an answer" rather than guessing.
+  </div>
+</div>
+
+<hr class="section-divider">
+
+<!-- ════════════════ PRESENTATION CHECKLIST ═══════════════════ -->
+<div class="slide-section">
+  <div class="slide-header">
+    <span class="slide-number" style="background:var(--red);">Prep</span>
+    <span class="slide-title">Pre-Presentation Checklist</span>
+  </div>
+
+  <div class="two-col">
+    <div class="bullet-block">
+      <h4>Technical Prep (Day Before)</h4>
+      <ul>
+        <li>Open fieldvision.onrender.com and warm the container — it cold-starts on first visit</li>
+        <li>Upload a test scouting PDF to confirm the pipeline works end-to-end</li>
+        <li>Prepare a sample Trackman CSV for the demo (or use a real one from this season)</li>
+        <li>Save backup screenshots of all key screens locally</li>
+        <li>Confirm your laptop can connect to the venue projector (HDMI / USB-C adapter)</li>
+        <li>Have a mobile hotspot as internet backup</li>
+      </ul>
+    </div>
+    <div class="bullet-block">
+      <h4>Slide Prep</h4>
+      <ul>
+        <li>10–12 slides maximum — cut anything that's "nice to have"</li>
+        <li>Every slide should have a clear headline statement, not just a topic label</li>
+        <li>Use FieldVision brand colors: Navy #002147, Red #C8102E, White</li>
+        <li>No more than 5 bullet points per slide — cut ruthlessly</li>
+        <li>Rehearse with a timer — 15 minutes of content, 5 minutes for Q&amp;A</li>
+        <li>Practice the demo segment at least 3 times so it's fluid</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════ FOOTER ═══════════════════════════════════ -->
+<div class="doc-footer">
+  <strong>FieldVision — Capstone Presentation Guide</strong><br>
+  Saint Mary's College of California · Data Science Capstone Practicum · Spring 2026<br>
+  Generated for: Jake Young · Live app: fieldvision.onrender.com · GitHub: jakeyoung1/FieldVision
+</div>
+
+</body>
+</html>
