@@ -627,8 +627,16 @@
       </p>
     </div>
 
+    <!-- ── Sport Switcher ──────────────────────────────────────────── -->
+    <div class="reveal" style="display:flex;justify-content:center;margin-bottom:28px;">
+      <div style="display:inline-flex;gap:4px;padding:4px;border-radius:12px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);">
+        <button id="fv-sport-baseball" class="fv-sport-pill active" onclick="switchSport('baseball')">⚾ Baseball</button>
+        <button id="fv-sport-basketball" class="fv-sport-pill" onclick="switchSport('basketball')">🏀 Basketball</button>
+      </div>
+    </div>
+
     <!-- ── Tab Bar ─────────────────────────────────────────────────── -->
-    <div class="reveal" style="transition-delay:.05s;display:flex;gap:8px;margin-bottom:24px;border-bottom:1px solid rgba(255,255,255,.08);padding-bottom:0;">
+    <div id="fv-tabbar-baseball" class="reveal" style="transition-delay:.05s;display:flex;gap:8px;margin-bottom:24px;border-bottom:1px solid rgba(255,255,255,.08);padding-bottom:0;">
       <button class="fv-tab active" data-tab="scouting" onclick="switchTab('scouting')">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
         Scouting Notes
@@ -875,6 +883,178 @@
       </div>
     </div>
 
+    <!-- ══ BASKETBALL ═══════════════════════════════════════════════ -->
+
+    <!-- ── Basketball Tab Bar ──────────────────────────────────────── -->
+    <div id="fv-tabbar-basketball" style="display:none;gap:8px;margin-bottom:24px;border-bottom:1px solid rgba(255,255,255,.08);padding-bottom:0;">
+      <button class="fv-tab bb-tab bb-active" data-bbtab="bb-scouting" onclick="switchBBTab('bb-scouting')">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+        Scouting Notes
+      </button>
+      <button class="fv-tab bb-tab" data-bbtab="bb-boxscore" onclick="switchBBTab('bb-boxscore')">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+        Box Scores
+      </button>
+      <button class="fv-tab bb-tab" data-bbtab="bb-coach" onclick="switchBBTab('bb-coach')">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+        Coach
+      </button>
+    </div>
+
+    <!-- ── Basketball: Scouting Tab ────────────────────────────────── -->
+    <div id="tab-bb-scouting" class="bb-tab-panel" style="display:none;">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px;" class="fv-app-grid">
+        <div class="card" style="padding:28px;">
+          <div class="card-spot"></div>
+          <div style="font-weight:700;font-size:1rem;margin-bottom:6px;">Basketball Scouting Notes</div>
+          <div style="color:rgba(240,244,255,.42);font-size:.82rem;margin-bottom:16px;">
+            Paste notes or upload files. Player name on first line; separate multiple players with '---'.
+          </div>
+
+          <textarea id="bb-notes-input"
+                    placeholder="Jalen Carter&#10;6'4 combo guard, elite first step, streaky from three..."
+                    style="width:100%;height:150px;padding:10px 12px;border-radius:8px;background:#172033;
+                           border:1px solid rgba(249,115,22,.25);color:#f0f4ff;font-size:.82rem;
+                           resize:vertical;outline:none;box-sizing:border-box;font-family:inherit;"
+                    oninput="onBBNotesInput()"></textarea>
+
+          <div style="margin-top:12px;display:flex;align-items:center;gap:10px;">
+            <button type="button" onclick="document.getElementById('bb-file-input').click()"
+                    style="padding:6px 18px;border-radius:6px;background:rgba(249,115,22,.12);
+                           border:1px solid rgba(249,115,22,.35);color:#fb923c;font-weight:600;
+                           font-size:.82rem;cursor:pointer;">Upload Files</button>
+            <span style="font-size:.75rem;color:rgba(240,244,255,.28);">PDF · TXT · MD</span>
+            <input id="bb-file-input" type="file" multiple accept=".pdf,.txt,.md" style="display:none"
+                   onchange="handleBBFileSelect(this.files)">
+          </div>
+          <div id="bb-file-list" style="margin-top:12px;display:flex;flex-direction:column;gap:6px;"></div>
+
+          <button id="bb-analyze-btn" onclick="runBBAnalysis()"
+                  style="margin-top:16px;width:100%;padding:12px;border-radius:10px;
+                         background:#f97316;color:#fff;font-weight:700;font-size:.9rem;
+                         border:none;cursor:pointer;transition:opacity .2s;display:flex;
+                         align-items:center;justify-content:center;gap:8px;" disabled>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+            Analyze
+          </button>
+        </div>
+
+        <div class="card" style="padding:28px;min-height:340px;">
+          <div class="card-spot"></div>
+          <div id="bb-report-area">
+            <div id="bb-report-empty" style="height:300px;display:flex;flex-direction:column;
+                 align-items:center;justify-content:center;gap:12px;text-align:center;">
+              <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="rgba(249,115,22,.3)" stroke-width="1.2"><circle cx="12" cy="12" r="10"/><path d="M4.9 4.9c4 3.5 10.2 3.5 14.2 0M4.9 19.1c4-3.5 10.2-3.5 14.2 0M12 2v20M2 12h20"/></svg>
+              <div style="color:rgba(240,244,255,.3);font-size:.88rem;">Scouting report will appear here</div>
+            </div>
+            <div id="bb-report-content" style="display:none;"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Basketball: Box Scores Tab ──────────────────────────────── -->
+    <div id="tab-bb-boxscore" class="bb-tab-panel" style="display:none;">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px;" class="fv-app-grid">
+        <div class="card" style="padding:28px;">
+          <div class="card-spot"></div>
+          <div style="font-weight:700;font-size:1rem;margin-bottom:6px;">Upload Box Score CSV</div>
+          <div style="color:rgba(240,244,255,.42);font-size:.82rem;margin-bottom:20px;">
+            Game box scores or season stat exports (Basketball-Reference / Stathead format works).
+          </div>
+
+          <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;
+                 gap:12px;border:2px dashed rgba(249,115,22,.25);border-radius:12px;padding:36px 20px;
+                 transition:border-color .2s,background .2s;text-align:center;"
+                 ondragover="event.preventDefault();this.style.borderColor='#f97316'"
+                 ondragleave="this.style.borderColor='rgba(249,115,22,.25)'"
+                 ondrop="handleBBBoxDrop(event)">
+            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="rgba(249,115,22,.5)" stroke-width="1.5"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+            <div style="font-size:.9rem;color:rgba(240,244,255,.55);">Drop CSV here or</div>
+            <button type="button" onclick="document.getElementById('bb-box-input').click()"
+                    style="padding:6px 18px;border-radius:6px;background:rgba(249,115,22,.12);
+                           border:1px solid rgba(249,115,22,.35);color:#fb923c;font-weight:600;
+                           font-size:.82rem;cursor:pointer;">Browse</button>
+            <input id="bb-box-input" type="file" accept=".csv" style="display:none"
+                   onchange="handleBBBoxSelect(this.files[0])">
+          </div>
+
+          <div id="bb-box-file-label" style="display:none;margin-top:12px;"></div>
+
+          <input id="bb-box-focus" type="text" placeholder="Focus area (optional)…"
+                 style="margin-top:14px;width:100%;padding:10px 14px;border-radius:8px;
+                        background:#172033;border:1px solid rgba(255,255,255,.1);
+                        color:#f0f4ff;font-size:.85rem;outline:none;box-sizing:border-box;"
+                 onfocus="this.style.borderColor='rgba(249,115,22,.5)'"
+                 onblur="this.style.borderColor='rgba(255,255,255,.1)'">
+
+          <button id="bb-box-btn" onclick="runBBBoxScore()"
+                  style="margin-top:14px;width:100%;padding:12px;border-radius:10px;
+                         background:#f97316;color:#fff;font-weight:700;font-size:.9rem;
+                         border:none;cursor:pointer;transition:opacity .2s;" disabled>
+            Analyze Box Score
+          </button>
+        </div>
+
+        <div class="card" style="padding:28px;min-height:340px;">
+          <div class="card-spot"></div>
+          <div id="bb-box-result" style="color:rgba(240,244,255,.3);font-size:.88rem;
+               display:flex;align-items:center;justify-content:center;min-height:300px;text-align:center;">
+            Box score analysis will appear here
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Basketball: Coach Tab ───────────────────────────────────── -->
+    <div id="tab-bb-coach" class="bb-tab-panel" style="display:none;">
+
+      <!-- Mode pills -->
+      <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:20px;">
+        <button class="bb-mode-pill active" data-bbmode="chat" onclick="setBBCoachMode('chat')">💬 Open Chat</button>
+        <button class="bb-mode-pill" data-bbmode="development" onclick="setBBCoachMode('development')">📈 Development Plan</button>
+        <button class="bb-mode-pill" data-bbmode="opponent" onclick="setBBCoachMode('opponent')">🎯 Opponent Scouting</button>
+        <button class="bb-mode-pill" data-bbmode="practice" onclick="setBBCoachMode('practice')">📋 Practice Plan</button>
+      </div>
+
+      <div class="card" style="overflow:hidden;">
+        <div class="card-spot"></div>
+        <div style="padding:18px 24px;border-bottom:1px solid rgba(255,255,255,.06);
+             display:flex;align-items:center;justify-content:space-between;">
+          <div>
+            <div style="font-weight:700;font-size:.95rem;">Coaching Assistant</div>
+            <div id="bb-coach-context-label" style="font-size:.75rem;color:rgba(240,244,255,.38);margin-top:2px;">
+              No session data loaded — analyses from Scouting and Box Scores tabs feed in automatically
+            </div>
+          </div>
+          <button onclick="clearBBCoach()"
+                  style="padding:5px 12px;border-radius:6px;background:rgba(255,255,255,.05);
+                         border:1px solid rgba(255,255,255,.1);color:rgba(240,244,255,.5);
+                         font-size:.75rem;cursor:pointer;">Clear</button>
+        </div>
+        <div id="bb-coach-messages" style="padding:20px 24px;min-height:280px;max-height:420px;
+             overflow-y:auto;display:flex;flex-direction:column;gap:12px;">
+          <div id="bb-coach-empty" style="margin:auto;text-align:center;color:rgba(240,244,255,.25);font-size:.85rem;padding:40px 0;">
+            Pick a mode above, then ask — development plans, opponent prep, practice plans, or anything basketball.
+          </div>
+        </div>
+        <div style="padding:14px 18px;border-top:1px solid rgba(255,255,255,.06);display:flex;gap:10px;">
+          <input id="bb-coach-input" type="text"
+                 placeholder="e.g. Build a development plan for my point guard…"
+                 style="flex:1;padding:10px 16px;border-radius:8px;background:#172033;
+                        border:1px solid rgba(255,255,255,.1);color:#f0f4ff;font-size:.88rem;outline:none;"
+                 onkeydown="if(event.key==='Enter')sendBBCoach()"
+                 onfocus="this.style.borderColor='rgba(249,115,22,.5)'"
+                 onblur="this.style.borderColor='rgba(255,255,255,.1)'">
+          <button onclick="sendBBCoach()"
+                  style="padding:10px 20px;border-radius:8px;background:#f97316;color:#fff;
+                         font-weight:600;font-size:.85rem;border:none;cursor:pointer;white-space:nowrap;">
+            Send
+          </button>
+        </div>
+      </div>
+    </div>
+
   </div>
 </section>
 
@@ -911,6 +1091,28 @@
 .fv-grade-F { background: rgba(100,100,100,.15);color: #9ca3af; border: 1px solid rgba(100,100,100,.25); }
 
 @media (max-width: 640px) { .fv-app-grid { grid-template-columns: 1fr !important; } }
+
+/* ── Sport switcher ─────────────────────────────────────────────────────── */
+.fv-sport-pill {
+  padding: 8px 22px; border-radius: 9px; border: none; background: transparent;
+  color: rgba(240,244,255,.45); font-size: .88rem; font-weight: 600;
+  cursor: pointer; transition: color .2s, background .2s;
+}
+.fv-sport-pill:hover { color: rgba(240,244,255,.8); }
+#fv-sport-baseball.active   { background: rgba(200,16,46,.18);  color: #f0f4ff; }
+#fv-sport-basketball.active { background: rgba(249,115,22,.18); color: #f0f4ff; }
+
+/* ── Basketball tabs & coach mode pills ─────────────────────────────────── */
+.fv-tab.bb-active { color: #f0f4ff; border-bottom-color: #f97316; background: rgba(249,115,22,.07); }
+.bb-mode-pill {
+  padding: 7px 16px; border-radius: 99px; font-size: .8rem; font-weight: 600;
+  background: rgba(255,255,255,.04); border: 1px solid rgba(255,255,255,.1);
+  color: rgba(240,244,255,.5); cursor: pointer; transition: all .2s;
+}
+.bb-mode-pill:hover { color: rgba(240,244,255,.85); }
+.bb-mode-pill.active {
+  background: rgba(249,115,22,.15); border-color: rgba(249,115,22,.45); color: #fb923c;
+}
 </style>
 
 
@@ -2378,6 +2580,318 @@ document.querySelectorAll('[data-topline]').forEach(line => {
   const style = document.createElement('style');
   style.textContent = '@keyframes spin { to { transform: rotate(360deg); } }';
   document.head.appendChild(style);
+})();
+
+/* ══ BASKETBALL MODULE ══════════════════════════════════════════════════════
+   Fully additive — owns its own state, panels (.bb-tab-panel) and endpoints
+   (/api/basketball/*). Baseball code above is untouched.                    */
+(function () {
+  const API_BASE = window.FV_API_BASE || '';
+
+  // ── State ───────────────────────────────────────────────────────────────
+  let bbFiles        = [];
+  let bbReports      = [];   // accumulated scouting report texts this session
+  let bbBoxSummary   = '';   // plain-text summary from last box score run
+  let bbCoachHistory = [];
+  let bbMode         = 'chat';
+  let bbActiveTab    = 'bb-scouting';
+
+  // ── Sport switching ─────────────────────────────────────────────────────
+  window.switchSport = function (sport) {
+    const isBB = sport === 'basketball';
+    document.getElementById('fv-sport-baseball').classList.toggle('active', !isBB);
+    document.getElementById('fv-sport-basketball').classList.toggle('active', isBB);
+
+    const bsBar = document.getElementById('fv-tabbar-baseball');
+    const bbBar = document.getElementById('fv-tabbar-basketball');
+
+    if (isBB) {
+      bsBar.style.display = 'none';
+      document.querySelectorAll('.fv-tab-panel').forEach(p => p.style.display = 'none');
+      bbBar.style.display = 'flex';
+      switchBBTab(bbActiveTab);
+    } else {
+      bbBar.style.display = 'none';
+      document.querySelectorAll('.bb-tab-panel').forEach(p => p.style.display = 'none');
+      bsBar.style.display = 'flex';
+      const active = document.querySelector('.fv-tab.active');
+      window.switchTab(active && active.dataset.tab ? active.dataset.tab : 'scouting');
+    }
+  };
+
+  window.switchBBTab = function (name) {
+    bbActiveTab = name;
+    document.querySelectorAll('.bb-tab').forEach(t => t.classList.toggle('bb-active', t.dataset.bbtab === name));
+    document.querySelectorAll('.bb-tab-panel').forEach(p => p.style.display = 'none');
+    const panel = document.getElementById('tab-' + name);
+    if (panel) panel.style.display = '';
+    if (name === 'bb-coach') renderBBContextLabel();
+  };
+
+  // ── Scouting: input handling ────────────────────────────────────────────
+  window.onBBNotesInput = function () {
+    updateBBAnalyzeBtn();
+  };
+
+  window.handleBBFileSelect = function (fileList) {
+    bbFiles = Array.from(fileList);
+    renderBBFileList();
+    updateBBAnalyzeBtn();
+  };
+
+  window.removeBBFile = function (i) {
+    bbFiles.splice(i, 1);
+    renderBBFileList();
+    updateBBAnalyzeBtn();
+  };
+
+  function updateBBAnalyzeBtn () {
+    const notes = document.getElementById('bb-notes-input').value.trim();
+    document.getElementById('bb-analyze-btn').disabled = !notes && bbFiles.length === 0;
+  }
+
+  function renderBBFileList () {
+    const el = document.getElementById('bb-file-list');
+    el.innerHTML = bbFiles.map((f, i) => `
+      <div style="display:flex;align-items:center;gap:8px;padding:7px 10px;
+           background:#172033;border-radius:7px;font-size:.8rem;">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#f97316" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+        <span style="flex:1;color:rgba(240,244,255,.7);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${f.name}</span>
+        <span style="color:rgba(240,244,255,.3);">${(f.size/1024).toFixed(0)}KB</span>
+        <span onclick="removeBBFile(${i})" style="cursor:pointer;color:rgba(240,244,255,.3);padding:0 2px;">✕</span>
+      </div>
+    `).join('');
+  }
+
+  // ── Scouting: run analysis ──────────────────────────────────────────────
+  window.runBBAnalysis = async function () {
+    const notes = document.getElementById('bb-notes-input').value.trim();
+    if (!notes && !bbFiles.length) return;
+    const btn = document.getElementById('bb-analyze-btn');
+    btn.disabled = true;
+    btn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="animation:spin .8s linear infinite"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg> Analyzing…';
+
+    const empty   = document.getElementById('bb-report-empty');
+    const content = document.getElementById('bb-report-content');
+    empty.style.display = 'none';
+    content.style.display = '';
+    content.innerHTML = '<div style="color:rgba(240,244,255,.4);font-size:.85rem;padding:20px 0;">Running basketball scouting analysis…</div>';
+
+    try {
+      const fd = new FormData();
+      bbFiles.forEach(f => fd.append('files_upload', f));
+      if (notes) fd.append('notes_text', notes);
+
+      const res  = await fetch(`${API_BASE}/api/basketball/analyze`, { method: 'POST', body: fd });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.detail || 'Analysis failed');
+
+      content.innerHTML = data.results.map(r => {
+        bbReports.push(`[${r.label}]\n${r.report}`);
+        const grade = r.profile && r.profile.grade ? r.profile.grade : '?';
+        return `
+          <div style="margin-bottom:24px;">
+            <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">
+              <span style="font-weight:700;font-size:.95rem;">${r.label}</span>
+              <span class="fv-grade-badge ${bbGradeClass(grade)}">${grade}</span>
+              ${r.context_used ? '<span style="font-size:.68rem;color:rgba(249,115,22,.7);border:1px solid rgba(249,115,22,.3);border-radius:99px;padding:1px 8px;">stat comps used</span>' : ''}
+            </div>
+            <div class="fv-report-md">${bbMarkdown(r.report)}</div>
+          </div>`;
+      }).join('');
+      renderBBContextLabel();
+    } catch (err) {
+      content.innerHTML = `<div style="color:#f07080;font-size:.85rem;padding:20px 0;">Error: ${err.message}</div>`;
+    } finally {
+      btn.disabled = false;
+      btn.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="5 3 19 12 5 21 5 3"/></svg> Analyze';
+      updateBBAnalyzeBtn();
+    }
+  };
+
+  // ── Box scores ──────────────────────────────────────────────────────────
+  let bbBoxFile = null;
+
+  window.handleBBBoxDrop = function (e) {
+    e.preventDefault();
+    if (e.dataTransfer.files.length) handleBBBoxSelect(e.dataTransfer.files[0]);
+  };
+
+  window.handleBBBoxSelect = function (file) {
+    if (!file) return;
+    bbBoxFile = file;
+    const label = document.getElementById('bb-box-file-label');
+    label.style.display = '';
+    label.innerHTML = `<div style="display:flex;align-items:center;gap:8px;padding:7px 10px;
+         background:#172033;border-radius:7px;font-size:.8rem;">
+      <span style="flex:1;color:rgba(240,244,255,.7);">${file.name}</span>
+      <span style="color:rgba(240,244,255,.3);">${(file.size/1024).toFixed(0)}KB</span></div>`;
+    document.getElementById('bb-box-btn').disabled = false;
+  };
+
+  window.runBBBoxScore = async function () {
+    if (!bbBoxFile) return;
+    const btn = document.getElementById('bb-box-btn');
+    const out = document.getElementById('bb-box-result');
+    btn.disabled = true;
+    btn.textContent = 'Analyzing…';
+    out.style.display = 'block';
+    out.innerHTML = '<div style="color:rgba(240,244,255,.4);font-size:.85rem;">Crunching box score…</div>';
+
+    try {
+      const fd = new FormData();
+      fd.append('file', bbBoxFile);
+      fd.append('focus', document.getElementById('bb-box-focus').value.trim());
+
+      const res  = await fetch(`${API_BASE}/api/basketball/boxscore`, { method: 'POST', body: fd });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.detail || 'Box score analysis failed');
+
+      bbBoxSummary = data.summary;
+      const rows = Object.entries(data.stats).map(([name, s]) => `
+        <tr>
+          <td style="padding:6px 10px;color:#f0f4ff;font-weight:600;">${name}</td>
+          <td style="padding:6px 10px;">${s.ppg ?? '—'}</td>
+          <td style="padding:6px 10px;">${s.rpg ?? '—'}</td>
+          <td style="padding:6px 10px;">${s.apg ?? '—'}</td>
+          <td style="padding:6px 10px;">${s.ts_pct != null ? (s.ts_pct*100).toFixed(1)+'%' : '—'}</td>
+        </tr>`).join('');
+
+      out.innerHTML = `
+        <div style="text-align:left;">
+          <div style="font-size:.78rem;color:rgba(240,244,255,.4);margin-bottom:10px;">
+            ${data.players} player(s) · ${data.rows} row(s)
+          </div>
+          <div style="overflow-x:auto;margin-bottom:16px;">
+            <table style="width:100%;border-collapse:collapse;font-size:.8rem;color:rgba(240,244,255,.65);">
+              <thead><tr style="color:rgba(240,244,255,.4);text-align:left;">
+                <th style="padding:6px 10px;">Player</th><th style="padding:6px 10px;">PPG</th>
+                <th style="padding:6px 10px;">RPG</th><th style="padding:6px 10px;">APG</th>
+                <th style="padding:6px 10px;">TS%</th>
+              </tr></thead>
+              <tbody>${rows}</tbody>
+            </table>
+          </div>
+          <div class="fv-report-md">${bbMarkdown(data.interpretation)}</div>
+        </div>`;
+      renderBBContextLabel();
+    } catch (err) {
+      out.innerHTML = `<div style="color:#f07080;font-size:.85rem;">Error: ${err.message}</div>`;
+    } finally {
+      btn.disabled = false;
+      btn.textContent = 'Analyze Box Score';
+    }
+  };
+
+  // ── Coach ───────────────────────────────────────────────────────────────
+  window.setBBCoachMode = function (mode) {
+    bbMode = mode;
+    document.querySelectorAll('.bb-mode-pill').forEach(p => p.classList.toggle('active', p.dataset.bbmode === mode));
+    const placeholders = {
+      chat:        'Ask anything basketball…',
+      development: 'e.g. Build a development plan for my point guard…',
+      opponent:    'e.g. Break down the opponent from the box score I uploaded…',
+      practice:    'e.g. 90-minute practice focused on transition defense…',
+    };
+    document.getElementById('bb-coach-input').placeholder = placeholders[mode] || placeholders.chat;
+  };
+
+  window.clearBBCoach = function () {
+    bbCoachHistory = [];
+    const msgs = document.getElementById('bb-coach-messages');
+    msgs.innerHTML = '<div id="bb-coach-empty" style="margin:auto;text-align:center;color:rgba(240,244,255,.25);font-size:.85rem;padding:40px 0;">Pick a mode above, then ask — development plans, opponent prep, practice plans, or anything basketball.</div>';
+  };
+
+  function bbSessionContext () {
+    const parts = [];
+    if (bbReports.length) parts.push('SCOUTING REPORTS:\n' + bbReports.join('\n\n---\n\n'));
+    if (bbBoxSummary)     parts.push('BOX SCORE DATA:\n' + bbBoxSummary);
+    return parts.join('\n\n');
+  }
+
+  function renderBBContextLabel () {
+    const el = document.getElementById('bb-coach-context-label');
+    if (!el) return;
+    const bits = [];
+    if (bbReports.length) bits.push(`${bbReports.length} scouting report(s)`);
+    if (bbBoxSummary)     bits.push('box score data');
+    el.textContent = bits.length
+      ? `Session context loaded: ${bits.join(' + ')}`
+      : 'No session data loaded — analyses from Scouting and Box Scores tabs feed in automatically';
+  }
+
+  window.sendBBCoach = async function () {
+    const input = document.getElementById('bb-coach-input');
+    const text  = input.value.trim();
+    if (!text) return;
+    input.value = '';
+
+    const emptyMsg = document.getElementById('bb-coach-empty');
+    if (emptyMsg) emptyMsg.remove();
+
+    bbCoachHistory.push({ role: 'user', content: text });
+    renderBBCoachMessage('user', text);
+    const thinking = appendBBThinking();
+
+    try {
+      const res = await fetch(`${API_BASE}/api/basketball/coach`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ mode: bbMode, history: bbCoachHistory, context: bbSessionContext() }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.detail || 'Coach chat failed');
+
+      thinking.remove();
+      bbCoachHistory.push({ role: 'assistant', content: data.reply });
+      renderBBCoachMessage('assistant', data.reply);
+    } catch (err) {
+      thinking.remove();
+      renderBBCoachMessage('assistant', `Error: ${err.message}`);
+    }
+  };
+
+  function renderBBCoachMessage (role, text) {
+    const msgs = document.getElementById('bb-coach-messages');
+    const div  = document.createElement('div');
+    div.className = `fv-chat-bubble fv-chat-${role}`;
+    div.innerHTML = bbMarkdown(text);
+    msgs.appendChild(div);
+    msgs.scrollTop = msgs.scrollHeight;
+  }
+
+  function appendBBThinking () {
+    const msgs = document.getElementById('bb-coach-messages');
+    const div  = document.createElement('div');
+    div.className = 'fv-chat-bubble fv-chat-assistant';
+    div.innerHTML = '<span style="opacity:.5">Thinking…</span>';
+    msgs.appendChild(div);
+    msgs.scrollTop = msgs.scrollHeight;
+    return div;
+  }
+
+  // ── Helpers (module-local copies) ───────────────────────────────────────
+  function bbGradeClass (grade) {
+    if (!grade || grade === '?') return 'fv-grade-C';
+    const letter = grade[0].toUpperCase();
+    return ['A','B','C','D','F'].includes(letter) ? `fv-grade-${letter}` : 'fv-grade-C';
+  }
+
+  function bbMarkdown (md) {
+    if (!md) return '';
+    return md
+      .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+      .replace(/^## (.+)$/gm,  '<h2>$1</h2>')
+      .replace(/^### (.+)$/gm, '<h3>$1</h3>')
+      .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+      .replace(/\*(.+?)\*/g,    '<em>$1</em>')
+      .replace(/^[-*] (.+)$/gm, '<li>$1</li>')
+      .replace(/(<li>.*<\/li>\n?)+/g, m => `<ul>${m}</ul>`)
+      .replace(/\n\n/g, '</p><p>')
+      .replace(/^(?!<[hup])/gm, '')
+      .replace(/^(.+)$/gm, (l) => l.match(/^<[hup]/) ? l : `<p>${l}</p>`)
+      .replace(/<p><\/p>/g, '');
+  }
 })();
 </script>
 

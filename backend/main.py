@@ -14,7 +14,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 
-from backend.routes import analyze, chat, trackman
+from backend.routes import analyze, basketball, chat, trackman
 
 # ── App ───────────────────────────────────────────────────────────────────────
 app = FastAPI(
@@ -35,6 +35,7 @@ app.add_middleware(
 app.include_router(analyze.router, prefix="/api")
 app.include_router(chat.router,    prefix="/api")
 app.include_router(trackman.router, prefix="/api")
+app.include_router(basketball.router, prefix="/api")
 
 
 @app.get("/api/health")

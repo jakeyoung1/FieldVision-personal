@@ -8,3 +8,7 @@ data/embeddings.npy
 __pycache__/
 *.pyc
 .env
+
+# Local env
+.venv/
+.claude-flow/
