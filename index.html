@@ -884,6 +884,7 @@
     </div>
 
     <!-- ══ BASKETBALL ═══════════════════════════════════════════════ -->
+    <!-- (Play Maker panel is appended after the Coach panel below) -->
 
     <!-- ── Basketball Tab Bar ──────────────────────────────────────── -->
     <div id="fv-tabbar-basketball" style="display:none;gap:8px;margin-bottom:24px;border-bottom:1px solid rgba(255,255,255,.08);padding-bottom:0;">
@@ -898,6 +899,10 @@
       <button class="fv-tab bb-tab" data-bbtab="bb-coach" onclick="switchBBTab('bb-coach')">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
         Coach
+      </button>
+      <button class="fv-tab bb-tab" data-bbtab="bb-playmaker" onclick="switchBBTab('bb-playmaker')">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="5" cy="6" r="2.5"/><circle cx="19" cy="18" r="2.5"/><path d="M7 7.5 C 12 11, 12 13, 17 16.5" stroke-dasharray="2 2"/></svg>
+        Play Maker
       </button>
     </div>
 
@@ -1051,6 +1056,91 @@
                          font-weight:600;font-size:.85rem;border:none;cursor:pointer;white-space:nowrap;">
             Send
           </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Basketball: Play Maker Tab ──────────────────────────────── -->
+    <div id="tab-bb-playmaker" class="bb-tab-panel" style="display:none;">
+      <div style="display:grid;grid-template-columns:340px 1fr;gap:24px;" class="fv-app-grid">
+
+        <!-- Roster panel -->
+        <div class="card" style="padding:22px;">
+          <div class="card-spot"></div>
+          <div style="font-weight:700;font-size:1rem;margin-bottom:4px;">Lineup</div>
+          <div style="color:rgba(240,244,255,.42);font-size:.78rem;margin-bottom:14px;">
+            Drag the dots into your set. Name each dot, list strengths — the play is designed around them.
+          </div>
+
+          <div id="bb-pm-roster" style="display:flex;flex-direction:column;gap:10px;"></div>
+
+          <button onclick="bbPmAutofill()"
+                  style="margin-top:12px;width:100%;padding:8px;border-radius:8px;background:rgba(255,255,255,.05);
+                         border:1px solid rgba(255,255,255,.12);color:rgba(240,244,255,.6);
+                         font-size:.78rem;cursor:pointer;">
+            ↧ Fill from scouted players
+          </button>
+
+          <input id="bb-pm-objective" type="text" placeholder="Objective (optional) — e.g. open corner three for 2"
+                 style="margin-top:12px;width:100%;padding:9px 12px;border-radius:8px;
+                        background:#172033;border:1px solid rgba(255,255,255,.1);
+                        color:#f0f4ff;font-size:.8rem;outline:none;box-sizing:border-box;"
+                 onfocus="this.style.borderColor='rgba(249,115,22,.5)'"
+                 onblur="this.style.borderColor='rgba(255,255,255,.1)'">
+
+          <button id="bb-pm-generate" onclick="bbPmGenerate()"
+                  style="margin-top:12px;width:100%;padding:12px;border-radius:10px;
+                         background:#f97316;color:#fff;font-weight:700;font-size:.9rem;
+                         border:none;cursor:pointer;">
+            Design Play
+          </button>
+          <div id="bb-pm-status" style="margin-top:8px;font-size:.75rem;color:rgba(240,244,255,.4);min-height:16px;"></div>
+        </div>
+
+        <!-- Court panel -->
+        <div class="card" style="padding:22px;">
+          <div class="card-spot"></div>
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;flex-wrap:wrap;gap:8px;">
+            <div>
+              <div id="bb-pm-playname" style="font-weight:700;font-size:1rem;">Half Court</div>
+              <div id="bb-pm-caption" style="font-size:.78rem;color:#fb923c;min-height:18px;margin-top:2px;"></div>
+            </div>
+            <div style="display:flex;gap:8px;align-items:center;">
+              <select id="bb-pm-speed" style="padding:6px 10px;border-radius:7px;background:#0f1624;
+                      border:1px solid rgba(255,255,255,.1);color:#f0f4ff;font-size:.75rem;outline:none;">
+                <option value="0.5">0.5×</option>
+                <option value="1" selected>1×</option>
+                <option value="2">2×</option>
+              </select>
+              <button id="bb-pm-replay" onclick="bbPmReplay()" disabled
+                      style="padding:6px 14px;border-radius:7px;background:rgba(249,115,22,.12);
+                             border:1px solid rgba(249,115,22,.35);color:#fb923c;font-weight:600;
+                             font-size:.75rem;cursor:pointer;opacity:.4;">
+                ▶ Replay
+              </button>
+            </div>
+          </div>
+
+          <svg id="bb-pm-court" viewBox="0 0 500 470" style="width:100%;max-width:640px;display:block;margin:0 auto;
+               background:#0d1420;border-radius:12px;touch-action:none;user-select:none;">
+            <!-- court lines -->
+            <g stroke="rgba(240,244,255,.25)" stroke-width="2" fill="none">
+              <rect x="10" y="10" width="480" height="450"/>
+              <rect x="170" y="10" width="160" height="180"/>
+              <circle cx="250" cy="190" r="57"/>
+              <line x1="220" y1="29" x2="280" y2="29" stroke="rgba(249,115,22,.6)" stroke-width="3"/>
+              <circle cx="250" cy="40" r="9" stroke="rgba(249,115,22,.8)"/>
+              <line x1="48" y1="10" x2="48" y2="151"/>
+              <line x1="452" y1="10" x2="452" y2="151"/>
+              <path d="M 48 151 A 215 215 0 0 0 452 151"/>
+              <path d="M 193 460 A 57 57 0 0 1 307 460"/>
+            </g>
+            <g id="bb-pm-paths"></g>
+            <g id="bb-pm-dots"></g>
+            <circle id="bb-pm-ball" r="7" fill="#f97316" stroke="#fff" stroke-width="1.5" style="display:none;"/>
+          </svg>
+
+          <div id="bb-pm-desc" style="margin-top:14px;font-size:.85rem;color:rgba(240,244,255,.6);line-height:1.6;"></div>
         </div>
       </div>
     </div>
@@ -2586,7 +2676,9 @@ document.querySelectorAll('[data-topline]').forEach(line => {
    Fully additive — owns its own state, panels (.bb-tab-panel) and endpoints
    (/api/basketball/*). Baseball code above is untouched.                    */
 (function () {
-  const API_BASE = window.FV_API_BASE || '';
+  // Same origin always: basketball routes exist only on this fork's own server,
+  // never on the production baseball deployment that FV_API_BASE points at.
+  const API_BASE = '';
 
   // ── State ───────────────────────────────────────────────────────────────
   let bbFiles        = [];
@@ -2688,6 +2780,13 @@ document.querySelectorAll('[data-topline]').forEach(line => {
 
       content.innerHTML = data.results.map(r => {
         bbReports.push(`[${r.label}]\n${r.report}`);
+        if (r.profile) {
+          (window.bbSessionProfiles = window.bbSessionProfiles || []).push({
+            name: r.profile.name || r.label,
+            position: r.profile.position || '',
+            strengths: (r.profile.strengths || []).join(', '),
+          });
+        }
         const grade = r.profile && r.profile.grade ? r.profile.grade : '?';
         return `
           <div style="margin-bottom:24px;">
@@ -2892,6 +2991,243 @@ document.querySelectorAll('[data-topline]').forEach(line => {
       .replace(/^(.+)$/gm, (l) => l.match(/^<[hup]/) ? l : `<p>${l}</p>`)
       .replace(/<p><\/p>/g, '');
   }
+})();
+
+/* ══ PLAY MAKER MODULE ══════════════════════════════════════════════════════
+   Draggable dots on an SVG half court → /api/basketball/play → animated set
+   play. Court coords normalized: x 0-1 (sidelines), y 0 (baseline) - 1 (half
+   court). Pixel mapping: px = 10 + x*480, py = 10 + y*450.                  */
+(function () {
+  // Same origin always: basketball routes exist only on this fork's own server,
+  // never on the production baseball deployment that FV_API_BASE points at.
+  const API_BASE = '';
+  const COLORS = ['#f97316', '#38bdf8', '#4ade80', '#facc15', '#f472b6'];
+  const DEFAULT_POS = [[0.50, 0.85], [0.85, 0.60], [0.15, 0.60], [0.35, 0.35], [0.65, 0.20]];
+  const POSITIONS = ['PG', 'SG', 'SF', 'PF', 'C'];
+
+  const toPx = (x, y) => [10 + x * 480, 10 + y * 450];
+  const toNorm = (px, py) => [
+    Math.min(0.98, Math.max(0.02, (px - 10) / 480)),
+    Math.min(0.98, Math.max(0.02, (py - 10) / 450)),
+  ];
+
+  // dots[i] = {x, y, el, labelEl} — normalized coords
+  const dots = [];
+  let play = null;
+  let animId = null;
+  let animating = false;
+
+  // ── Build roster rows + SVG dots ────────────────────────────────────────
+  function init () {
+    const roster = document.getElementById('bb-pm-roster');
+    if (!roster || roster.children.length) return;
+    const dotsG = document.getElementById('bb-pm-dots');
+
+    for (let i = 0; i < 5; i++) {
+      roster.insertAdjacentHTML('beforeend', `
+        <div style="display:flex;gap:6px;align-items:center;">
+          <span style="width:14px;height:14px;border-radius:99px;background:${COLORS[i]};flex-shrink:0;"></span>
+          <input id="bb-pm-name-${i}" type="text" placeholder="Player ${i + 1}"
+                 style="flex:1;min-width:0;padding:7px 9px;border-radius:7px;background:#172033;
+                        border:1px solid rgba(255,255,255,.1);color:#f0f4ff;font-size:.78rem;outline:none;">
+          <select id="bb-pm-pos-${i}" style="padding:7px 4px;border-radius:7px;background:#0f1624;
+                  border:1px solid rgba(255,255,255,.1);color:#f0f4ff;font-size:.75rem;outline:none;">
+            ${POSITIONS.map(p => `<option ${p === POSITIONS[i] ? 'selected' : ''}>${p}</option>`).join('')}
+          </select>
+        </div>
+        <input id="bb-pm-str-${i}" type="text" placeholder="strengths — e.g. catch and shoot, screener"
+               style="margin-left:20px;padding:6px 9px;border-radius:7px;background:#0f1624;
+                      border:1px solid rgba(255,255,255,.07);color:rgba(240,244,255,.8);
+                      font-size:.72rem;outline:none;">`);
+
+      const [px, py] = toPx(...DEFAULT_POS[i]);
+      const g = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+      g.setAttribute('cursor', 'grab');
+      g.innerHTML = `
+        <circle r="13" cx="0" cy="0" fill="${COLORS[i]}" stroke="rgba(255,255,255,.85)" stroke-width="2"/>
+        <text y="4" text-anchor="middle" font-size="12" font-weight="700" fill="#0d1420">${i + 1}</text>
+        <text class="bb-pm-dotname" y="27" text-anchor="middle" font-size="10" fill="rgba(240,244,255,.7)"></text>`;
+      g.setAttribute('transform', `translate(${px},${py})`);
+      dotsG.appendChild(g);
+      dots.push({ x: DEFAULT_POS[i][0], y: DEFAULT_POS[i][1], el: g, labelEl: g.querySelector('.bb-pm-dotname') });
+
+      g.addEventListener('pointerdown', (e) => startDrag(e, i));
+      document.getElementById(`bb-pm-name-${i}`).addEventListener('input', (e) => {
+        dots[i].labelEl.textContent = e.target.value.split(' ').pop().slice(0, 10);
+      });
+    }
+  }
+
+  // ── Dragging ────────────────────────────────────────────────────────────
+  function svgPoint (e) {
+    const svg = document.getElementById('bb-pm-court');
+    const pt = svg.createSVGPoint();
+    pt.x = e.clientX; pt.y = e.clientY;
+    const p = pt.matrixTransform(svg.getScreenCTM().inverse());
+    return [p.x, p.y];
+  }
+
+  function startDrag (e, i) {
+    if (animating) return;
+    e.preventDefault();
+    const move = (ev) => {
+      const [px, py] = svgPoint(ev);
+      const [nx, ny] = toNorm(px, py);
+      dots[i].x = nx; dots[i].y = ny;
+      const [dx, dy] = toPx(nx, ny);
+      dots[i].el.setAttribute('transform', `translate(${dx},${dy})`);
+    };
+    const up = () => {
+      window.removeEventListener('pointermove', move);
+      window.removeEventListener('pointerup', up);
+    };
+    window.addEventListener('pointermove', move);
+    window.addEventListener('pointerup', up);
+  }
+
+  // ── Autofill from scouting session ──────────────────────────────────────
+  window.bbPmAutofill = function () {
+    init();
+    const profiles = window.bbSessionProfiles || [];
+    const status = document.getElementById('bb-pm-status');
+    if (!profiles.length) {
+      status.textContent = 'No scouted players this session — run Scouting Notes first.';
+      return;
+    }
+    profiles.slice(0, 5).forEach((p, i) => {
+      document.getElementById(`bb-pm-name-${i}`).value = p.name || '';
+      document.getElementById(`bb-pm-str-${i}`).value = p.strengths || '';
+      const sel = document.getElementById(`bb-pm-pos-${i}`);
+      if (p.position && POSITIONS.includes(p.position.toUpperCase())) sel.value = p.position.toUpperCase();
+      dots[i].labelEl.textContent = (p.name || '').split(' ').pop().slice(0, 10);
+    });
+    status.textContent = `Filled ${Math.min(5, profiles.length)} player(s) from this session.`;
+  };
+
+  // ── Generate ────────────────────────────────────────────────────────────
+  window.bbPmGenerate = async function () {
+    init();
+    stopAnim();
+    const btn = document.getElementById('bb-pm-generate');
+    const status = document.getElementById('bb-pm-status');
+    btn.disabled = true;
+    btn.textContent = 'Designing…';
+    status.textContent = 'Claude is drawing up the play (10-30s)…';
+
+    const players = dots.map((d, i) => ({
+      id: `P${i + 1}`,
+      name: document.getElementById(`bb-pm-name-${i}`).value.trim() || `Player ${i + 1}`,
+      position: document.getElementById(`bb-pm-pos-${i}`).value,
+      strengths: document.getElementById(`bb-pm-str-${i}`).value.trim(),
+      x: d.x, y: d.y,
+    }));
+
+    try {
+      const res = await fetch(`${API_BASE}/api/basketball/play`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ players, objective: document.getElementById('bb-pm-objective').value.trim() }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.detail || 'Play design failed');
+
+      play = data.play;
+      document.getElementById('bb-pm-playname').textContent = play.play_name;
+      document.getElementById('bb-pm-desc').textContent = play.description;
+      status.textContent = '';
+      drawPaths();
+      const replay = document.getElementById('bb-pm-replay');
+      replay.disabled = false;
+      replay.style.opacity = '1';
+      runAnim();
+    } catch (err) {
+      status.textContent = `Error: ${err.message}`;
+    } finally {
+      btn.disabled = false;
+      btn.textContent = 'Design Play';
+    }
+  };
+
+  // ── Path preview (dashed movement lines) ────────────────────────────────
+  function drawPaths () {
+    const g = document.getElementById('bb-pm-paths');
+    g.innerHTML = '';
+    play.players.forEach((p, i) => {
+      const pts = p.keyframes.map(kf => toPx(kf.x, kf.y).join(',')).join(' ');
+      g.insertAdjacentHTML('beforeend',
+        `<polyline points="${pts}" fill="none" stroke="${COLORS[i]}" stroke-width="1.5"
+             stroke-dasharray="4 4" opacity="0.35"/>`);
+    });
+  }
+
+  // ── Animation ───────────────────────────────────────────────────────────
+  function interp (kfs, t) {
+    if (t <= kfs[0].t) return kfs[0];
+    for (let i = 0; i < kfs.length - 1; i++) {
+      const a = kfs[i], b = kfs[i + 1];
+      if (t >= a.t && t <= b.t) {
+        const f = b.t > a.t ? (t - a.t) / (b.t - a.t) : 0;
+        return { x: a.x + (b.x - a.x) * f, y: a.y + (b.y - a.y) * f };
+      }
+    }
+    return kfs[kfs.length - 1];
+  }
+
+  function currentCaption (t) {
+    let best = null;
+    play.players.forEach((p, i) => {
+      const name = document.getElementById(`bb-pm-name-${i}`).value.trim() || `Player ${i + 1}`;
+      p.keyframes.forEach(kf => {
+        if (kf.action && kf.t <= t && (!best || kf.t >= best.t)) best = { t: kf.t, text: `${name}: ${kf.action}` };
+      });
+    });
+    return best ? best.text : '';
+  }
+
+  function runAnim () {
+    stopAnim();
+    animating = true;
+    const speed = parseFloat(document.getElementById('bb-pm-speed').value) || 1;
+    const ball = document.getElementById('bb-pm-ball');
+    ball.style.display = '';
+    const start = performance.now();
+
+    // setInterval instead of requestAnimationFrame: rAF is fully suspended in
+    // hidden/backgrounded tabs, freezing the play mid-animation.
+    const frame = () => {
+      const t = ((performance.now() - start) / 1000) * speed;
+      play.players.forEach((p, i) => {
+        const pos = interp(p.keyframes, Math.min(t, play.duration));
+        const [px, py] = toPx(pos.x, pos.y);
+        dots[i].el.setAttribute('transform', `translate(${px},${py})`);
+      });
+      const bpos = interp(play.ball.keyframes, Math.min(t, play.duration));
+      const [bx, by] = toPx(bpos.x, bpos.y);
+      ball.setAttribute('cx', bx); ball.setAttribute('cy', by + 18);
+      document.getElementById('bb-pm-caption').textContent = currentCaption(Math.min(t, play.duration));
+
+      if (t >= play.duration) stopAnim();
+    };
+    frame();
+    animId = setInterval(frame, 33);
+  }
+
+  function stopAnim () {
+    if (animId) clearInterval(animId);
+    animId = null;
+    animating = false;
+  }
+
+  window.bbPmReplay = function () {
+    if (play) runAnim();
+  };
+
+  // Build roster/dots when the tab is first opened
+  const origSwitchBBTab = window.switchBBTab;
+  window.switchBBTab = function (name) {
+    origSwitchBBTab(name);
+    if (name === 'bb-playmaker') init();
+  };
 })();
 </script>
 

@@ -119,6 +119,11 @@ class CoachRequest(BaseModel):
     context: str = ""         # session context: reports + box score summaries
 
 
+class PlayRequest(BaseModel):
+    players: list[dict]       # [{id, name, position, strengths, x, y}]
+    objective: str = ""
+
+
 @router.post("/basketball/analyze")
 async def bb_analyze(
     files_upload: list[UploadFile] | None = File(None),
@@ -208,6 +213,24 @@ async def bb_boxscore(
 
     except HTTPException:
         raise
+    except Exception as e:
+        raise HTTPException(500, f"Server error: {str(e)}")
+
+
+@router.post("/basketball/play")
+async def bb_play(req: PlayRequest):
+    """Design an animated set play from player positions + strengths."""
+    if not req.players or len(req.players) > 5:
+        raise HTTPException(400, "1-5 players required")
+    for i, p in enumerate(req.players):
+        if "x" not in p or "y" not in p:
+            raise HTTPException(400, f"player {i} missing court position")
+        p.setdefault("id", f"P{i + 1}")
+    try:
+        play = basketball.design_play(req.players, req.objective)
+        return JSONResponse({"play": play})
+    except ValueError as e:
+        raise HTTPException(502, str(e))
     except Exception as e:
         raise HTTPException(500, f"Server error: {str(e)}")
 
