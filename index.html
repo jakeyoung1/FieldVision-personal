@@ -505,6 +505,7 @@
       <a href="#pipeline"  class="nav-link">Pipeline</a>
       <a href="#features"  class="nav-link">Features</a>
       <a href="#stack"     class="nav-link">Stack</a>
+      <a href="#" class="nav-link" onclick="fvToggleGuide(event)">Guide</a>
     </div>
 
     <!-- CTA -->
@@ -514,6 +515,57 @@
     </a>
   </div>
 </nav>
+
+<!-- ── User Guide Modal ─────────────────────────────────────────────────── -->
+<div id="fv-guide-overlay" style="display:none;position:fixed;inset:0;z-index:100;background:rgba(5,8,14,.8);
+     backdrop-filter:blur(4px);" onclick="if(event.target===this)fvToggleGuide(event)">
+  <div style="max-width:720px;margin:5vh auto;max-height:90vh;overflow-y:auto;background:#0f1624;
+       border:1px solid rgba(255,255,255,.1);border-radius:16px;padding:36px 40px;position:relative;">
+    <button onclick="fvToggleGuide(event)" style="position:absolute;top:16px;right:18px;background:none;
+            border:none;color:rgba(240,244,255,.5);font-size:1.3rem;cursor:pointer;">✕</button>
+    <h2 style="font-size:1.4rem;font-weight:800;margin-bottom:4px;">How to Use FieldVision</h2>
+    <p style="font-size:.82rem;color:rgba(240,244,255,.45);margin-bottom:24px;">
+      Pick a sport with the ⚾/🏀 toggle in the app section. Every tab has one-click demo data — you never need your own files to explore.</p>
+
+    <div class="fv-guide-sport">⚾ Baseball</div>
+    <ol class="fv-guide-list">
+      <li><strong>Scouting Notes</strong> — upload PDF/TXT files (handwritten PDFs OK — Claude Vision reads them) or paste notes. Multiple players: name on the first line of each block, separated by <code>---</code>. Every report is grounded in 1,919 Branch Rickey historical scouting documents and graded A–F. Use <em>⚡ Load demo scouting notes</em> to try instantly.</li>
+      <li><strong>Trackman</strong> — drop a Trackman CSV. You get instant pitch charts: MLB percentile sliders (velo + spin vs league averages), a movement plot, and plate location — then click <em>Analyze Pitching Data</em> for the AI read. <em>⚡ Load demo Trackman data</em> works without a file.</li>
+      <li><strong>Players</strong> — every analyzed player lands here with a grade badge. Search and filter by grade or source.</li>
+      <li><strong>Compare</strong> — pick any two scouted players for an AI head-to-head: category-by-category edges, risk profiles, and a verdict.</li>
+      <li><strong>Combined Chat</strong> — ask anything about everything loaded this session (notes + Trackman together).</li>
+    </ol>
+
+    <div class="fv-guide-sport">🏀 Basketball</div>
+    <ol class="fv-guide-list">
+      <li><strong>Scouting Notes</strong> — paste or upload notes (same <code>---</code> convention). Reports include statistical comps from 5,000+ NBA player-seasons.</li>
+      <li><strong>Box Scores</strong> — upload game or season stat CSVs (Basketball-Reference format works) for per-player averages, shooting splits, true-shooting, and an AI read.</li>
+      <li><strong>Coach</strong> — four modes: Development Plan, Opponent Scouting, Practice Plan, Open Chat. Your session's reports and box scores feed in automatically.</li>
+      <li><strong>Play Maker</strong> — drag the five dots into your set, name each player and list strengths (or <em>Fill from scouted players</em>), give an objective, hit <em>Design Play</em>. The AI drafts a set play and the dots run it on the court with live captions. Replay at 0.5–2× speed.</li>
+    </ol>
+
+    <div class="fv-guide-sport">Tips</div>
+    <ul class="fv-guide-list">
+      <li>Reports accumulate across the session — analyze several players, then use Compare, Players, and the chats on all of them.</li>
+      <li>Any baseball report exports to PDF with the ↓ Export button.</li>
+      <li>AI calls take 10–30 seconds — the interesting kind of loading.</li>
+    </ul>
+  </div>
+</div>
+<style>
+  .fv-guide-sport { font-weight:800; font-size:1rem; margin:18px 0 10px; color:#f0f4ff; }
+  .fv-guide-list { margin-left:20px; display:flex; flex-direction:column; gap:10px; }
+  .fv-guide-list li { font-size:.86rem; line-height:1.7; color:rgba(240,244,255,.65); }
+  .fv-guide-list strong { color:#f0f4ff; }
+  .fv-guide-list code { background:#172033; padding:1px 6px; border-radius:4px; font-size:.8rem; }
+</style>
+<script>
+  function fvToggleGuide (e) {
+    if (e) e.preventDefault();
+    const o = document.getElementById('fv-guide-overlay');
+    o.style.display = o.style.display === 'none' ? 'block' : 'none';
+  }
+</script>
 
 
 <!-- ════════════════════════════════════════════════════════════════════════
@@ -660,6 +712,10 @@
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/><line x1="9" y1="10" x2="15" y2="10"/><line x1="9" y1="14" x2="13" y2="14"/></svg>
         Combined Chat
       </button>
+      <button class="fv-tab" data-tab="fvcompare" onclick="switchTab('fvcompare')">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 3h5v5"/><path d="M8 21H3v-5"/><path d="M21 3l-7 7"/><path d="M3 21l7-7"/></svg>
+        Compare
+      </button>
     </div>
 
     <!-- ── Scouting Tab ───────────────────────────────────────────── -->
@@ -805,6 +861,8 @@
           </div>
         </div>
       </div>
+      <!-- Pitch visual suite — populated by the Baseball Pro module on CSV select -->
+      <div id="fv-viz-panel" style="display:none;margin-top:24px;"></div>
     </div>
 
     <!-- ── Players Tab ───────────────────────────────────────────── -->
@@ -884,6 +942,28 @@
             Send
           </button>
         </div>
+      </div>
+    </div>
+
+    <!-- ── Compare Tab (baseball) ─────────────────────────────────── -->
+    <div id="tab-fvcompare" class="fv-tab-panel" style="display:none;">
+      <div id="fv-compare-empty" style="text-align:center;padding:60px 20px;color:rgba(240,244,255,.3);font-size:.9rem;">
+        Scout at least two players (Scouting Notes tab), then compare them head to head here.
+      </div>
+      <div id="fv-compare-ui" style="display:none;">
+        <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-bottom:22px;">
+          <select id="fv-cmp-a" style="flex:1;min-width:180px;padding:10px 14px;border-radius:8px;background:#0f1624;
+                  border:1px solid rgba(255,255,255,.1);color:#f0f4ff;font-size:.88rem;outline:none;"></select>
+          <span style="color:rgba(240,244,255,.4);font-weight:700;">vs</span>
+          <select id="fv-cmp-b" style="flex:1;min-width:180px;padding:10px 14px;border-radius:8px;background:#0f1624;
+                  border:1px solid rgba(255,255,255,.1);color:#f0f4ff;font-size:.88rem;outline:none;"></select>
+          <button id="fv-cmp-btn" onclick="fvRunCompare()"
+                  style="padding:10px 24px;border-radius:8px;background:#C8102E;color:#fff;
+                         font-weight:700;font-size:.88rem;border:none;cursor:pointer;">
+            Compare
+          </button>
+        </div>
+        <div id="fv-cmp-result"></div>
       </div>
     </div>
 
@@ -1833,6 +1913,9 @@ document.querySelectorAll('[data-topline]').forEach(line => {
   let combinedChatHistory = [];   // separate history for the Combined Chat tab
   let trackmanRoster      = {};   // { teamName: [{name, stats}] } from last Trackman run
 
+  // Read-only handle for the Compare tab (separate module below)
+  window.fvGetTalentPool = () => talentPool;
+
   // ── Tab switching ────────────────────────────────────────────────────────
   window.switchTab = function (name) {
     document.querySelectorAll('.fv-tab').forEach(t => t.classList.toggle('active', t.dataset.tab === name));
@@ -1909,16 +1992,22 @@ document.querySelectorAll('[data-topline]').forEach(line => {
       const fd = new FormData();
       selectedFiles.forEach(f => fd.append('files_upload', f));
 
-      // If paste text provided, convert to a virtual .txt file
+      // If paste text provided, convert to virtual .txt files.
+      // '---' separates players (each block: name on first line, notes below) —
+      // the backend groups by filename, so each block must become its own file.
       const pasteVal = document.getElementById('fv-paste-input').value.trim();
+      let pasteBlocks = [];
       if (pasteVal) {
-        const blob = new Blob([pasteVal], { type: 'text/plain' });
-        const firstLine = pasteVal.split('\n')[0].trim().replace(/[^a-zA-Z0-9 _-]/g, '').trim();
-        const name = (firstLine || 'pasted-notes') + '.txt';
-        fd.append('files_upload', blob, name);
+        pasteBlocks = pasteVal.split(/^\s*---\s*$/m).map(b => b.trim()).filter(Boolean);
+        pasteBlocks.forEach((block, i) => {
+          const blob = new Blob([block], { type: 'text/plain' });
+          const firstLine = block.split('\n')[0].trim().replace(/[^a-zA-Z0-9 _-]/g, '').trim();
+          const name = (firstLine || `pasted-notes-${i + 1}`) + '.txt';
+          fd.append('files_upload', blob, name);
+        });
       }
 
-      const totalFiles = selectedFiles.length + (pasteVal ? 1 : 0);
+      const totalFiles = selectedFiles.length + pasteBlocks.length;
       fd.append('batch_mode', totalFiles > 1 ? 'true' : 'false');
 
       const res  = await fetch(`${API_BASE}/api/analyze`, { method: 'POST', body: fd });
@@ -3233,6 +3322,245 @@ document.querySelectorAll('[data-topline]').forEach(line => {
     origSwitchBBTab(name);
     if (name === 'bb-playmaker') init();
   };
+})();
+
+/* ══ BASEBALL PRO MODULE ════════════════════════════════════════════════════
+   Additive upgrades to the baseball side: one-click demo data, Statcast-style
+   MLB percentile sliders, pitch movement / velocity / location charts
+   (/api/trackman/viz — no LLM cost), and the head-to-head Compare tab
+   (/api/compare). Baseball core logic above is wrapped, not modified.       */
+(function () {
+  const PITCH_COLORS = {
+    Fastball: '#ef4444', FourSeamFastBall: '#ef4444', Sinker: '#f97316',
+    TwoSeamFastBall: '#f97316', Cutter: '#eab308', Slider: '#38bdf8',
+    Sweeper: '#22d3ee', Curveball: '#4ade80', ChangeUp: '#a78bfa',
+    Changeup: '#a78bfa', Splitter: '#f472b6',
+  };
+  const pColor = t => PITCH_COLORS[t] || '#9ca3af';
+  const pctColor = p => `hsl(${Math.max(0, 220 - 2.2 * p)}, 72%, 55%)`;
+  let vizData = null;
+
+  // ── Demo data buttons ────────────────────────────────────────────────────
+  function injectDemoButtons () {
+    const paste = document.getElementById('fv-paste-input');
+    if (paste && !document.getElementById('fv-demo-notes-btn')) {
+      paste.insertAdjacentHTML('afterend', `
+        <button id="fv-demo-notes-btn" type="button"
+                style="margin-top:8px;padding:6px 14px;border-radius:6px;background:rgba(200,16,46,.1);
+                       border:1px solid rgba(200,16,46,.35);color:#f07080;font-weight:600;
+                       font-size:.76rem;cursor:pointer;">⚡ Load demo scouting notes</button>`);
+      document.getElementById('fv-demo-notes-btn').addEventListener('click', async () => {
+        const txt = await (await fetch('/static/demo/scouting_demo.txt')).text();
+        const ta = document.getElementById('fv-paste-input');
+        ta.style.display = 'block';
+        ta.value = txt;
+        window.onPasteInput(txt);
+        ta.scrollIntoView({ block: 'center' });
+      });
+    }
+    const focus = document.getElementById('fv-trackman-focus');
+    if (focus && !document.getElementById('fv-demo-tm-btn')) {
+      focus.insertAdjacentHTML('beforebegin', `
+        <button id="fv-demo-tm-btn" type="button"
+                style="margin-top:10px;padding:6px 14px;border-radius:6px;background:rgba(165,180,252,.08);
+                       border:1px solid rgba(165,180,252,.3);color:#a5b4fc;font-weight:600;
+                       font-size:.76rem;cursor:pointer;">⚡ Load demo Trackman data</button>`);
+      document.getElementById('fv-demo-tm-btn').addEventListener('click', async () => {
+        const blob = await (await fetch('/static/demo/trackman_demo.csv')).blob();
+        const file = new File([blob], 'trackman_demo.csv', { type: 'text/csv' });
+        window.handleTrackmanSelect(file);
+      });
+    }
+  }
+
+  // ── Trackman charts: wrap the existing file-select handler ──────────────
+  const origTmSelect = window.handleTrackmanSelect;
+  window.handleTrackmanSelect = function (file) {
+    origTmSelect(file);
+    if (file) loadViz(file);
+  };
+
+  async function loadViz (file) {
+    const panel = document.getElementById('fv-viz-panel');
+    panel.style.display = '';
+    panel.innerHTML = '<div class="card" style="padding:24px;color:rgba(240,244,255,.4);font-size:.85rem;">Building pitch charts…</div>';
+    try {
+      const fd = new FormData();
+      fd.append('file', file);
+      const res = await fetch('/api/trackman/viz', { method: 'POST', body: fd });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.detail || 'Chart build failed');
+      vizData = data;
+      renderViz(Object.keys(data.pitchers)[0]);
+    } catch (err) {
+      panel.innerHTML = `<div class="card" style="padding:24px;color:#f07080;font-size:.85rem;">Charts unavailable: ${err.message}</div>`;
+    }
+  }
+
+  function renderViz (pitcherName) {
+    const panel = document.getElementById('fv-viz-panel');
+    const names = Object.keys(vizData.pitchers);
+    const p = vizData.pitchers[pitcherName];
+    const selector = names.length > 1 ? `
+      <select onchange="fvVizPick(this.value)" style="padding:8px 12px;border-radius:8px;background:#0f1624;
+              border:1px solid rgba(255,255,255,.1);color:#f0f4ff;font-size:.82rem;outline:none;">
+        ${names.map(n => `<option ${n === pitcherName ? 'selected' : ''}>${n}</option>`).join('')}
+      </select>` : `<span style="font-weight:700;">${pitcherName}</span>`;
+
+    panel.innerHTML = `
+      <div class="card" style="padding:26px;">
+        <div class="card-spot"></div>
+        <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:6px;">
+          <div style="font-weight:700;font-size:1rem;">Pitch Arsenal — ${pitcherName}</div>
+          ${selector}
+        </div>
+        <div style="font-size:.72rem;color:rgba(240,244,255,.35);margin-bottom:18px;">${vizData.benchmark_note}</div>
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:22px;">
+          <div>${percentileCard(p.types)}</div>
+          <div>${movementPlot(p.pitches)}</div>
+          <div>${locationPlot(p.pitches)}</div>
+        </div>
+      </div>`;
+  }
+
+  window.fvVizPick = name => renderViz(name);
+
+  function percentileCard (types) {
+    const rows = types.map(t => {
+      const bars = [];
+      if (t.velo_pctile != null) bars.push(bar('Velo', t.avg_velo + ' mph', t.velo_pctile));
+      if (t.spin_pctile != null) bars.push(bar('Spin', t.avg_spin + ' rpm', t.spin_pctile));
+      if (!bars.length && t.avg_velo) bars.push(`<div style="font-size:.75rem;color:rgba(240,244,255,.4);">${t.avg_velo} mph avg — no MLB benchmark</div>`);
+      return `
+        <div style="margin-bottom:14px;">
+          <div style="display:flex;align-items:center;gap:8px;font-size:.8rem;font-weight:600;margin-bottom:6px;">
+            <span style="width:10px;height:10px;border-radius:99px;background:${pColor(t.type)};"></span>
+            ${t.type} <span style="color:rgba(240,244,255,.35);font-weight:400;">× ${t.count}</span>
+          </div>
+          ${bars.join('')}
+        </div>`;
+    }).join('');
+    return `<div style="font-size:.8rem;font-weight:700;margin-bottom:12px;color:rgba(240,244,255,.7);">MLB Percentiles</div>${rows}`;
+  }
+
+  function bar (label, value, pct) {
+    return `
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:5px;">
+        <span style="width:34px;font-size:.7rem;color:rgba(240,244,255,.45);">${label}</span>
+        <div style="flex:1;height:8px;border-radius:99px;background:rgba(255,255,255,.07);position:relative;">
+          <div style="width:${pct}%;height:100%;border-radius:99px;background:${pctColor(pct)};"></div>
+          <span style="position:absolute;left:calc(${pct}% - 11px);top:-7px;width:22px;height:22px;border-radius:99px;
+                background:${pctColor(pct)};color:#0d1420;font-size:.68rem;font-weight:800;display:flex;
+                align-items:center;justify-content:center;border:2px solid #0d1420;">${pct}</span>
+        </div>
+        <span style="width:70px;text-align:right;font-size:.72rem;color:rgba(240,244,255,.6);">${value}</span>
+      </div>`;
+  }
+
+  function movementPlot (pitches) {
+    const pts = pitches.filter(p => p.hb != null && p.ivb != null);
+    if (!pts.length) return '';
+    const sx = v => 150 + v * 5.4, sy = v => 150 - v * 5.4;   // ±25in → 300px
+    const dots = pts.map(p =>
+      `<circle cx="${sx(p.hb).toFixed(1)}" cy="${sy(p.ivb).toFixed(1)}" r="4" fill="${pColor(p.type)}" opacity="0.75"/>`).join('');
+    const legend = [...new Set(pts.map(p => p.type))].map((t, i) =>
+      `<circle cx="12" cy="${14 + i * 16}" r="4" fill="${pColor(t)}"/><text x="21" y="${18 + i * 16}" font-size="9" fill="rgba(240,244,255,.6)">${t}</text>`).join('');
+    return `
+      <div style="font-size:.8rem;font-weight:700;margin-bottom:12px;color:rgba(240,244,255,.7);">Movement (catcher's view)</div>
+      <svg viewBox="0 0 300 300" style="width:100%;background:#0d1420;border-radius:10px;">
+        <line x1="150" y1="0" x2="150" y2="300" stroke="rgba(255,255,255,.1)"/>
+        <line x1="0" y1="150" x2="300" y2="150" stroke="rgba(255,255,255,.1)"/>
+        <text x="290" y="146" font-size="9" fill="rgba(240,244,255,.3)" text-anchor="end">HB →</text>
+        <text x="154" y="12" font-size="9" fill="rgba(240,244,255,.3)">IVB ↑</text>
+        ${dots}${legend}
+      </svg>`;
+  }
+
+  function locationPlot (pitches) {
+    const pts = pitches.filter(p => p.loc_x != null && p.loc_z != null);
+    if (!pts.length) return '';
+    const sx = v => 140 + v * 56, sy = v => 320 - v * 60;   // x ±2.5ft, z 0..5ft
+    const dots = pts.map(p =>
+      `<circle cx="${sx(p.loc_x).toFixed(1)}" cy="${sy(p.loc_z).toFixed(1)}" r="4" fill="${pColor(p.type)}" opacity="0.7"/>`).join('');
+    return `
+      <div style="font-size:.8rem;font-weight:700;margin-bottom:12px;color:rgba(240,244,255,.7);">Plate Location</div>
+      <svg viewBox="0 0 280 340" style="width:100%;max-width:280px;background:#0d1420;border-radius:10px;">
+        <rect x="${sx(-0.83)}" y="${sy(3.5)}" width="${(sx(0.83) - sx(-0.83)).toFixed(1)}" height="${(sy(1.5) - sy(3.5)).toFixed(1)}"
+              fill="none" stroke="rgba(240,244,255,.35)" stroke-width="1.5"/>
+        <path d="M ${sx(-0.7)} 330 L ${sx(0.7)} 330 L ${sx(0.5)} 336 L ${sx(-0.5)} 336 Z" fill="rgba(240,244,255,.2)"/>
+        ${dots}
+      </svg>`;
+  }
+
+  // ── Compare tab ──────────────────────────────────────────────────────────
+  const origSwitchTab = window.switchTab;
+  window.switchTab = function (name) {
+    origSwitchTab(name);
+    if (name === 'fvcompare') populateCompare();
+  };
+
+  function comparablePool () {
+    return (window.fvGetTalentPool ? window.fvGetTalentPool() : []).filter(p => p.report && p.report.trim());
+  }
+
+  function populateCompare () {
+    const pool = comparablePool();
+    const empty = document.getElementById('fv-compare-empty');
+    const ui = document.getElementById('fv-compare-ui');
+    if (pool.length < 2) { empty.style.display = ''; ui.style.display = 'none'; return; }
+    empty.style.display = 'none'; ui.style.display = '';
+    const opts = pool.map((p, i) => `<option value="${i}">${p.label}${p.profile && p.profile.grade ? ' — ' + p.profile.grade : ''}</option>`).join('');
+    document.getElementById('fv-cmp-a').innerHTML = opts;
+    document.getElementById('fv-cmp-b').innerHTML = opts;
+    document.getElementById('fv-cmp-b').selectedIndex = 1;
+  }
+
+  window.fvRunCompare = async function () {
+    const pool = comparablePool();
+    const a = pool[+document.getElementById('fv-cmp-a').value];
+    const b = pool[+document.getElementById('fv-cmp-b').value];
+    const out = document.getElementById('fv-cmp-result');
+    if (!a || !b || a === b) { out.innerHTML = '<div style="color:rgba(240,244,255,.4);font-size:.85rem;">Pick two different players.</div>'; return; }
+    const btn = document.getElementById('fv-cmp-btn');
+    btn.disabled = true; btn.textContent = 'Comparing…';
+    out.innerHTML = '<div class="card" style="padding:22px;color:rgba(240,244,255,.4);font-size:.85rem;">Head-to-head analysis running…</div>';
+    try {
+      const res = await fetch('/api/compare', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ player_a: { label: a.label, report: a.report }, player_b: { label: b.label, report: b.report } }),
+      });
+      const d = await res.json();
+      if (!res.ok) throw new Error(d.detail || 'Comparison failed');
+      const rows = (d.categories || []).map(c => `
+        <tr>
+          <td style="padding:9px 12px;font-weight:600;color:rgba(240,244,255,.75);white-space:nowrap;">${c.name}</td>
+          <td style="padding:9px 12px;${c.edge === 'A' ? 'color:#4ade80;font-weight:600;' : 'color:rgba(240,244,255,.55);'}">${c.a}</td>
+          <td style="padding:9px 12px;${c.edge === 'B' ? 'color:#4ade80;font-weight:600;' : 'color:rgba(240,244,255,.55);'}">${c.b}</td>
+        </tr>`).join('');
+      out.innerHTML = `
+        <div class="card" style="padding:26px;">
+          <div class="card-spot"></div>
+          <div style="font-size:.72rem;letter-spacing:.1em;color:#f07080;font-weight:700;margin-bottom:8px;">VERDICT — ${d.preferred || ''}</div>
+          <div style="font-size:.95rem;line-height:1.7;color:rgba(240,244,255,.85);margin-bottom:20px;">${d.verdict || ''}</div>
+          <div style="overflow-x:auto;">
+            <table style="width:100%;border-collapse:collapse;font-size:.83rem;">
+              <thead><tr style="text-align:left;color:rgba(240,244,255,.45);border-bottom:1px solid rgba(255,255,255,.08);">
+                <th style="padding:9px 12px;"></th><th style="padding:9px 12px;">${d.a_label}</th><th style="padding:9px 12px;">${d.b_label}</th>
+              </tr></thead>
+              <tbody>${rows}</tbody>
+            </table>
+          </div>
+          ${d.risk ? `<div style="margin-top:16px;font-size:.78rem;color:rgba(240,244,255,.45);line-height:1.7;">
+            <strong style="color:rgba(240,244,255,.65);">Risk:</strong> ${d.a_label}: ${d.risk.a || '—'} · ${d.b_label}: ${d.risk.b || '—'}</div>` : ''}
+        </div>`;
+    } catch (err) {
+      out.innerHTML = `<div class="card" style="padding:22px;color:#f07080;font-size:.85rem;">Error: ${err.message}</div>`;
+    } finally {
+      btn.disabled = false; btn.textContent = 'Compare';
+    }
+  };
+
+  injectDemoButtons();
 })();
 </script>
 

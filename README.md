@@ -26,8 +26,13 @@ How it works: player positions + strengths + objective → Claude returns keyfra
 
 ![Basketball scouting report](static/readme/readme-scouting.png)
 
-### Baseball (original capstone, untouched)
-- Handwritten note OCR (Claude Vision fallback chain), Branch Rickey RAG (1,919 historical scouting docs), Trackman pitch analytics, talent pool with grade filtering, session-wide AI chat, PDF export
+### Baseball
+- **Pitch Arsenal charts** — drop a Trackman CSV and instantly get **MLB percentile sliders** (velocity + spin vs league distributions, Baseball Savant style), a **movement plot** (IVB vs HB, catcher's view), and a **plate-location chart** with strike zone — no AI call needed, charts are instant
+- **Head-to-head Compare** — pick any two scouted players for an AI verdict: category-by-category edges, risk profiles, who to take first
+- **One-click demo data** — sample scouting notes and a realistic Trackman dataset built in; the whole platform demos without any files
+- Handwritten note OCR (Claude Vision fallback chain), Branch Rickey RAG (1,919 historical scouting docs), talent pool with grade filtering, session-wide AI chat, PDF export
+
+![Pitch Arsenal](static/readme/readme-pitcharsenal.png)
 
 ---
 
@@ -41,7 +46,7 @@ How it works: player positions + strengths + objective → Claude returns keyfra
 | RAG | scikit-learn TF-IDF — dual indexes (Rickey docs + NBA stat blurbs) |
 | Data | Pandas + NumPy; Basketball-Reference season exports |
 | Guardrails | Per-IP rate limiting, request size caps, env-driven CORS |
-| Tests | pytest — box score math, play JSON validation, RAG blurbs |
+| Tests | pytest — box score math, play JSON validation, RAG blurbs, MLB percentile math |
 
 ### RAG design note
 Stat rows don't share vocabulary with free-text scouting notes, so each player-season row is converted to a blurb with **derived scouting-language descriptors** ("high volume scorer", "rim protector", position words) before TF-IDF indexing — and **player names are excluded from the search index** so a prospect named Carter doesn't false-match NBA Carters.
