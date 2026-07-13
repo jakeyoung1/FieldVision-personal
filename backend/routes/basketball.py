@@ -132,6 +132,10 @@ async def bb_analyze(
     """Analyze basketball scouting notes from files and/or pasted text."""
     if not files_upload and not notes_text.strip():
         raise HTTPException(400, "No files or notes provided")
+    if len(notes_text) > 20_000:
+        raise HTTPException(413, "Pasted notes too long (20k character limit)")
+    if files_upload and len(files_upload) > 10:
+        raise HTTPException(413, "Too many files (10 max)")
 
     try:
         player_map: dict[str, str] = {}
@@ -226,8 +230,10 @@ async def bb_play(req: PlayRequest):
         if "x" not in p or "y" not in p:
             raise HTTPException(400, f"player {i} missing court position")
         p.setdefault("id", f"P{i + 1}")
+        p["name"] = str(p.get("name", ""))[:60]
+        p["strengths"] = str(p.get("strengths", ""))[:300]
     try:
-        play = basketball.design_play(req.players, req.objective)
+        play = basketball.design_play(req.players, req.objective[:300])
         return JSONResponse({"play": play})
     except ValueError as e:
         raise HTTPException(502, str(e))
@@ -240,8 +246,10 @@ async def bb_coach(req: CoachRequest):
     """Coaching chat: development plans, opponent scouting, practice plans, open chat."""
     if not req.history:
         raise HTTPException(400, "history is required")
+    if len(req.history) > 40 or any(len(str(m.get("content", ""))) > 8_000 for m in req.history):
+        raise HTTPException(413, "Chat history too long")
     try:
-        reply = basketball.coach_reply(req.mode, req.history, req.context)
+        reply = basketball.coach_reply(req.mode, req.history, req.context[:30_000])
         return JSONResponse({"reply": reply, "mode": req.mode})
     except Exception as e:
         raise HTTPException(500, f"Server error: {str(e)}")

@@ -1,0 +1,15 @@
+services:
+  - type: web
+    name: fieldvision-personal
+    runtime: python
+    plan: free
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn backend.main:app --host 0.0.0.0 --port $PORT
+    healthCheckPath: /api/health
+    envVars:
+      - key: ANTHROPIC_API_KEY
+        sync: false          # set in Render dashboard, never committed
+      - key: FV_RATE_LIMIT
+        value: "20"
+      - key: FV_RATE_WINDOW
+        value: "300"

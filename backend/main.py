@@ -9,9 +9,12 @@ try:
 except ImportError:
     pass
 
-from fastapi import FastAPI
+import time
+from collections import defaultdict, deque
+
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import FileResponse
+from fastapi.responses import FileResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 
 from backend.routes import analyze, basketball, chat, trackman
@@ -24,12 +27,45 @@ app = FastAPI(
 )
 
 # ── CORS ─────────────────────────────────────────────────────────────────────
+# Same-origin serving means CORS is only needed for cross-origin API use.
+# Default stays permissive for local dev; set FV_ALLOWED_ORIGINS on the host
+# (comma-separated) to lock down a public deployment.
+_origins = [o.strip() for o in os.environ.get("FV_ALLOWED_ORIGINS", "*").split(",")]
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],   # tighten in production
+    allow_origins=_origins,
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# ── Rate limiting ─────────────────────────────────────────────────────────────
+# Every POST under /api/ triggers a paid Claude call. Cheap in-memory per-IP
+# sliding window; single-process deployment makes this sufficient.
+RATE_LIMIT = int(os.environ.get("FV_RATE_LIMIT", "20"))        # requests
+RATE_WINDOW = int(os.environ.get("FV_RATE_WINDOW", "300"))     # seconds
+MAX_BODY_BYTES = 10 * 1024 * 1024                              # 10 MB uploads
+_hits: dict[str, deque] = defaultdict(deque)
+
+
+@app.middleware("http")
+async def guardrails(request: Request, call_next):
+    if request.method == "POST" and request.url.path.startswith("/api/"):
+        body_len = int(request.headers.get("content-length") or 0)
+        if body_len > MAX_BODY_BYTES:
+            return JSONResponse({"detail": "Request too large"}, status_code=413)
+
+        ip = request.client.host if request.client else "unknown"
+        now = time.monotonic()
+        window = _hits[ip]
+        while window and now - window[0] > RATE_WINDOW:
+            window.popleft()
+        if len(window) >= RATE_LIMIT:
+            return JSONResponse(
+                {"detail": "Rate limit exceeded — try again in a few minutes"},
+                status_code=429,
+            )
+        window.append(now)
+    return await call_next(request)
 
 # ── API routes ────────────────────────────────────────────────────────────────
 app.include_router(analyze.router, prefix="/api")

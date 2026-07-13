@@ -1,20 +1,33 @@
-# ⚾ FieldVision — Baseball Scouting Intelligence
+# FieldVision — Multi-Sport Scouting Intelligence
 
-AI-powered baseball analytics platform for Saint Mary's College of California. Transform handwritten scouting notes into structured reports, interpret Trackman pitching data, and chat with an AI scout — all grounded in Branch Rickey's 1,919 historical scouting documents.
+AI-powered scouting platform. Started as a baseball capstone for Saint Mary's College of California; this personal fork adds a full **basketball scouting + coaching suite** with an **animated AI play designer**.
 
-**Live:** [fieldvision.onrender.com](https://fieldvision.onrender.com)
+![FieldVision hero](static/readme/readme-hero.png)
+
+---
+
+## 🏀 Play Maker — AI-designed set plays, animated
+
+Drag five dots into your set, describe each player's strengths, give an objective — Claude designs a play around the lineup and the dots run it on the court with live coaching captions.
+
+![Play Maker demo](static/readme/playmaker-demo.gif)
+
+How it works: player positions + strengths + objective → Claude returns keyframe JSON (validated and clamped server-side) → SVG dots and ball interpolate along paths with action captions, dashed path previews, replay, and speed control.
 
 ---
 
 ## Features
 
-- **Handwritten Note OCR** — Upload PDF, TXT, or MD scouting notes. Claude Vision OCR handles scanned and handwritten PDFs that text extractors can't read
-- **Branch Rickey RAG** — 1,919 historical scouting transcriptions indexed with TF-IDF (sklearn). Every report is benchmarked against decades of professional scouting wisdom
-- **Trackman Analysis** — Upload a Trackman CSV export for post-game pitch analytics. Per-pitcher velocity, spin rate, and pitch mix with neutral AI interpretation
-- **AI Chat Interface** — Follow-up questions grounded in your session. All uploads accumulate as context across the session
-- **PDF Report Export** — Export any scouting report to a clean, print-ready PDF
-- **Session Memory** — Upload multiple players in one session; the AI references all prior uploads when answering questions
-- **Players Tab** — Auto-populated talent pool with grade badges, search, and grade filtering
+### Basketball (new in this fork)
+- **Scouting Notes** — paste or upload notes; structured report with grade, strengths, concerns, and **statistical comps pulled from 5,000+ NBA player-seasons** (Basketball-Reference per-game + advanced stats across 10 seasons, 1986–2026)
+- **Box Scores** — upload game or season CSVs; per-player PPG/RPG/APG, shooting splits, and true-shooting with plain-language AI interpretation
+- **Coach** — four modes: player development plans, opponent scouting, practice planning, open chat. Session scouting reports and box score data feed in automatically
+- **Play Maker** — the animated set-play designer above
+
+![Basketball scouting report](static/readme/readme-scouting.png)
+
+### Baseball (original capstone, untouched)
+- Handwritten note OCR (Claude Vision fallback chain), Branch Rickey RAG (1,919 historical scouting docs), Trackman pitch analytics, talent pool with grade filtering, session-wide AI chat, PDF export
 
 ---
 
@@ -22,113 +35,61 @@ AI-powered baseball analytics platform for Saint Mary's College of California. T
 
 | Layer | Technology |
 |---|---|
-| Frontend | Native HTML / Tailwind CSS / Vanilla JS |
-| Backend | FastAPI (Python 3.11) |
-| AI / LLM | Anthropic Claude (Sonnet 4.5 + Opus 4.5 for Vision OCR) |
-| RAG | scikit-learn TF-IDF (20K features, cosine similarity) |
-| PDF Extraction | pdfplumber → pypdf → Claude Vision OCR (fallback chain) |
-| Data | Pandas + NumPy |
-| Deployment | Render (Docker) — tracked on `feature/full-stack` branch |
+| Frontend | Single-page HTML / Tailwind CSS / vanilla JS + SVG animation |
+| Backend | FastAPI (Python 3.11+) |
+| AI / LLM | Anthropic Claude (Sonnet 4.5; Opus 4.5 for Vision OCR) |
+| RAG | scikit-learn TF-IDF — dual indexes (Rickey docs + NBA stat blurbs) |
+| Data | Pandas + NumPy; Basketball-Reference season exports |
+| Guardrails | Per-IP rate limiting, request size caps, env-driven CORS |
+| Tests | pytest — box score math, play JSON validation, RAG blurbs |
+
+### RAG design note
+Stat rows don't share vocabulary with free-text scouting notes, so each player-season row is converted to a blurb with **derived scouting-language descriptors** ("high volume scorer", "rim protector", position words) before TF-IDF indexing — and **player names are excluded from the search index** so a prospect named Carter doesn't false-match NBA Carters.
+
+---
+
+## Run locally
+
+```bash
+python3 -m venv .venv && .venv/bin/pip install -r requirements.txt
+cp .env.example .env   # add your ANTHROPIC_API_KEY
+.venv/bin/uvicorn backend.main:app --port 8001
+```
+
+Open http://localhost:8001 — flip the ⚾/🏀 toggle in the app section.
+
+Tests: `.venv/bin/pip install -r requirements-dev.txt && .venv/bin/python -m pytest tests/`
+
+To refresh the basketball RAG, drop any Basketball-Reference/Stathead-format CSVs into `data/basketball/` and restart (index caches at first query).
+
+---
+
+## Deploy (Render)
+
+`render.yaml` blueprint included:
+1. Render dashboard → New → Blueprint → point at this repo
+2. Set `ANTHROPIC_API_KEY` when prompted (never committed)
+3. Optionally set `FV_ALLOWED_ORIGINS` / `FV_RATE_LIMIT`
 
 ---
 
 ## Project Structure
 
 ```
-FieldVision/
-├── index.html                       # Full frontend (single-page app)
+FieldVision-personal/
+├── index.html                       # Full frontend (SPA: landing + baseball + basketball)
 ├── backend/
-│   ├── main.py                      # FastAPI app entry point
+│   ├── main.py                      # FastAPI entry, guardrails middleware
 │   ├── routes/
-│   │   ├── analyze.py               # POST /api/analyze
-│   │   ├── chat.py                  # POST /api/chat
-│   │   └── trackman.py              # POST /api/trackman
+│   │   ├── analyze.py  chat.py  trackman.py     # baseball (original)
+│   │   └── basketball.py            # /api/basketball/{analyze,boxscore,coach,play}
 │   └── services/
-│       ├── claude.py                # All Claude API calls
-│       ├── rag.py                   # TF-IDF retrieval from Branch Rickey CSV
-│       └── files.py                 # PDF extraction + Claude Vision OCR fallback
-├── static/
-│   ├── logo.svg                     # Site logo (white + red FV mark)
-│   ├── logo-share-card.png          # Shareable dark card (1200×1200)
-│   └── logo-share-white.png         # Shareable white card (1200×1200)
+│       ├── claude.py  rag.py  files.py           # baseball (original)
+│       ├── basketball.py            # basketball prompts + play designer
+│       └── rag_basketball.py        # NBA stat-comp RAG
 ├── data/
-│   └── branch-rickey-scouting.csv   # Historical scouting knowledge base (1,919 docs)
-├── requirements.txt
-└── Dockerfile
+│   ├── branch-rickey-scouting.csv   # baseball knowledge base
+│   └── basketball/bbref_*.csv       # 10 seasons of NBA stats (5,080 players)
+├── tests/                           # pytest suite (no API key needed)
+└── render.yaml                      # one-click Render blueprint
 ```
-
----
-
-## API Endpoints
-
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| `POST` | `/api/analyze` | Upload scouting note files, returns structured reports |
-| `POST` | `/api/chat` | Continue a scouting conversation with session context |
-| `POST` | `/api/trackman` | Upload Trackman CSV, returns stats + AI interpretation |
-| `GET/HEAD` | `/api/health` | Health check (used by UptimeRobot keep-alive) |
-
----
-
-## Local Setup
-
-### 1. Clone the repo
-
-```bash
-git clone https://github.com/jakeyoung1/FieldVision.git
-cd FieldVision
-```
-
-### 2. Create a virtual environment
-
-```bash
-python -m venv .venv
-source .venv/bin/activate  # Windows: .venv\Scripts\activate
-```
-
-### 3. Install dependencies
-
-```bash
-pip install -r requirements.txt
-```
-
-### 4. Add your Anthropic API key
-
-Create a `.env` file in the project root:
-
-```
-ANTHROPIC_API_KEY=sk-ant-...
-```
-
-### 5. Run the development server
-
-```bash
-uvicorn backend.main:app --reload
-```
-
-Open [http://localhost:8000](http://localhost:8000)
-
----
-
-## Deployment
-
-The app is deployed on **Render** using Docker. Render tracks the `feature/full-stack` branch.
-
-**Branch sync pattern** — after every commit to `main`:
-```bash
-git checkout feature/full-stack && git merge main && git push origin feature/full-stack && git checkout main
-```
-
-**Environment variables required on Render:**
-- `ANTHROPIC_API_KEY`
-
-**Keep-alive:** UptimeRobot pings `/api/health` every 5 minutes to prevent Render's free tier from sleeping.
-
----
-
-## Roadmap
-
-- [ ] Mass upload — batch process multiple players at once
-- [ ] Player comparison — side-by-side grade and strengths view
-- [ ] Talent pool filtering — filter by grade, position, and metrics
-- [ ] Custom domain

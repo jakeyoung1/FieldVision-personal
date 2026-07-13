@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>FieldVision — Baseball Scouting Intelligence</title>
+  <title>FieldVision — Multi-Sport Scouting Intelligence</title>
   <meta name="description" content="AI-powered baseball scouting intelligence. Transform handwritten notes into actionable reports with Claude AI and Branch Rickey's 1,919 historical scouting documents." />
 
   <!-- Fonts: Fira Code (data/headings) + Inter (body) -->
@@ -548,7 +548,7 @@
     <!-- Eyebrow -->
     <div class="reveal eyebrow">
       <span class="pulse-dot" style="display:inline-block;width:7px;height:7px;border-radius:50%;background:#C8102E;margin-right:8px;vertical-align:middle;"></span>
-      Baseball Scouting Intelligence &nbsp;·&nbsp; Active Project
+      Baseball + Basketball Scouting Intelligence &nbsp;·&nbsp; Active Project
     </div>
 
     <!-- Logo + Title -->
@@ -564,12 +564,13 @@
     <!-- Tagline -->
     <p class="reveal" style="transition-delay:.16s;font-size:clamp(1.1rem,2.5vw,1.4rem);
        font-weight:300;color:rgba(240,244,255,.65);margin-bottom:14px;">
-      Baseball Scouting Intelligence
+      Multi-Sport Scouting Intelligence
     </p>
     <p class="reveal" style="transition-delay:.2s;font-size:.95rem;max-width:620px;margin:0 auto 44px;
        line-height:1.8;color:rgba(240,244,255,.45);">
-      Transform handwritten scouting notes into structured, actionable intelligence.
-      Powered by Claude AI, 1,919 Branch Rickey historical reports, and semantic retrieval.
+      Transform scouting notes into structured, actionable intelligence — for baseball and basketball.
+      Claude AI, 1,919 Branch Rickey historical reports, 5,000+ NBA statistical comps,
+      an AI coaching assistant, and an animated set-play designer.
     </p>
 
     <!-- CTA Row -->
@@ -623,7 +624,8 @@
         FieldVision App
       </h2>
       <p style="font-size:1rem;color:rgba(240,244,255,.5);max-width:500px;margin:0 auto;line-height:1.75;">
-        Upload scouting notes, analyze Trackman data, compare prospects — all without leaving the page.
+        Pick a sport, upload scouting notes or stat exports, chat with the coaching AI,
+        and design animated plays — all without leaving the page.
       </p>
     </div>
 
@@ -1491,7 +1493,7 @@
            onerror="this.style.display='none'" />
       <div>
         <div style="font-weight:700;font-size:.9rem;color:rgba(240,244,255,.8);">FieldVision</div>
-        <div style="font-size:.75rem;color:rgba(240,244,255,.32);">Baseball Scouting Intelligence</div>
+        <div style="font-size:.75rem;color:rgba(240,244,255,.32);">Multi-Sport Scouting Intelligence</div>
       </div>
     </div>
 
@@ -2980,6 +2982,7 @@ document.querySelectorAll('[data-topline]').forEach(line => {
     if (!md) return '';
     return md
       .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+      .replace(/^# (.+)$/gm,   '<h2>$1</h2>')
       .replace(/^## (.+)$/gm,  '<h2>$1</h2>')
       .replace(/^### (.+)$/gm, '<h3>$1</h3>')
       .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')

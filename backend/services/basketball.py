@@ -134,22 +134,30 @@ LINEUP (use these exact ids and starting positions):
 {roster}"""
 
     client = claude._client()
-    resp = client.messages.create(
-        model=claude.MODEL,
-        max_tokens=2500,
-        system=COURT_SYSTEM,
-        messages=[{"role": "user", "content": prompt}],
-    )
-    raw = resp.content[0].text.strip()
-    raw = re.sub(r"^```(?:json)?\s*", "", raw)
-    raw = re.sub(r"\s*```$", "", raw)
-    try:
-        play = json.loads(raw)
-    except json.JSONDecodeError:
-        m = re.search(r"\{.*\}", raw, re.DOTALL)
-        if not m:
-            raise ValueError("Model did not return valid play JSON")
-        play = json.loads(m.group())
+    play = None
+    for attempt in range(2):  # one retry on malformed JSON
+        resp = client.messages.create(
+            model=claude.MODEL,
+            max_tokens=2500,
+            system=COURT_SYSTEM,
+            messages=[{"role": "user", "content": prompt}],
+        )
+        raw = resp.content[0].text.strip()
+        raw = re.sub(r"^```(?:json)?\s*", "", raw)
+        raw = re.sub(r"\s*```$", "", raw)
+        try:
+            play = json.loads(raw)
+            break
+        except json.JSONDecodeError:
+            m = re.search(r"\{.*\}", raw, re.DOTALL)
+            if m:
+                try:
+                    play = json.loads(m.group())
+                    break
+                except json.JSONDecodeError:
+                    pass
+            if attempt == 1:
+                raise ValueError("Model did not return valid play JSON")
     return _clean_play(play, players)
 
 
