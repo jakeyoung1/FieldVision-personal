@@ -3136,7 +3136,6 @@ document.querySelectorAll('[data-topline]').forEach(line => {
 
       const [px, py] = toPx(...DEFAULT_POS[i]);
       const g = document.createElementNS('http://www.w3.org/2000/svg', 'g');
-      g.setAttribute('cursor', 'grab');
       g.innerHTML = `
         <circle r="13" cx="0" cy="0" fill="${COLORS[i]}" stroke="rgba(255,255,255,.85)" stroke-width="2"/>
         <text y="4" text-anchor="middle" font-size="12" font-weight="700" fill="#0d1420">${i + 1}</text>
@@ -3164,18 +3163,47 @@ document.querySelectorAll('[data-topline]').forEach(line => {
   function startDrag (e, i) {
     if (animating) return;
     e.preventDefault();
-    const move = (ev) => {
+    const svg = document.getElementById('bb-pm-court');
+    const circle = dots[i].el.querySelector('circle');
+
+    // The dot IS the pointer while dragging: hide the OS cursor and make the
+    // active dot unmistakable (bigger, bright ring, crosshair guides).
+    svg.style.cursor = 'none';
+    circle.setAttribute('r', '17');
+    circle.setAttribute('stroke', '#fff');
+    circle.setAttribute('stroke-width', '3.5');
+    dots[i].el.setAttribute('filter', 'drop-shadow(0 0 6px rgba(255,255,255,.65))');
+
+    const guides = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+    guides.innerHTML = `
+      <line class="bb-pm-gx" x1="10" x2="490" stroke="rgba(255,255,255,.22)" stroke-width="1" stroke-dasharray="3 4"/>
+      <line class="bb-pm-gy" y1="10" y2="460" stroke="rgba(255,255,255,.22)" stroke-width="1" stroke-dasharray="3 4"/>`;
+    svg.insertBefore(guides, document.getElementById('bb-pm-dots'));
+    const gx = guides.querySelector('.bb-pm-gx');
+    const gy = guides.querySelector('.bb-pm-gy');
+
+    const position = (ev) => {
       const [px, py] = svgPoint(ev);
       const [nx, ny] = toNorm(px, py);
       dots[i].x = nx; dots[i].y = ny;
       const [dx, dy] = toPx(nx, ny);
       dots[i].el.setAttribute('transform', `translate(${dx},${dy})`);
+      gx.setAttribute('y1', dy); gx.setAttribute('y2', dy);
+      gy.setAttribute('x1', dx); gy.setAttribute('x2', dx);
     };
+    position(e);   // snap dot to the pointer immediately — proof the drag is live
+
     const up = () => {
-      window.removeEventListener('pointermove', move);
+      window.removeEventListener('pointermove', position);
       window.removeEventListener('pointerup', up);
+      svg.style.cursor = '';
+      circle.setAttribute('r', '13');
+      circle.setAttribute('stroke', 'rgba(255,255,255,.85)');
+      circle.setAttribute('stroke-width', '2');
+      dots[i].el.removeAttribute('filter');
+      guides.remove();
     };
-    window.addEventListener('pointermove', move);
+    window.addEventListener('pointermove', position);
     window.addEventListener('pointerup', up);
   }
 
