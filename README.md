@@ -1,55 +1,72 @@
-# FieldVision — Multi-Sport Scouting Intelligence
+# FieldVision — Baseball Scouting Intelligence
 
-AI-powered scouting platform. Started as a baseball capstone for Saint Mary's College of California; this personal fork adds a full **basketball scouting + coaching suite** with an **animated AI play designer**.
+AI-assisted scouting platform built around a principle pro evaluators actually care about: **show your evidence**. Every grade traces back to the exact note sentences and Trackman numbers that produced it, confidence is computed from evidence availability (never self-reported by the model), the system flags when notes and data disagree — and the human scout owns the final evaluation.
+
+**Live:** https://fieldvision-personal.onrender.com · Baseball capstone origin: Saint Mary's College of California
 
 ![FieldVision hero](static/readme/readme-hero.png)
 
 ---
 
-## 🏀 Play Maker — AI-designed set plays, animated
+## The Evidence Chain
 
-Drag five dots into your set, describe each player's strengths, give an objective — Claude designs a play around the lineup and the dots run it on the court with live coaching captions.
+Every scouting report separates four epistemic layers, per tool:
+
+| Layer | Example |
+|---|---|
+| **Observation** | *"Fastball played with late life up in the zone"* (verbatim note quote) |
+| **Measurement** | 94.2 mph avg, 2,390 rpm — from session Trackman data |
+| **Interpretation** | Above-average riding fastball |
+| **Projection** | Potential bat-missing weapon if command holds *(most uncertain layer, hedged)* |
+
+Plus, per tool and overall:
+- **Computed confidence** (High/Medium/Low) — derived server-side from evidence count + measurement availability, not model self-assessment
+- **Conflict detection** — ⚠️ flags when notes and Trackman data genuinely disagree
+- **Scout override** — the scout can correct any grade with a reason; AI assessment and scout override display side by side
+- **Take / Follow / Hold recommendation** and **"What would change this evaluation?"** — the information-gap section
+- **Player Decision Report** — exports as a front-office-style artifact: tools table, evidence, risk, overrides, sources, timestamps
+
+## Baseball features
+
+- **Scouting Notes** — PDF/TXT upload (handwritten PDFs via a pdfplumber → pypdf → Claude Vision OCR fallback chain) or pasted text; `---` separates players. Reports grounded in **1,919 Branch Rickey historical scouting documents** (TF-IDF RAG)
+- **Trackman** — instant pitch charts, zero LLM cost: MLB percentile sliders (velo + spin vs approximate league distributions — labeled as approximations), movement plot (IVB/HB, catcher's view), plate location with strike zone; AI interpretation on demand
+- **Compare** — head-to-head AI verdict on any two scouted players: category edges, risk profiles, who to take first
+- **Players** — session talent pool with grade badges, search, filters; **persists across refreshes** (localStorage)
+- **Combined Chat** — session-wide Q&A, **streamed word-by-word** (SSE)
+- **One-click demo data** everywhere — the platform demos with zero files
+
+![Pitch Arsenal](static/readme/readme-pitcharsenal.png)
+![Scouting report](static/readme/readme-scouting.png)
+
+---
+
+## Basketball module — proving the architecture generalizes
+
+The same pipeline (notes → RAG comps → structured report → coaching chat) was ported to basketball to test sport-agnosticism, plus one sport-specific showpiece: **Play Maker** — drag five dots on an SVG half court, describe each player's strengths, and the AI designs a set play the dots then run as an animation with live coaching captions.
 
 ![Play Maker demo](static/readme/playmaker-demo.gif)
 
-How it works: player positions + strengths + objective → Claude returns keyframe JSON (validated and clamped server-side) → SVG dots and ball interpolate along paths with action captions, dashed path previews, replay, and speed control.
+Also: box score CSV analysis (PPG/RPG/APG/TS%), a four-mode coaching assistant, and stat comps from 5,080 NBA player-seasons (1986–2026) with scouting-language descriptor tags and name-excluded indexing.
 
 ---
 
-## Features
-
-### Basketball (new in this fork)
-- **Scouting Notes** — paste or upload notes; structured report with grade, strengths, concerns, and **statistical comps pulled from 5,000+ NBA player-seasons** (Basketball-Reference per-game + advanced stats across 10 seasons, 1986–2026)
-- **Box Scores** — upload game or season CSVs; per-player PPG/RPG/APG, shooting splits, and true-shooting with plain-language AI interpretation
-- **Coach** — four modes: player development plans, opponent scouting, practice planning, open chat. Session scouting reports and box score data feed in automatically
-- **Play Maker** — the animated set-play designer above
-
-![Basketball scouting report](static/readme/readme-scouting.png)
-
-### Baseball
-- **Pitch Arsenal charts** — drop a Trackman CSV and instantly get **MLB percentile sliders** (velocity + spin vs league distributions, Baseball Savant style), a **movement plot** (IVB vs HB, catcher's view), and a **plate-location chart** with strike zone — no AI call needed, charts are instant
-- **Head-to-head Compare** — pick any two scouted players for an AI verdict: category-by-category edges, risk profiles, who to take first
-- **One-click demo data** — sample scouting notes and a realistic Trackman dataset built in; the whole platform demos without any files
-- Handwritten note OCR (Claude Vision fallback chain), Branch Rickey RAG (1,919 historical scouting docs), talent pool with grade filtering, session-wide AI chat, PDF export
-
-![Pitch Arsenal](static/readme/readme-pitcharsenal.png)
-
----
-
-## Tech Stack
+## Tech
 
 | Layer | Technology |
 |---|---|
-| Frontend | Single-page HTML / Tailwind CSS / vanilla JS + SVG animation |
-| Backend | FastAPI (Python 3.11+) |
-| AI / LLM | Anthropic Claude (Sonnet 4.5; Opus 4.5 for Vision OCR) |
-| RAG | scikit-learn TF-IDF — dual indexes (Rickey docs + NBA stat blurbs) |
-| Data | Pandas + NumPy; Basketball-Reference season exports |
-| Guardrails | Per-IP rate limiting, request size caps, env-driven CORS |
-| Tests | pytest — box score math, play JSON validation, RAG blurbs, MLB percentile math |
+| Frontend | Single-page HTML / Tailwind / vanilla JS + SVG; SSE streaming reader |
+| Backend | FastAPI (Python 3.11) |
+| AI | Anthropic Claude (Sonnet; Opus for Vision OCR). Structured-JSON evaluations with server-side validation, evidence verification against source text, and computed confidence |
+| RAG | scikit-learn TF-IDF, dual indexes (deliberate zero-heavy-dependency choice for fast cold starts; see design notes below) |
+| Guardrails | Per-IP rate limiting, size caps, env-driven CORS |
+| CI | GitHub Actions — ruff + pytest on every push |
+| Tests | 28+ pytest cases, all runnable without an API key |
 
-### RAG design note
-Stat rows don't share vocabulary with free-text scouting notes, so each player-season row is converted to a blurb with **derived scouting-language descriptors** ("high volume scorer", "rim protector", position words) before TF-IDF indexing — and **player names are excluded from the search index** so a prospect named Carter doesn't false-match NBA Carters.
+### Design notes
+- **Evidence verification:** quoted evidence is checked to be a verbatim substring of the source notes; unverifiable quotes are marked.
+- **Confidence is rules, not vibes:** ≥2 verified quotes + measurement → High; quotes or measurement alone → Medium; thin → Low.
+- **TF-IDF over embeddings, deliberately:** zero-dependency deploys and fast cold starts on small hosting; stat rows are converted to scouting-language blurbs (with position words and derived descriptors) so free-text notes can match them. Embedding upgrade is planned behind a retrieval evaluation harness, not vibes.
+- **Percentiles are labeled approximations** vs public league distributions — transparency over fake precision.
 
 ---
 
@@ -61,40 +78,24 @@ cp .env.example .env   # add your ANTHROPIC_API_KEY
 .venv/bin/uvicorn backend.main:app --port 8001
 ```
 
-Open http://localhost:8001 — flip the ⚾/🏀 toggle in the app section.
-
 Tests: `.venv/bin/pip install -r requirements-dev.txt && .venv/bin/python -m pytest tests/`
 
-To refresh the basketball RAG, drop any Basketball-Reference/Stathead-format CSVs into `data/basketball/` and restart (index caches at first query).
+Deploy: `render.yaml` blueprint included — point Render at this repo, set `ANTHROPIC_API_KEY`.
 
----
-
-## Deploy (Render)
-
-`render.yaml` blueprint included:
-1. Render dashboard → New → Blueprint → point at this repo
-2. Set `ANTHROPIC_API_KEY` when prompted (never committed)
-3. Optionally set `FV_ALLOWED_ORIGINS` / `FV_RATE_LIMIT`
-
----
-
-## Project Structure
+## Project structure
 
 ```
 FieldVision-personal/
-├── index.html                       # Full frontend (SPA: landing + baseball + basketball)
+├── index.html                     # SPA: landing + baseball + basketball
 ├── backend/
-│   ├── main.py                      # FastAPI entry, guardrails middleware
-│   ├── routes/
-│   │   ├── analyze.py  chat.py  trackman.py     # baseball (original)
-│   │   └── basketball.py            # /api/basketball/{analyze,boxscore,coach,play}
+│   ├── main.py                    # FastAPI entry + guardrails middleware
+│   ├── routes/                    # analyze, chat, trackman, trackman_viz, compare, basketball
 │   └── services/
-│       ├── claude.py  rag.py  files.py           # baseball (original)
-│       ├── basketball.py            # basketball prompts + play designer
-│       └── rag_basketball.py        # NBA stat-comp RAG
-├── data/
-│   ├── branch-rickey-scouting.csv   # baseball knowledge base
-│   └── basketball/bbref_*.csv       # 10 seasons of NBA stats (5,080 players)
-├── tests/                           # pytest suite (no API key needed)
-└── render.yaml                      # one-click Render blueprint
+│       ├── scout_report.py        # Evidence Chain: structured eval + computed confidence
+│       ├── claude.py rag.py files.py mlb_benchmarks.py
+│       └── basketball.py rag_basketball.py
+├── data/                          # Branch Rickey corpus + NBA season CSVs
+├── static/demo/                   # one-click demo datasets
+├── tests/                         # pytest (no API key needed)
+└── .github/workflows/ci.yml
 ```

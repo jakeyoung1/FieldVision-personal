@@ -895,6 +895,10 @@
             <option value="scouting">Scouting Notes</option>
             <option value="trackman">Trackman</option>
           </select>
+          <button onclick="fvResetSession()" title="Sessions persist in this browser across refreshes"
+                  style="padding:9px 14px;border-radius:8px;background:rgba(255,255,255,.04);
+                         border:1px solid rgba(255,255,255,.12);color:rgba(240,244,255,.45);
+                         font-size:.78rem;cursor:pointer;">Reset session</button>
         </div>
         <!-- Rendered content injected here by renderPlayers() -->
         <div id="fv-player-cards"></div>
@@ -1915,6 +1919,9 @@ document.querySelectorAll('[data-topline]').forEach(line => {
 
   // Read-only handle for the Compare tab (separate module below)
   window.fvGetTalentPool = () => talentPool;
+  // Chart builds (free path) can seed measurement context; a real Trackman
+  // analysis run still overwrites it with the richer summary.
+  window.fvSetTrackmanContext = (s) => { if (!trackmanContext) trackmanContext = s; };
 
   // ── Tab switching ────────────────────────────────────────────────────────
   window.switchTab = function (name) {
@@ -2009,6 +2016,8 @@ document.querySelectorAll('[data-topline]').forEach(line => {
 
       const totalFiles = selectedFiles.length + pasteBlocks.length;
       fd.append('batch_mode', totalFiles > 1 ? 'true' : 'false');
+      // Session Trackman data feeds the measurement layer of the Evidence Chain
+      if (trackmanContext) fd.append('trackman_context', trackmanContext);
 
       const res  = await fetch(`${API_BASE}/api/analyze`, { method: 'POST', body: fd });
       const data = await res.json();
@@ -2024,6 +2033,7 @@ document.querySelectorAll('[data-topline]').forEach(line => {
         }
       });
       updatePlayersTabBadge(0);
+      saveSession();
 
     } catch (err) {
       showReportError(err.message);
@@ -2033,6 +2043,7 @@ document.querySelectorAll('[data-topline]').forEach(line => {
     }
   };
 
+  let loadingStageTimer = null;
   function showReportLoading () {
     document.getElementById('fv-report-empty').style.display   = 'none';
     document.getElementById('fv-report-content').style.display = '';
@@ -2043,8 +2054,17 @@ document.querySelectorAll('[data-topline]').forEach(line => {
              style="animation:spin .9s linear infinite">
           <path d="M21 12a9 9 0 1 1-6.219-8.56"/>
         </svg>
-        <div style="color:rgba(240,244,255,.45);font-size:.88rem;">Running analysis…</div>
+        <div id="fv-loading-stage" style="color:rgba(240,244,255,.45);font-size:.88rem;transition:opacity .3s;">Extracting notes…</div>
       </div>`;
+    const stages = ['Retrieving Branch Rickey comps…', 'Building evidence chain…',
+                    'Grading tools…', 'Weighing risk and projection…', 'Finalizing recommendation…'];
+    let i = 0;
+    clearInterval(loadingStageTimer);
+    loadingStageTimer = setInterval(() => {
+      const el = document.getElementById('fv-loading-stage');
+      if (!el || i >= stages.length) { clearInterval(loadingStageTimer); return; }
+      el.textContent = stages[i++];
+    }, 3200);
   }
 
   function showReportError (msg) {
@@ -2070,7 +2090,38 @@ document.querySelectorAll('[data-topline]').forEach(line => {
     currentReport = results.map(r => r.report).join('\n\n---\n\n');
     sessionReports.push(...results.map(r => `[${r.label}]\n${r.report}`));
 
-    const html = results.map(r => {
+    lastResults = results;
+    redrawReports();
+    document.getElementById('fv-chat-panel').style.display = '';
+  }
+
+  // ── Evidence Chain rendering ──────────────────────────────────────────────
+  let lastResults = [];
+
+  const REC_STYLE = {
+    'Priority Follow': 'background:rgba(34,197,94,.15);color:#4ade80;border-color:rgba(34,197,94,.4);',
+    'Follow':          'background:rgba(99,102,241,.15);color:#a5b4fc;border-color:rgba(99,102,241,.4);',
+    'Hold':            'background:rgba(245,158,11,.13);color:#fbbf24;border-color:rgba(245,158,11,.35);',
+    'Do Not Follow':   'background:rgba(200,16,46,.14);color:#f07080;border-color:rgba(200,16,46,.4);',
+  };
+  const CONF_COLOR = { High: '#4ade80', Medium: '#fbbf24', Low: '#f07080' };
+
+  function confPill (c) {
+    return `<span style="font-size:.66rem;font-weight:700;padding:1px 8px;border-radius:99px;
+      border:1px solid ${CONF_COLOR[c]}55;color:${CONF_COLOR[c]};">confidence: ${c}</span>`;
+  }
+
+  function overrideBadge (r, key) {
+    const o = r.overrides && r.overrides[key];
+    if (!o) return '';
+    return `<span style="font-size:.68rem;padding:1px 8px;border-radius:99px;background:rgba(56,189,248,.12);
+      border:1px solid rgba(56,189,248,.4);color:#38bdf8;font-weight:700;" title="${(o.note || '').replace(/"/g, '&quot;')}">
+      SCOUT: ${o.grade}</span>`;
+  }
+
+  function redrawReports () {
+    const html = lastResults.map((r, ri) => {
+      if (r.structured) return structuredCard(r, ri);
       const p = r.profile || {};
       const grade = p.grade || '?';
       const reportHtml = markdownToHtml(r.report);
@@ -2079,52 +2130,244 @@ document.querySelectorAll('[data-topline]').forEach(line => {
           <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;flex-wrap:wrap;">
             <span style="font-weight:700;font-size:.95rem;">${p.name || r.label}</span>
             <span class="fv-grade-badge ${gradeClass(grade)}">${grade}</span>
-            ${p.position ? `<span style="font-size:.75rem;color:rgba(240,244,255,.4);">${p.position}</span>` : ''}
             <button onclick="exportReportPDF(this)" style="margin-left:auto;padding:4px 12px;border-radius:5px;
               background:rgba(200,16,46,.12);border:1px solid rgba(200,16,46,.3);color:#C8102E;
               font-size:.72rem;font-weight:600;cursor:pointer;">↓ Export PDF</button>
           </div>
-          ${p.summary ? `<p style="font-size:.85rem;color:rgba(240,244,255,.55);margin-bottom:10px;line-height:1.6;">${p.summary}</p>` : ''}
           <div class="fv-report-md">${reportHtml}</div>
         </div>`;
     }).join('<hr style="border:none;border-top:1px solid rgba(255,255,255,.07);margin:20px 0;">');
 
     document.getElementById('fv-report-content').innerHTML =
-      `<div style="max-height:480px;overflow-y:auto;padding-right:4px;">${html}</div>`;
-
-    document.getElementById('fv-chat-panel').style.display = '';
+      `<div style="max-height:560px;overflow-y:auto;padding-right:4px;">${html}</div>`;
   }
 
-  // ── PDF Export ───────────────────────────────────────────────────────────
+  function structuredCard (r, ri) {
+    const s = r.structured;
+    const name = s.name || r.label;
+    const recStyle = REC_STYLE[s.recommendation] || REC_STYLE['Follow'];
+
+    const tools = s.tools.map((t, ti) => `
+      <div style="border:1px solid rgba(255,255,255,.08);border-radius:10px;padding:12px 14px;margin-bottom:10px;background:rgba(255,255,255,.02);">
+        <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:8px;">
+          <span style="font-weight:700;font-size:.85rem;">${t.name}</span>
+          <span class="fv-grade-badge ${gradeClass(t.grade)}">${t.grade}</span>
+          ${overrideBadge(r, t.name)}
+          ${confPill(t.confidence)}
+          <button onclick="fvOverride(${ri}, '${t.name.replace(/'/g, "\\'")}')"
+                  style="margin-left:auto;padding:2px 9px;border-radius:5px;background:none;
+                         border:1px solid rgba(255,255,255,.15);color:rgba(240,244,255,.45);
+                         font-size:.66rem;cursor:pointer;">✎ override</button>
+        </div>
+        ${t.evidence.map(q => `<div style="font-size:.78rem;color:rgba(240,244,255,.55);border-left:2px solid rgba(200,16,46,.4);
+            padding:2px 10px;margin:4px 0;font-style:italic;">"${q}"</div>`).join('')}
+        ${t.measurement ? `<div style="font-size:.76rem;color:#a5b4fc;font-family:ui-monospace,monospace;margin:6px 0 2px;">📊 ${t.measurement}</div>` : ''}
+        <div style="font-size:.8rem;color:rgba(240,244,255,.72);margin-top:6px;">${t.interpretation}</div>
+        ${t.projection ? `<div style="font-size:.76rem;color:rgba(240,244,255,.45);margin-top:4px;"><span style="font-size:.62rem;font-weight:700;letter-spacing:.06em;color:rgba(240,244,255,.3);">PROJECTION</span> ${t.projection}</div>` : ''}
+        ${t.conflict ? `<div style="margin-top:8px;padding:7px 10px;border-radius:7px;background:rgba(245,158,11,.09);
+            border:1px solid rgba(245,158,11,.3);font-size:.76rem;color:#fbbf24;">⚠️ Notes vs data: ${t.conflict}</div>` : ''}
+        <div id="fv-ovr-form-${ri}-${t.name.replace(/[^a-zA-Z0-9]/g, '_')}"></div>
+      </div>`).join('');
+
+    return `
+      <div style="margin-bottom:24px;" data-report-label="${name}" data-ri="${ri}"
+           data-report-html="${encodeURIComponent(markdownToHtml(r.report))}" data-report-text="${encodeURIComponent(r.report)}">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px;flex-wrap:wrap;">
+          <span style="font-weight:700;font-size:1rem;">${name}</span>
+          <span class="fv-grade-badge ${gradeClass(s.grade)}">${s.grade}</span>
+          ${overrideBadge(r, '__overall__')}
+          ${s.position ? `<span style="font-size:.75rem;color:rgba(240,244,255,.4);">${s.position}</span>` : ''}
+          ${confPill(s.confidence)}
+          <button onclick="fvOverride(${ri}, '__overall__')"
+                  style="padding:2px 9px;border-radius:5px;background:none;border:1px solid rgba(255,255,255,.15);
+                         color:rgba(240,244,255,.45);font-size:.66rem;cursor:pointer;">✎</button>
+          <button onclick="exportReportPDF(this)" style="margin-left:auto;padding:4px 12px;border-radius:5px;
+            background:rgba(200,16,46,.12);border:1px solid rgba(200,16,46,.3);color:#C8102E;
+            font-size:.72rem;font-weight:600;cursor:pointer;">↓ Decision Report</button>
+        </div>
+        <div style="display:inline-block;padding:5px 14px;border-radius:8px;border:1px solid;
+             font-size:.78rem;font-weight:700;margin-bottom:10px;${recStyle}">
+          ${s.recommendation}${s.recommendation_reason ? ` — <span style="font-weight:400;">${s.recommendation_reason}</span>` : ''}
+        </div>
+        <div id="fv-ovr-form-${ri}-__overall__"></div>
+        <p style="font-size:.85rem;color:rgba(240,244,255,.6);margin-bottom:14px;line-height:1.65;">${s.summary}</p>
+        ${tools}
+        ${s.risk ? `<div style="font-size:.8rem;color:rgba(240,244,255,.55);margin-top:12px;"><strong style="color:rgba(240,244,255,.75);">Risk:</strong> ${s.risk}</div>` : ''}
+        ${s.what_would_change.length ? `
+          <div style="margin-top:12px;padding:11px 14px;border-radius:9px;background:rgba(99,102,241,.06);border:1px solid rgba(99,102,241,.2);">
+            <div style="font-size:.7rem;font-weight:700;letter-spacing:.06em;color:#a5b4fc;margin-bottom:6px;">WHAT WOULD CHANGE THIS EVALUATION</div>
+            ${s.what_would_change.map(w => `<div style="font-size:.78rem;color:rgba(240,244,255,.6);margin:3px 0;">· ${w}</div>`).join('')}
+          </div>` : ''}
+        <div style="font-size:.68rem;color:rgba(240,244,255,.28);margin-top:10px;">
+          Sources: scouting notes${s.had_measurement ? ' · Trackman session data' : ''}${r.context_used ? ' · Branch Rickey corpus' : ''}
+          · AI analysis with scout review — human owns the final evaluation
+        </div>
+      </div>`;
+  }
+
+  // ── Scout override ────────────────────────────────────────────────────────
+  window.fvOverride = function (ri, key) {
+    const r = lastResults[ri];
+    const slotId = `fv-ovr-form-${ri}-${key === '__overall__' ? '__overall__' : key.replace(/[^a-zA-Z0-9]/g, '_')}`;
+    const slot = document.getElementById(slotId);
+    if (!slot) return;
+    if (slot.innerHTML) { slot.innerHTML = ''; return; }
+    const current = (r.overrides && r.overrides[key]) || {};
+    const grades = ['A','A-','B+','B','B-','C+','C','C-','D+','D','F'];
+    slot.innerHTML = `
+      <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;padding:10px;margin:8px 0;
+           border-radius:8px;background:rgba(56,189,248,.06);border:1px solid rgba(56,189,248,.25);">
+        <span style="font-size:.72rem;color:#38bdf8;font-weight:700;">Scout override:</span>
+        <select id="${slotId}-g" style="padding:5px 8px;border-radius:6px;background:#0f1624;border:1px solid rgba(255,255,255,.15);color:#f0f4ff;font-size:.75rem;">
+          ${grades.map(g => `<option ${g === current.grade ? 'selected' : ''}>${g}</option>`).join('')}
+        </select>
+        <input id="${slotId}-n" type="text" placeholder="reason (what the AI got wrong)" value="${(current.note || '').replace(/"/g, '&quot;')}"
+               style="flex:1;min-width:160px;padding:5px 10px;border-radius:6px;background:#0f1624;border:1px solid rgba(255,255,255,.15);color:#f0f4ff;font-size:.75rem;">
+        <button onclick="fvSaveOverride(${ri}, '${key.replace(/'/g, "\\'")}')"
+                style="padding:5px 12px;border-radius:6px;background:#38bdf8;color:#0d1420;font-weight:700;font-size:.72rem;border:none;cursor:pointer;">Save</button>
+        ${current.grade ? `<button onclick="fvClearOverride(${ri}, '${key.replace(/'/g, "\\'")}')"
+                style="padding:5px 10px;border-radius:6px;background:none;border:1px solid rgba(255,255,255,.2);color:rgba(240,244,255,.5);font-size:.72rem;cursor:pointer;">Remove</button>` : ''}
+      </div>`;
+  };
+
+  window.fvSaveOverride = function (ri, key) {
+    const r = lastResults[ri];
+    const slotId = `fv-ovr-form-${ri}-${key === '__overall__' ? '__overall__' : key.replace(/[^a-zA-Z0-9]/g, '_')}`;
+    r.overrides = r.overrides || {};
+    r.overrides[key] = {
+      grade: document.getElementById(slotId + '-g').value,
+      note: document.getElementById(slotId + '-n').value.trim(),
+      at: new Date().toISOString(),
+    };
+    saveSession();
+    redrawReports();
+  };
+
+  window.fvClearOverride = function (ri, key) {
+    const r = lastResults[ri];
+    if (r.overrides) delete r.overrides[key];
+    saveSession();
+    redrawReports();
+  };
+
+  // ── Session persistence (localStorage) ───────────────────────────────────
+  function saveSession () {
+    try {
+      localStorage.setItem('fv-session-v1', JSON.stringify({
+        talentPool: talentPool.slice(0, 60),
+        sessionReports: sessionReports.slice(-60),
+      }));
+    } catch (e) { /* quota — session continues unsaved */ }
+  }
+
+  function restoreSession () {
+    try {
+      const raw = localStorage.getItem('fv-session-v1');
+      if (!raw) return;
+      const s = JSON.parse(raw);
+      if (Array.isArray(s.talentPool) && s.talentPool.length) {
+        talentPool.push(...s.talentPool);
+        updatePlayersTabBadge(0);
+      }
+      if (Array.isArray(s.sessionReports)) sessionReports.push(...s.sessionReports);
+    } catch (e) { /* corrupt state — start clean */ }
+  }
+
+  window.fvResetSession = function () {
+    if (!confirm('Clear all saved players and reports from this browser?')) return;
+    localStorage.removeItem('fv-session-v1');
+    location.reload();
+  };
+  restoreSession();
+
+  // ── PDF Export — Player Decision Report ──────────────────────────────────
   window.exportReportPDF = function (btn) {
     const card = btn.closest('[data-report-label]');
     const label = card.dataset.reportLabel;
-    const bodyHtml = decodeURIComponent(card.dataset.reportHtml);
+    const ri = card.dataset.ri;
+    const r = ri != null ? lastResults[+ri] : null;
+
+    let body;
+    if (r && r.structured) {
+      body = decisionReportHtml(r, label);
+    } else {
+      body = `<h1>FieldVision Scouting Report</h1>
+        <div class="meta">Player: <strong>${label}</strong> | Generated: ${new Date().toLocaleDateString()}</div>
+        ${decodeURIComponent(card.dataset.reportHtml)}`;
+    }
 
     const win = window.open('', '_blank');
     win.document.write(`<!DOCTYPE html><html><head>
       <meta charset="UTF-8">
       <title>FieldVision — ${label}</title>
       <style>
-        body { font-family: Georgia, serif; max-width: 720px; margin: 40px auto; padding: 0 24px; color: #111; line-height: 1.7; }
-        h1 { font-size: 1.5rem; border-bottom: 2px solid #C8102E; padding-bottom: 8px; margin-bottom: 4px; }
-        .meta { font-size: .85rem; color: #555; margin-bottom: 28px; }
-        h2 { font-size: 1.1rem; color: #002147; margin-top: 24px; }
-        h3 { font-size: 1rem; color: #002147; }
-        p, li { font-size: .95rem; }
-        ul { padding-left: 20px; }
-        hr { border: none; border-top: 1px solid #ddd; margin: 20px 0; }
-        @media print { body { margin: 20px; } }
+        body { font-family: Georgia, serif; max-width: 760px; margin: 36px auto; padding: 0 24px; color: #111; line-height: 1.65; }
+        h1 { font-size: 1.45rem; border-bottom: 2px solid #C8102E; padding-bottom: 8px; margin-bottom: 4px; }
+        .meta { font-size: .8rem; color: #555; margin-bottom: 22px; }
+        h2 { font-size: 1.02rem; color: #002147; margin: 22px 0 8px; text-transform: uppercase; letter-spacing: .04em; }
+        p, li, td, th { font-size: .92rem; }
+        ul { padding-left: 20px; margin: 4px 0; }
+        .rec { display: inline-block; padding: 6px 16px; border: 2px solid #002147; font-weight: bold; font-size: 1rem; margin: 6px 0 2px; }
+        table { width: 100%; border-collapse: collapse; margin: 8px 0; }
+        th, td { border: 1px solid #ccc; padding: 6px 10px; text-align: left; }
+        th { background: #f2f4f8; font-size: .8rem; text-transform: uppercase; letter-spacing: .04em; }
+        .q { font-style: italic; color: #444; margin: 2px 0 2px 12px; font-size: .86rem; }
+        .m { font-family: Menlo, monospace; font-size: .82rem; color: #334; }
+        .warn { background: #fff7e6; border-left: 3px solid #d97706; padding: 5px 10px; font-size: .85rem; margin: 4px 0; }
+        .ovr { background: #e8f6fd; border-left: 3px solid #0284c7; padding: 5px 10px; font-size: .85rem; margin: 4px 0; }
+        .foot { margin-top: 26px; font-size: .74rem; color: #778; border-top: 1px solid #ddd; padding-top: 10px; }
+        @media print { body { margin: 16px; } }
       </style>
-    </head><body>
-      <h1>FieldVision Scouting Report</h1>
-      <div class="meta">Player: <strong>${label}</strong> &nbsp;|&nbsp; Generated: ${new Date().toLocaleDateString()}</div>
-      ${bodyHtml}
-    </body></html>`);
+    </head><body>${body}</body></html>`);
     win.document.close();
     win.focus();
     setTimeout(() => { win.print(); }, 400);
   };
+
+  function decisionReportHtml (r, label) {
+    const s = r.structured;
+    const ov = r.overrides || {};
+    const overall = ov['__overall__'];
+    const now = new Date();
+
+    const toolRows = s.tools.map(t => {
+      const o = ov[t.name];
+      return `<tr>
+        <td><strong>${t.name}</strong></td>
+        <td>${t.grade}</td>
+        <td>${o ? `<strong>${o.grade}</strong>` : '—'}</td>
+        <td>${t.confidence}</td>
+      </tr>`;
+    }).join('');
+
+    const evidence = s.tools.map(t => `
+      <p style="margin:10px 0 2px;"><strong>${t.name} — ${t.grade}</strong>${ov[t.name] ? ` <span style="color:#0284c7;">(scout override: ${ov[t.name].grade})</span>` : ''}</p>
+      ${t.evidence.map(q => `<div class="q">"${q}"</div>`).join('')}
+      ${t.measurement ? `<div class="m">Measurement: ${t.measurement}</div>` : ''}
+      <div style="font-size:.88rem;">${t.interpretation}</div>
+      ${t.projection ? `<div style="font-size:.85rem;color:#555;">Projection: ${t.projection}</div>` : ''}
+      ${t.conflict ? `<div class="warn">⚠ Notes vs data: ${t.conflict}</div>` : ''}
+      ${ov[t.name] && ov[t.name].note ? `<div class="ovr">Scout: ${ov[t.name].note}</div>` : ''}`).join('');
+
+    return `
+      <h1>PLAYER EVALUATION — ${label.toUpperCase()}</h1>
+      <div class="meta">${s.position || ''} · Generated ${now.toLocaleDateString()} ${now.toLocaleTimeString()} · FieldVision · Overall confidence: ${s.confidence}</div>
+      <div class="rec">${(overall ? overall.grade : s.grade)} · ${s.recommendation}</div>
+      ${overall ? `<div class="ovr">Scout override of overall grade (AI said ${s.grade})${overall.note ? `: ${overall.note}` : ''}</div>` : ''}
+      <p>${s.summary}</p>
+      <h2>Tools</h2>
+      <table><thead><tr><th>Tool</th><th>AI Grade</th><th>Scout Override</th><th>Confidence</th></tr></thead>
+      <tbody>${toolRows}</tbody></table>
+      <h2>Evidence</h2>${evidence}
+      <h2>Risk</h2><p>${s.risk || '—'}</p>
+      ${s.what_would_change.length ? `<h2>What Would Change This Evaluation</h2><ul>${s.what_would_change.map(w => `<li>${w}</li>`).join('')}</ul>` : ''}
+      <h2>Recommendation</h2><p><strong>${s.recommendation}</strong> — ${s.recommendation_reason}</p>
+      <div class="foot">
+        Sources: scouting notes${s.had_measurement ? ' · Trackman session data' : ''}${r.context_used ? ' · Branch Rickey historical corpus' : ''}.
+        AI-generated analysis with human scout review — the scout owns the final evaluation.
+        Percentile references are approximate league distributions, not official MLB percentiles.
+      </div>`;
+  }
 
   // ── Chat ─────────────────────────────────────────────────────────────────
   window.sendChat = async function () {
@@ -2139,25 +2382,21 @@ document.querySelectorAll('[data-topline]').forEach(line => {
     const thinkingEl = appendChatThinking();
 
     try {
-      const res  = await fetch(`${API_BASE}/api/chat`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          history: chatHistory,
-          context: currentReport,
-          session_context: sessionReports.length > 1
-            ? `Prior uploads this session:\n${sessionReports.slice(0, -1).join('\n\n---\n\n')}`
-            : ''
-        }),
+      const reply = await window.fvStreamFetch(`${API_BASE}/api/chat`, {
+        history: chatHistory,
+        context: currentReport,
+        session_context: sessionReports.length > 1
+          ? `Prior uploads this session:\n${sessionReports.slice(0, -1).join('\n\n---\n\n')}`
+          : ''
+      }, (partial) => {
+        thinkingEl.innerHTML = markdownToHtml(partial);
+        thinkingEl.parentElement.scrollTop = thinkingEl.parentElement.scrollHeight;
       });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.detail || 'Chat failed');
 
-      thinkingEl.remove();
-      chatHistory.push({ role: 'assistant', content: data.reply });
-      renderChatMessage('assistant', data.reply);
-      syncProfileFromChat(data.reply, text);
-      extractAndAddPlayers(data.reply, currentReport);
+      thinkingEl.innerHTML = markdownToHtml(reply);
+      chatHistory.push({ role: 'assistant', content: reply });
+      syncProfileFromChat(reply, text);
+      extractAndAddPlayers(reply, currentReport);
     } catch (err) {
       thinkingEl.remove();
       renderChatMessage('assistant', `Error: ${err.message}`);
@@ -2701,22 +2940,18 @@ document.querySelectorAll('[data-topline]').forEach(line => {
     const fullContext = contextParts.join('\n\n===\n\n');
 
     try {
-      const res  = await fetch(`${API_BASE}/api/chat`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          history: combinedChatHistory,
-          context: fullContext,
-          session_context: '',
-        }),
+      const reply = await window.fvStreamFetch(`${API_BASE}/api/chat`, {
+        history: combinedChatHistory,
+        context: fullContext,
+        session_context: '',
+      }, (partial) => {
+        thinking.innerHTML = markdownToHtml(partial);
+        thinking.parentElement.scrollTop = thinking.parentElement.scrollHeight;
       });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.detail || 'Chat failed');
 
-      thinking.remove();
-      combinedChatHistory.push({ role: 'assistant', content: data.reply });
-      renderCombinedMessage('assistant', data.reply);
-      extractAndAddPlayers(data.reply, sessionReports.join('\n\n---\n\n'));
+      thinking.innerHTML = markdownToHtml(reply);
+      combinedChatHistory.push({ role: 'assistant', content: reply });
+      extractAndAddPlayers(reply, sessionReports.join('\n\n---\n\n'));
     } catch (err) {
       thinking.remove();
       renderCombinedMessage('assistant', `Error: ${err.message}`);
@@ -3026,17 +3261,15 @@ document.querySelectorAll('[data-topline]').forEach(line => {
     const thinking = appendBBThinking();
 
     try {
-      const res = await fetch(`${API_BASE}/api/basketball/coach`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ mode: bbMode, history: bbCoachHistory, context: bbSessionContext() }),
+      const reply = await window.fvStreamFetch(`${API_BASE}/api/basketball/coach`, {
+        mode: bbMode, history: bbCoachHistory, context: bbSessionContext(),
+      }, (partial) => {
+        thinking.innerHTML = bbMarkdown(partial);
+        thinking.parentElement.scrollTop = thinking.parentElement.scrollHeight;
       });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.detail || 'Coach chat failed');
 
-      thinking.remove();
-      bbCoachHistory.push({ role: 'assistant', content: data.reply });
-      renderBBCoachMessage('assistant', data.reply);
+      thinking.innerHTML = bbMarkdown(reply);
+      bbCoachHistory.push({ role: 'assistant', content: reply });
     } catch (err) {
       thinking.remove();
       renderBBCoachMessage('assistant', `Error: ${err.message}`);
@@ -3352,6 +3585,41 @@ document.querySelectorAll('[data-topline]').forEach(line => {
   };
 })();
 
+/* ══ SHARED: SSE stream fetch ═══════════════════════════════════════════════
+   POSTs {…payload, stream:true}; parses server-sent events; calls onDelta with
+   the accumulated text after each chunk; resolves with the full reply.       */
+window.fvStreamFetch = async function (url, payload, onDelta) {
+  const res = await fetch(url, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ ...payload, stream: true }),
+  });
+  if (!res.ok) {
+    const d = await res.json().catch(() => ({}));
+    throw new Error(d.detail || `Request failed (${res.status})`);
+  }
+  const reader = res.body.getReader();
+  const decoder = new TextDecoder();
+  let buf = '', full = '';
+  while (true) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    buf += decoder.decode(value, { stream: true });
+    const events = buf.split('\n\n');
+    buf = events.pop();
+    for (const ev of events) {
+      const line = ev.trim();
+      if (!line.startsWith('data: ')) continue;
+      let obj;
+      try { obj = JSON.parse(line.slice(6)); } catch (e) { continue; }
+      if (obj.error) throw new Error(obj.error);
+      if (obj.delta) { full += obj.delta; onDelta(full); }
+    }
+  }
+  if (!full) throw new Error('Empty response');
+  return full;
+};
+
 /* ══ BASEBALL PRO MODULE ════════════════════════════════════════════════════
    Additive upgrades to the baseball side: one-click demo data, Statcast-style
    MLB percentile sliders, pitch movement / velocity / location charts
@@ -3420,6 +3688,21 @@ document.querySelectorAll('[data-topline]').forEach(line => {
       if (!res.ok) throw new Error(data.detail || 'Chart build failed');
       vizData = data;
       renderViz(Object.keys(data.pitchers)[0]);
+
+      // Feed pitch aggregates into the Evidence Chain measurement layer
+      if (window.fvSetTrackmanContext) {
+        const lines = [];
+        for (const [name, p] of Object.entries(data.pitchers)) {
+          for (const t of p.types) {
+            let l = `${name} — ${t.type}: ${t.count} pitches`;
+            if (t.avg_velo) l += `, ${t.avg_velo} mph avg (max ${t.max_velo})`;
+            if (t.avg_spin) l += `, ${t.avg_spin} rpm`;
+            if (t.velo_pctile != null) l += `, ~${t.velo_pctile}th pct MLB velo`;
+            lines.push(l);
+          }
+        }
+        window.fvSetTrackmanContext(lines.join('\n'));
+      }
     } catch (err) {
       panel.innerHTML = `<div class="card" style="padding:24px;color:#f07080;font-size:.85rem;">Charts unavailable: ${err.message}</div>`;
     }
@@ -3473,7 +3756,8 @@ document.querySelectorAll('[data-topline]').forEach(line => {
 
   function bar (label, value, pct) {
     return `
-      <div style="display:flex;align-items:center;gap:8px;margin-bottom:5px;">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:5px;"
+           title="Approximate percentile vs public MLB league distributions — not an official MLB/Statcast percentile.">
         <span style="width:34px;font-size:.7rem;color:rgba(240,244,255,.45);">${label}</span>
         <div style="flex:1;height:8px;border-radius:99px;background:rgba(255,255,255,.07);position:relative;">
           <div style="width:${pct}%;height:100%;border-radius:99px;background:${pctColor(pct)};"></div>

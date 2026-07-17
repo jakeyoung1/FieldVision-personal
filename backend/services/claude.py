@@ -79,6 +79,25 @@ def chat_reply(history: list[dict], context: str = "", session_context: str = ""
     return resp.content[0].text
 
 
+def chat_reply_stream(history: list[dict], context: str = "", session_context: str = ""):
+    """Streaming variant of chat_reply — yields text deltas."""
+    system = SYSTEM_SCOUT
+    if session_context:
+        system += f"\n\nSession context:\n{session_context}"
+    if context:
+        system += f"\n\n{context}"
+
+    client = _client()
+    with client.messages.stream(
+        model=MODEL,
+        max_tokens=800,
+        system=system,
+        messages=history,
+    ) as stream:
+        for text in stream.text_stream:
+            yield text
+
+
 def extract_player_profile(label: str, insights_text: str) -> dict:
     """Extract a structured JSON player profile from analysis text."""
     prompt = f"""Extract a structured player profile from this scouting analysis.

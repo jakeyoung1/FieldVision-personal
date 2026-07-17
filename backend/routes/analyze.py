@@ -3,7 +3,7 @@ from fastapi import APIRouter, File, Form, HTTPException, UploadFile
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel
 
-from backend.services import claude, files, rag
+from backend.services import claude, files, rag, scout_report
 
 router = APIRouter()
 
@@ -30,10 +30,11 @@ async def analyze(
     files_upload: list[UploadFile] = File(...),
     batch_mode: bool = Form(False),
     session_id: str = Form(""),
+    trackman_context: str = Form(""),
 ):
     """
     Analyze one or more scouting note files.
-    Returns list of player results.
+    Returns list of player results with Evidence Chain structure.
     """
     if not files_upload:
         raise HTTPException(400, "No files uploaded")
@@ -53,14 +54,31 @@ async def analyze(
                 continue
             # RAG context
             context = rag.context_block(text[:500])
-            # Analysis
-            report = claude.analyze_notes(text, context)
-            # Profile extraction
-            profile = claude.extract_player_profile(label, report)
+
+            # Evidence Chain evaluation; legacy two-call path is the fallback
+            structured = None
+            try:
+                structured = scout_report.evaluate(
+                    text, context, trackman_context[:8_000]
+                )
+                report = scout_report.to_markdown(structured)
+                profile = {
+                    "name": structured["name"] or label,
+                    "position": structured["position"],
+                    "grade": structured["grade"],
+                    "strengths": structured["strengths"],
+                    "concerns": structured["concerns"],
+                    "summary": structured["summary"][:200],
+                }
+            except Exception:
+                report = claude.analyze_notes(text, context)
+                profile = claude.extract_player_profile(label, report)
+
             results.append({
                 "label": label,
                 "report": report,
                 "profile": profile,
+                "structured": structured,
                 "context_used": bool(context),
             })
 

@@ -117,6 +117,7 @@ class CoachRequest(BaseModel):
     mode: str = "chat"        # development | opponent | practice | chat
     history: list[dict]       # [{role: user|assistant, content: str}]
     context: str = ""         # session context: reports + box score summaries
+    stream: bool = False
 
 
 class PlayRequest(BaseModel):
@@ -248,6 +249,9 @@ async def bb_coach(req: CoachRequest):
         raise HTTPException(400, "history is required")
     if len(req.history) > 40 or any(len(str(m.get("content", ""))) > 8_000 for m in req.history):
         raise HTTPException(413, "Chat history too long")
+    if req.stream:
+        from backend.routes.chat import sse
+        return sse(basketball.coach_reply_stream(req.mode, req.history, req.context[:30_000]))
     try:
         reply = basketball.coach_reply(req.mode, req.history, req.context[:30_000])
         return JSONResponse({"reply": reply, "mode": req.mode})

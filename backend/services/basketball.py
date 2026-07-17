@@ -218,3 +218,20 @@ def coach_reply(mode: str, history: list[dict], context: str = "") -> str:
         messages=history,
     )
     return resp.content[0].text
+
+
+def coach_reply_stream(mode: str, history: list[dict], context: str = ""):
+    """Streaming variant of coach_reply — yields text deltas."""
+    system = COACH_MODES.get(mode, COACH_MODES["chat"])
+    if context:
+        system += f"\n\nSession context (scouting reports and box score data loaded this session):\n{context}"
+
+    client = claude._client()
+    with client.messages.stream(
+        model=claude.MODEL,
+        max_tokens=1200,
+        system=system,
+        messages=history,
+    ) as stream:
+        for text in stream.text_stream:
+            yield text
