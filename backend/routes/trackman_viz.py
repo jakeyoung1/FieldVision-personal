@@ -70,11 +70,11 @@ def build_viz(df: pd.DataFrame) -> dict:
 
 
 @router.post("/trackman/viz")
-async def trackman_viz(file: UploadFile = File(...)):
+def trackman_viz(file: UploadFile = File(...)):
     try:
         if not file.filename.lower().endswith(".csv"):
             raise HTTPException(400, "Only CSV files are supported")
-        content = await file.read()
+        content = file.file.read()
         try:
             df = pd.read_csv(io.StringIO(content.decode("utf-8", errors="replace")))
         except Exception as e:

@@ -14,7 +14,7 @@ class ExtractPlayersRequest(BaseModel):
 
 
 @router.post("/extract-players")
-async def extract_players(req: ExtractPlayersRequest):
+def extract_players(req: ExtractPlayersRequest):
     """Extract structured player profiles from a chat reply."""
     if not req.reply.strip():
         return JSONResponse({"profiles": []})
@@ -26,7 +26,7 @@ async def extract_players(req: ExtractPlayersRequest):
 
 
 @router.post("/analyze")
-async def analyze(
+def analyze(
     files_upload: list[UploadFile] = File(...),
     batch_mode: bool = Form(False),
     session_id: str = Form(""),
@@ -42,7 +42,7 @@ async def analyze(
     try:
         raw_files = []
         for f in files_upload:
-            content = await f.read()
+            content = f.file.read()
             raw_files.append((f.filename, content))
 
         # Group multi-page PDFs by player name

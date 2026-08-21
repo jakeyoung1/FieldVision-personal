@@ -29,7 +29,7 @@ class CompareRequest(BaseModel):
 
 
 @router.post("/compare")
-async def compare(req: CompareRequest):
+def compare(req: CompareRequest):
     a_label = str(req.player_a.get("label", "Player A"))[:60]
     b_label = str(req.player_b.get("label", "Player B"))[:60]
     a_report = str(req.player_a.get("report", ""))[:6000]

@@ -31,7 +31,7 @@ def sse(generator):
 
 
 @router.post("/chat")
-async def chat(req: ChatRequest):
+def chat(req: ChatRequest):
     if not req.history:
         raise HTTPException(400, "history is required")
 

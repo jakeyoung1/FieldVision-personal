@@ -21,7 +21,7 @@ def _safe_cols(df: pd.DataFrame, cols: list[str]) -> list[str]:
 
 
 @router.post("/trackman")
-async def trackman(
+def trackman(
     file: UploadFile = File(...),
     focus: str = Form(""),
 ):
@@ -29,7 +29,7 @@ async def trackman(
         if not file.filename.lower().endswith(".csv"):
             raise HTTPException(400, "Only CSV files are supported")
 
-        content = await file.read()
+        content = file.file.read()
         try:
             df = pd.read_csv(io.StringIO(content.decode("utf-8", errors="replace")))
         except Exception as e:

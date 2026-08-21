@@ -126,7 +126,7 @@ class PlayRequest(BaseModel):
 
 
 @router.post("/basketball/analyze")
-async def bb_analyze(
+def bb_analyze(
     files_upload: list[UploadFile] | None = File(None),
     notes_text: str = Form(""),
 ):
@@ -144,7 +144,7 @@ async def bb_analyze(
         if files_upload:
             raw_files = []
             for f in files_upload:
-                content = await f.read()
+                content = f.file.read()
                 raw_files.append((f.filename, content))
             player_map.update(files.group_by_player(raw_files))
 
@@ -181,7 +181,7 @@ async def bb_analyze(
 
 
 @router.post("/basketball/boxscore")
-async def bb_boxscore(
+def bb_boxscore(
     file: UploadFile = File(...),
     focus: str = Form(""),
 ):
@@ -190,7 +190,7 @@ async def bb_boxscore(
         if not file.filename.lower().endswith(".csv"):
             raise HTTPException(400, "Only CSV files are supported")
 
-        content = await file.read()
+        content = file.file.read()
         try:
             df = pd.read_csv(io.StringIO(content.decode("utf-8", errors="replace")))
         except Exception as e:
@@ -223,7 +223,7 @@ async def bb_boxscore(
 
 
 @router.post("/basketball/play")
-async def bb_play(req: PlayRequest):
+def bb_play(req: PlayRequest):
     """Design an animated set play from player positions + strengths."""
     if not req.players or len(req.players) > 5:
         raise HTTPException(400, "1-5 players required")
@@ -243,7 +243,7 @@ async def bb_play(req: PlayRequest):
 
 
 @router.post("/basketball/coach")
-async def bb_coach(req: CoachRequest):
+def bb_coach(req: CoachRequest):
     """Coaching chat: development plans, opponent scouting, practice plans, open chat."""
     if not req.history:
         raise HTTPException(400, "history is required")
