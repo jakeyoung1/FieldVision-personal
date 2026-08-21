@@ -60,7 +60,7 @@ Also: box score CSV analysis (PPG/RPG/APG/TS%), a four-mode coaching assistant, 
 | RAG | scikit-learn TF-IDF, dual indexes (deliberate zero-heavy-dependency choice for fast cold starts; see design notes below) |
 | Guardrails | Per-IP rate limiting, size caps, env-driven CORS |
 | CI | GitHub Actions — ruff + pytest on every push |
-| Tests | 28+ pytest cases, all runnable without an API key |
+| Tests | 34 pytest cases, all runnable without an API key |
 
 ### Design notes
 - **Evidence verification:** quoted evidence is checked to be a verbatim substring of the source notes; unverifiable quotes are marked.

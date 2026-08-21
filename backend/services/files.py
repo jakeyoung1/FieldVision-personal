@@ -98,6 +98,12 @@ def _pdf_via_claude_vision(content: bytes) -> str:
         return f"[Vision OCR failed: {e}]"
 
 
+# A horizontal rule on its own line separates players within one document.
+SPLIT_RE = re.compile(r"^\s*-{3,}\s*$", re.M)
+# "Player: Tarik Skubal - LHP" / "Name: ..." / a bare leading name line.
+NAME_RE = re.compile(r"^\s*(?:player|name)\s*[:\-]\s*(.+)$", re.M | re.I)
+
+
 def group_by_player(files: list[tuple[str, bytes]]) -> dict[str, str]:
     """
     Group files by player name (strips ' (page N)' suffixes from multi-page PDFs).
@@ -111,4 +117,30 @@ def group_by_player(files: list[tuple[str, bytes]]) -> dict[str, str]:
         text = extract_text(filename, content)
         groups.setdefault(base, []).append(text)
 
-    return {label: "\n\n".join(texts) for label, texts in groups.items()}
+    merged = {label: "\n\n".join(texts) for label, texts in groups.items()}
+
+    # A single document may hold several players separated by a `---` rule,
+    # which is the convention the UI documents. Split those out so each player
+    # is evaluated on his own evidence; without this every player in the file
+    # is merged into one report and graded as a single arm.
+    out: dict[str, str] = {}
+    for label, text in merged.items():
+        sections = [b.strip() for b in SPLIT_RE.split(text) if b.strip()]
+        if len(sections) < 2:
+            out[label] = text
+            continue
+        for i, section in enumerate(sections, start=1):
+            out[_section_label(section, label, i)] = section
+    return out
+
+
+def _section_label(section: str, fallback: str, index: int) -> str:
+    """Prefer the player's own name over a positional label."""
+    m = NAME_RE.search(section)
+    if m:
+        name = m.group(1).strip(" -\u2014:")
+        # Trim a trailing position tag, e.g. "Tarik Skubal - LHP".
+        name = re.split(r"\s+[\u2014-]\s+", name)[0].strip()
+        if name:
+            return name
+    return f"{fallback} ({index})"

@@ -141,7 +141,7 @@ LINEUP (use these exact ids and starting positions):
         resp = client.messages.create(
             model=claude.MODEL,
             max_tokens=10000,
-            output_config={"effort": "high"},
+            output_config={"effort": "medium"},
             system=COURT_SYSTEM,
             messages=[{"role": "user", "content": prompt}],
         )

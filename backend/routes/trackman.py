@@ -13,7 +13,16 @@ PITCH_COLS = [
     "Pitcher", "PitcherTeam", "PitchType", "RelSpeed", "SpinRate",
     "InducedVertBreak", "HorzBreak", "PlateLocHeight", "PlateLocSide",
     "PitchCall", "TaggedPitchType", "AutoPitchType",
+    # Outcome columns — these drive strike%, whiff%, K/BB and innings.
+    "KorBB", "PlayResult", "OutsOnPlay", "RunsScored",
 ]
+
+# Trackman PitchCall / PlayResult vocabularies.
+HITS_SET = {"Single", "Double", "Triple", "HomeRun"}
+STRIKE_SET = {"StrikeCalled", "StrikeSwinging", "FoulBallNotFieldable", "InPlay"}
+# A swing is any offer at the pitch; whiff rate is whiffs per *swing*, not per
+# pitch, so that a pitcher who is never offered at is not credited for it.
+SWING_SET = {"StrikeSwinging", "FoulBallNotFieldable", "InPlay"}
 
 
 def _safe_cols(df: pd.DataFrame, cols: list[str]) -> list[str]:
@@ -62,6 +71,31 @@ def trackman(
                 if "PitchType" in grp.columns or "TaggedPitchType" in grp.columns:
                     col = "TaggedPitchType" if "TaggedPitchType" in grp.columns else "PitchType"
                     pitcher_stats["pitch_mix"] = grp[col].value_counts().to_dict()
+
+                # Outcome stats. Each block is guarded independently so a
+                # partial export still yields everything it can support.
+                if "KorBB" in grp.columns:
+                    pitcher_stats["strikeouts"] = int((grp["KorBB"] == "Strikeout").sum())
+                    pitcher_stats["walks"] = int((grp["KorBB"] == "Walk").sum())
+                if "PlayResult" in grp.columns:
+                    pr = grp["PlayResult"].fillna("")
+                    pitcher_stats["hits_allowed"] = int(pr.isin(HITS_SET).sum())
+                    pitcher_stats["home_runs"] = int((pr == "HomeRun").sum())
+                if "RunsScored" in grp.columns:
+                    pitcher_stats["runs_scored"] = int(pd.to_numeric(grp["RunsScored"], errors="coerce").fillna(0).sum())
+                if "OutsOnPlay" in grp.columns:
+                    total_outs = int(pd.to_numeric(grp["OutsOnPlay"], errors="coerce").fillna(0).sum())
+                    pitcher_stats["outs_recorded"] = total_outs
+                    pitcher_stats["innings_pitched"] = round(total_outs / 3, 1)
+                if "PitchCall" in grp.columns:
+                    total = len(grp)
+                    strikes = int(grp["PitchCall"].isin(STRIKE_SET).sum())
+                    pitcher_stats["strike_pct"] = round(strikes / total * 100, 1) if total else 0.0
+                    swings = int(grp["PitchCall"].isin(SWING_SET).sum())
+                    whiffs = int((grp["PitchCall"] == "StrikeSwinging").sum())
+                    pitcher_stats["whiff_pct"] = round(whiffs / swings * 100, 1) if swings else 0.0
+                    pitcher_stats["swings"] = swings
+
                 stats[str(pitcher)] = pitcher_stats
 
         # Build teams grouping: { teamName: [pitcherName, ...] }
@@ -81,6 +115,13 @@ def trackman(
             if "pitch_mix" in s:
                 mix = ", ".join(f"{k}:{v}" for k, v in list(s["pitch_mix"].items())[:4])
                 line += f", mix: {mix}"
+            for key, label in (("strike_pct", "strike%"), ("whiff_pct", "whiff%")):
+                if key in s:
+                    line += f", {label}: {s[key]}"
+            for key, label in (("innings_pitched", "IP"), ("strikeouts", "K"), ("walks", "BB"),
+                               ("hits_allowed", "H"), ("home_runs", "HR"), ("runs_scored", "R")):
+                if key in s:
+                    line += f", {label}: {s[key]}"
             summary_lines.append(line)
         summary_text = "\n".join(summary_lines)
 

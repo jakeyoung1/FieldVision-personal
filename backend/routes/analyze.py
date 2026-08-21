@@ -1,4 +1,5 @@
 """POST /api/analyze — single or batch scouting note analysis."""
+from concurrent.futures import ThreadPoolExecutor
 from fastapi import APIRouter, File, Form, HTTPException, UploadFile
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel
@@ -48,14 +49,13 @@ def analyze(
         # Group multi-page PDFs by player name
         player_map = files.group_by_player(raw_files)
 
-        results = []
-        for label, text in player_map.items():
+        def evaluate_one(item: tuple[str, str]) -> dict | None:
+            label, text = item
             if not text.strip():
-                continue
-            # RAG context
+                return None
             context = rag.context_block(text[:500])
 
-            # Evidence Chain evaluation; legacy two-call path is the fallback
+            # Evidence Chain evaluation; legacy two-call path is the fallback.
             structured = None
             try:
                 structured = scout_report.evaluate(
@@ -81,14 +81,25 @@ def analyze(
                 report = claude.analyze_notes(text, context)
                 profile = claude.extract_player_profile(label, report)
 
-            results.append({
+            return {
                 "label": label,
                 "report": report,
                 "profile": profile,
                 "structured": structured,
                 "evidence_chain": structured is not None,
                 "context_used": bool(context),
-            })
+            }
+
+        # Each player is an independent, network-bound evaluation, so run them
+        # concurrently: a five-player upload finishes in roughly the time of
+        # the slowest single player instead of the sum of all five. Bounded so
+        # a large batch cannot open an unlimited number of API connections.
+        items = list(player_map.items())
+        if len(items) == 1:
+            results = [r for r in (evaluate_one(items[0]),) if r]
+        else:
+            with ThreadPoolExecutor(max_workers=min(4, len(items))) as pool:
+                results = [r for r in pool.map(evaluate_one, items) if r]
 
         return JSONResponse({"results": results, "count": len(results)})
 
