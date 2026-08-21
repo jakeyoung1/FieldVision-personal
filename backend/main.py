@@ -82,6 +82,49 @@ def health():
     return {"status": "ok", "version": "2.0.0"}
 
 
+@app.get("/api/diag")
+def diag():
+    """Temporary deployment diagnostic. Reports credential *shape* and the
+    full exception chain from one minimal API call.
+
+    Never returns the key itself — only length and a prefix boolean. Remove
+    this route once the deployment is confirmed healthy.
+    """
+    import anthropic
+
+    from backend.services import claude, errors
+
+    out = {
+        "version": "2.0.0",
+        "credential": errors.key_status(),
+        "anthropic_sdk": getattr(anthropic, "__version__", "unknown"),
+        "models": {
+            "reasoning": claude.MODEL,
+            "extraction": claude.EXTRACT_MODEL,
+            "vision": claude.VISION_MODEL,
+        },
+        "base_url_override": os.environ.get("ANTHROPIC_BASE_URL") or None,
+        "proxy_vars": sorted(
+            k for k in os.environ
+            if k.upper() in {"HTTP_PROXY", "HTTPS_PROXY", "ALL_PROXY", "NO_PROXY"}
+        ),
+    }
+
+    try:
+        resp = anthropic.Anthropic().messages.create(
+            model=claude.EXTRACT_MODEL,
+            max_tokens=16,
+            messages=[{"role": "user", "content": "reply with just: OK"}],
+        )
+        out["api_call"] = "ok"
+        out["blocks"] = [b.type for b in resp.content]
+    except Exception as exc:  # noqa: BLE001 - diagnostic endpoint reports everything
+        out["api_call"] = "failed"
+        out["error"] = errors.report(exc, "diag")
+
+    return out
+
+
 @app.head("/")
 def health_root():
     """HEAD support for uptime monitors hitting the root."""

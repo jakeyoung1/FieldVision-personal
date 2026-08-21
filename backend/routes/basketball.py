@@ -6,7 +6,7 @@ from fastapi import APIRouter, File, Form, HTTPException, UploadFile
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel
 
-from backend.services import basketball, claude, files, rag_basketball
+from backend.services import errors, basketball, claude, files, rag_basketball
 
 router = APIRouter()
 
@@ -177,7 +177,7 @@ async def bb_analyze(
     except HTTPException:
         raise
     except Exception as e:
-        raise HTTPException(500, f"Server error: {str(e)}")
+        raise HTTPException(500, f"Server error: {errors.report(e, __name__)}")
 
 
 @router.post("/basketball/boxscore")
@@ -219,7 +219,7 @@ async def bb_boxscore(
     except HTTPException:
         raise
     except Exception as e:
-        raise HTTPException(500, f"Server error: {str(e)}")
+        raise HTTPException(500, f"Server error: {errors.report(e, __name__)}")
 
 
 @router.post("/basketball/play")
@@ -239,7 +239,7 @@ async def bb_play(req: PlayRequest):
     except ValueError as e:
         raise HTTPException(502, str(e))
     except Exception as e:
-        raise HTTPException(500, f"Server error: {str(e)}")
+        raise HTTPException(500, f"Server error: {errors.report(e, __name__)}")
 
 
 @router.post("/basketball/coach")
@@ -256,4 +256,4 @@ async def bb_coach(req: CoachRequest):
         reply = basketball.coach_reply(req.mode, req.history, req.context[:30_000])
         return JSONResponse({"reply": reply, "mode": req.mode})
     except Exception as e:
-        raise HTTPException(500, f"Server error: {str(e)}")
+        raise HTTPException(500, f"Server error: {errors.report(e, __name__)}")

@@ -3,7 +3,7 @@ from fastapi import APIRouter, File, Form, HTTPException, UploadFile
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel
 
-from backend.services import claude, files, rag, scout_report
+from backend.services import errors, claude, files, rag, scout_report
 
 router = APIRouter()
 
@@ -22,7 +22,7 @@ async def extract_players(req: ExtractPlayersRequest):
         profiles = claude.extract_players_from_chat(req.reply, req.context)
         return JSONResponse({"profiles": profiles})
     except Exception as e:
-        raise HTTPException(500, f"Server error: {str(e)}")
+        raise HTTPException(500, f"Server error: {errors.report(e, __name__)}")
 
 
 @router.post("/analyze")
@@ -87,4 +87,4 @@ async def analyze(
     except HTTPException:
         raise
     except Exception as e:
-        raise HTTPException(500, f"Server error: {str(e)}")
+        raise HTTPException(500, f"Server error: {errors.report(e, __name__)}")

@@ -5,7 +5,7 @@ import pandas as pd
 from fastapi import APIRouter, File, HTTPException, UploadFile
 from fastapi.responses import JSONResponse
 
-from backend.services import mlb_benchmarks
+from backend.services import errors, mlb_benchmarks
 
 router = APIRouter()
 
@@ -83,4 +83,4 @@ async def trackman_viz(file: UploadFile = File(...)):
     except HTTPException:
         raise
     except Exception as e:
-        raise HTTPException(500, f"Server error: {str(e)}")
+        raise HTTPException(500, f"Server error: {errors.report(e, __name__)}")

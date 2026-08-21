@@ -6,7 +6,7 @@ from fastapi import APIRouter, HTTPException
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel
 
-from backend.services import claude
+from backend.services import errors, claude
 
 router = APIRouter()
 
@@ -70,4 +70,4 @@ Compare them head to head."""
     except HTTPException:
         raise
     except Exception as e:
-        raise HTTPException(500, f"Server error: {str(e)}")
+        raise HTTPException(500, f"Server error: {errors.report(e, __name__)}")
