@@ -56,7 +56,7 @@ Also: box score CSV analysis (PPG/RPG/APG/TS%), a four-mode coaching assistant, 
 |---|---|
 | Frontend | Single-page HTML / Tailwind / vanilla JS + SVG; SSE streaming reader |
 | Backend | FastAPI (Python 3.11) |
-| AI | Anthropic Claude Opus 5 (text and Vision OCR) with adaptive thinking, effort tuned per call — `high` for scouting reports and comparisons, `low` for structured extraction. Structured-JSON evaluations with server-side validation, evidence verification against source text, and computed confidence |
+| AI | Anthropic Claude Sonnet 5 (text and Vision OCR) with adaptive thinking, effort tuned per call — `high` for scouting reports and comparisons, `medium` for chat. Structured JSON extraction runs on Haiku 4.5, a fifth the cost for a task that only reformats text the reasoning model already produced. Structured-JSON evaluations with server-side validation, evidence verification against source text, and computed confidence |
 | RAG | scikit-learn TF-IDF, dual indexes (deliberate zero-heavy-dependency choice for fast cold starts; see design notes below) |
 | Guardrails | Per-IP rate limiting, size caps, env-driven CORS |
 | CI | GitHub Actions — ruff + pytest on every push |

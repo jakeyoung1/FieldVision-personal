@@ -5,14 +5,21 @@ from functools import lru_cache
 
 import anthropic
 
-MODEL = "claude-opus-5"
-VISION_MODEL = "claude-opus-5"
+MODEL = "claude-sonnet-5"
+VISION_MODEL = "claude-sonnet-5"
+
+# Structured JSON extraction is mechanical — it reformats text the reasoning
+# model already produced. Haiku is a fifth the cost and fast enough that the
+# quality difference is invisible on this task.
+# NOTE: output_config.effort is rejected on Haiku 4.5, so calls using this
+# model must not pass it.
+EXTRACT_MODEL = "claude-haiku-4-5"
 
 
 def first_text(resp) -> str:
     """Return the first text block of a response.
 
-    Claude Opus 5 runs adaptive thinking by default, so `content[0]` is
+    Claude Sonnet 5 runs adaptive thinking by default, so `content[0]` is
     frequently a thinking block rather than the answer. Indexing position 0
     blindly raises AttributeError on every request, so always scan for the
     text block instead.
@@ -131,9 +138,8 @@ INSIGHTS:
 
     client = _client()
     resp = client.messages.create(
-        model=MODEL,
+        model=EXTRACT_MODEL,
         max_tokens=3000,
-        output_config={"effort": "low"},
         messages=[{"role": "user", "content": prompt}],
     )
     text = first_text(resp).strip()
@@ -204,9 +210,8 @@ Return [] if no players are meaningfully evaluated."""
 
     client = _client()
     resp = client.messages.create(
-        model=MODEL,
+        model=EXTRACT_MODEL,
         max_tokens=3000,
-        output_config={"effort": "low"},
         messages=[{"role": "user", "content": prompt}],
     )
     raw = first_text(resp).strip()
