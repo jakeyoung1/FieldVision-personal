@@ -56,11 +56,12 @@ def evaluate(notes: str, rag_context: str = "", trackman_context: str = "") -> d
     client = claude._client()
     resp = client.messages.create(
         model=claude.MODEL,
-        max_tokens=2000,
+        max_tokens=12000,
+        output_config={"effort": "high"},
         system=SYSTEM_STRUCTURED,
         messages=[{"role": "user", "content": "\n\n".join(blocks)}],
     )
-    raw = resp.content[0].text.strip()
+    raw = claude.first_text(resp).strip()
     raw = re.sub(r"^```(?:json)?\s*", "", raw)
     raw = re.sub(r"\s*```$", "", raw)
     try:

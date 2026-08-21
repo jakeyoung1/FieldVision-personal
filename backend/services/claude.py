@@ -5,7 +5,22 @@ from functools import lru_cache
 
 import anthropic
 
-MODEL = "claude-sonnet-4-5"
+MODEL = "claude-opus-5"
+VISION_MODEL = "claude-opus-5"
+
+
+def first_text(resp) -> str:
+    """Return the first text block of a response.
+
+    Claude Opus 5 runs adaptive thinking by default, so `content[0]` is
+    frequently a thinking block rather than the answer. Indexing position 0
+    blindly raises AttributeError on every request, so always scan for the
+    text block instead.
+    """
+    for block in resp.content:
+        if block.type == "text":
+            return block.text
+    return ""
 
 SYSTEM_SCOUT = """You are FieldVision, an AI baseball scouting assistant trained on Branch Rickey's
 1,919 historical scouting documents. Analyze player notes with precision, referencing Rickey's
@@ -54,11 +69,12 @@ Format your response as:
     client = _client()
     resp = client.messages.create(
         model=MODEL,
-        max_tokens=1200,
+        max_tokens=8000,
+        output_config={"effort": "high"},
         system=SYSTEM_SCOUT,
         messages=[{"role": "user", "content": prompt}],
     )
-    return resp.content[0].text
+    return first_text(resp)
 
 
 def chat_reply(history: list[dict], context: str = "", session_context: str = "") -> str:
@@ -72,11 +88,12 @@ def chat_reply(history: list[dict], context: str = "", session_context: str = ""
     client = _client()
     resp = client.messages.create(
         model=MODEL,
-        max_tokens=800,
+        max_tokens=4000,
+        output_config={"effort": "medium"},
         system=system,
         messages=history,
     )
-    return resp.content[0].text
+    return first_text(resp)
 
 
 def chat_reply_stream(history: list[dict], context: str = "", session_context: str = ""):
@@ -90,7 +107,8 @@ def chat_reply_stream(history: list[dict], context: str = "", session_context: s
     client = _client()
     with client.messages.stream(
         model=MODEL,
-        max_tokens=800,
+        max_tokens=4000,
+        output_config={"effort": "medium"},
         system=system,
         messages=history,
     ) as stream:
@@ -114,10 +132,11 @@ INSIGHTS:
     client = _client()
     resp = client.messages.create(
         model=MODEL,
-        max_tokens=400,
+        max_tokens=3000,
+        output_config={"effort": "low"},
         messages=[{"role": "user", "content": prompt}],
     )
-    text = resp.content[0].text.strip()
+    text = first_text(resp).strip()
     text = re.sub(r"^```(?:json)?\s*", "", text)
     text = re.sub(r"\s*```$", "", text)
 
@@ -186,10 +205,11 @@ Return [] if no players are meaningfully evaluated."""
     client = _client()
     resp = client.messages.create(
         model=MODEL,
-        max_tokens=700,
+        max_tokens=3000,
+        output_config={"effort": "low"},
         messages=[{"role": "user", "content": prompt}],
     )
-    raw = resp.content[0].text.strip()
+    raw = first_text(resp).strip()
     raw = re.sub(r"^```(?:json)?\s*", "", raw)
     raw = re.sub(r"\s*```$", "", raw)
 
@@ -224,8 +244,9 @@ DATA SUMMARY:
     client = _client()
     resp = client.messages.create(
         model=MODEL,
-        max_tokens=600,
+        max_tokens=6000,
+        output_config={"effort": "high"},
         system=SYSTEM_COACH,
         messages=[{"role": "user", "content": prompt}],
     )
-    return resp.content[0].text
+    return first_text(resp)

@@ -49,11 +49,12 @@ Compare them head to head."""
         client = claude._client()
         resp = client.messages.create(
             model=claude.MODEL,
-            max_tokens=1000,
+            max_tokens=8000,
+            output_config={"effort": "high"},
             system=SYSTEM_COMPARE,
             messages=[{"role": "user", "content": prompt}],
         )
-        raw = resp.content[0].text.strip()
+        raw = claude.first_text(resp).strip()
         raw = re.sub(r"^```(?:json)?\s*", "", raw)
         raw = re.sub(r"\s*```$", "", raw)
         try:

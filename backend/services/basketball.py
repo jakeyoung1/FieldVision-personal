@@ -64,11 +64,12 @@ Format your response as:
     client = claude._client()
     resp = client.messages.create(
         model=claude.MODEL,
-        max_tokens=1200,
+        max_tokens=6000,
+        output_config={"effort": "high"},
         system=SYSTEM_SCOUT,
         messages=[{"role": "user", "content": prompt}],
     )
-    return resp.content[0].text
+    return claude.first_text(resp)
 
 
 def interpret_box_score(summary: str, focus: str = "") -> str:
@@ -87,11 +88,12 @@ DATA SUMMARY:
     client = claude._client()
     resp = client.messages.create(
         model=claude.MODEL,
-        max_tokens=600,
+        max_tokens=4000,
+        output_config={"effort": "medium"},
         system=SYSTEM_COACH_BASE,
         messages=[{"role": "user", "content": prompt}],
     )
-    return resp.content[0].text
+    return claude.first_text(resp)
 
 
 COURT_SYSTEM = SYSTEM_COACH_BASE + """
@@ -138,11 +140,12 @@ LINEUP (use these exact ids and starting positions):
     for attempt in range(2):  # one retry on malformed JSON
         resp = client.messages.create(
             model=claude.MODEL,
-            max_tokens=2500,
+            max_tokens=10000,
+            output_config={"effort": "high"},
             system=COURT_SYSTEM,
             messages=[{"role": "user", "content": prompt}],
         )
-        raw = resp.content[0].text.strip()
+        raw = claude.first_text(resp).strip()
         raw = re.sub(r"^```(?:json)?\s*", "", raw)
         raw = re.sub(r"\s*```$", "", raw)
         try:
@@ -213,11 +216,12 @@ def coach_reply(mode: str, history: list[dict], context: str = "") -> str:
     client = claude._client()
     resp = client.messages.create(
         model=claude.MODEL,
-        max_tokens=1200,
+        max_tokens=6000,
+        output_config={"effort": "high"},
         system=system,
         messages=history,
     )
-    return resp.content[0].text
+    return claude.first_text(resp)
 
 
 def coach_reply_stream(mode: str, history: list[dict], context: str = ""):
@@ -229,7 +233,8 @@ def coach_reply_stream(mode: str, history: list[dict], context: str = ""):
     client = claude._client()
     with client.messages.stream(
         model=claude.MODEL,
-        max_tokens=1200,
+        max_tokens=4000,
+        output_config={"effort": "medium"},
         system=system,
         messages=history,
     ) as stream:

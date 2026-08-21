@@ -4,6 +4,8 @@ import io
 import re
 from pathlib import Path
 
+from backend.services import claude
+
 
 def extract_text(filename: str, content: bytes) -> str:
     """Extract plain text from uploaded file bytes."""
@@ -63,8 +65,9 @@ def _pdf_via_claude_vision(content: bytes) -> str:
         pdf_b64 = base64.standard_b64encode(content).decode("utf-8")
 
         resp = client.messages.create(
-            model="claude-opus-4-5",
-            max_tokens=4096,
+            model=claude.VISION_MODEL,
+            max_tokens=8000,
+            output_config={"effort": "medium"},
             messages=[{
                 "role": "user",
                 "content": [
@@ -89,7 +92,7 @@ def _pdf_via_claude_vision(content: bytes) -> str:
                 ],
             }],
         )
-        return resp.content[0].text.strip()
+        return claude.first_text(resp).strip()
 
     except Exception as e:
         return f"[Vision OCR failed: {e}]"
