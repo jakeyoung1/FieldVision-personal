@@ -1,5 +1,6 @@
 """Claude API service — analysis, chat, profile extraction, pitch interpretation."""
 import json
+import os
 import re
 from functools import lru_cache
 
@@ -54,7 +55,18 @@ GRADE_LABELS = {
 
 @lru_cache(maxsize=1)
 def _client() -> anthropic.Anthropic:
-    return anthropic.Anthropic()
+    """Build a client with the credential trimmed.
+
+    A key pasted into a hosting dashboard very often carries a trailing
+    newline or space. The SDK forwards it verbatim, the API rejects it, and
+    the resulting failure surfaces as a bare "Connection error." with nothing
+    naming the real cause. Stripping here makes that whole class of
+    deployment bug impossible.
+    """
+    key = os.environ.get("ANTHROPIC_API_KEY")
+    if key is not None:
+        key = key.strip()
+    return anthropic.Anthropic(api_key=key) if key else anthropic.Anthropic()
 
 
 def analyze_notes(text: str, context: str = "") -> str:

@@ -11,19 +11,19 @@ stderr for the platform log.
 from __future__ import annotations
 
 import os
+import re
 import sys
 import traceback
 
-# Substrings that must never appear in a message returned to a client.
-_SENSITIVE = ("sk-ant-", "api_key", "authorization")
+# Mask real secret material only. An earlier version blanked any message
+# containing the *word* "api_key", which suppressed the very errors this
+# module exists to surface — the diagnosis has to survive the redaction.
+_SECRET_RE = re.compile(r"(sk-ant-[A-Za-z0-9_\-]{4})[A-Za-z0-9_\-]+")
 
 
 def _redact(text: str) -> str:
-    lowered = text.lower()
-    for marker in _SENSITIVE:
-        if marker in lowered:
-            return "[redacted: message referenced a credential]"
-    return text
+    """Mask key material while leaving the surrounding message readable."""
+    return _SECRET_RE.sub(r"\1...[redacted]", text)
 
 
 def describe(exc: BaseException) -> str:
