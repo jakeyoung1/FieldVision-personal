@@ -70,7 +70,14 @@ def analyze(
                     "concerns": structured["concerns"],
                     "summary": structured["summary"][:200],
                 }
-            except Exception:
+            except Exception as exc:
+                # The Evidence Chain is the whole point of this endpoint, so a
+                # silent downgrade to the legacy path is worse than the failure
+                # itself: the response still returns 200, just with
+                # structured=None and no grades, evidence or confidence. Log
+                # loudly so the degradation is visible in the platform log.
+                errors.report(exc, f"{__name__}:evidence-chain-fallback:{label}")
+                structured = None
                 report = claude.analyze_notes(text, context)
                 profile = claude.extract_player_profile(label, report)
 
@@ -79,6 +86,7 @@ def analyze(
                 "report": report,
                 "profile": profile,
                 "structured": structured,
+                "evidence_chain": structured is not None,
                 "context_used": bool(context),
             })
 
