@@ -61,3 +61,49 @@ def test_markdown_render_contains_chain():
     assert "Measurement: 94.5 mph" in md
     assert "Priority Follow" in md
     assert "What Would Change This Evaluation" in md
+
+
+# ── Evidence verification: whole quote, whitespace-tolerant ──────────────────
+
+def test_quote_with_verbatim_prefix_and_invented_tail_is_not_verified():
+    """The regression this fix exists for.
+
+    The earlier check tested only `quote[:60]`, so a quote that reproduced the
+    first 60 characters of the notes and then invented the rest was marked
+    verified. NOTES[:60] is "Fastball sits 94-96 with late life. Slider flashes
+    plus. Com", so the string below cleared the old test and fails the new one.
+    """
+    drifted = "Fastball sits 94-96 with late life. Slider flashes plus. Com and he throws 105 mph"
+    assert drifted.casefold()[:60] in NOTES.casefold()      # old check passed it
+    data = {"tools": [_tool([drifted])]}
+    out = finalize(data, NOTES, had_measurement=False)
+    t = out["tools"][0]
+    assert t["evidence_verified"] is False
+    assert t["evidence"] == [drifted]          # surfaced, but flagged unverified
+    assert t["confidence"] == "Low"
+
+
+def test_plainly_invented_quote_is_not_verified():
+    data = {"tools": [_tool(["best changeup in the country"])]}
+    out = finalize(data, NOTES, had_measurement=False)
+    assert out["tools"][0]["evidence_verified"] is False
+
+
+def test_quote_spanning_a_line_break_still_verifies():
+    """PDF extraction wraps lines; verbatim text should survive that."""
+    notes = "Fastball sits 94-96\nwith late life. Slider flashes plus."
+    data = {"tools": [_tool(["Fastball sits 94-96 with late life"])]}
+    out = finalize(data, notes, had_measurement=False)
+    assert out["tools"][0]["evidence_verified"] is True
+
+
+def test_smart_quotes_and_trailing_ellipsis_do_not_block_verification():
+    data = {"tools": [_tool(["“Slider flashes plus…”"])]}
+    out = finalize(data, NOTES, had_measurement=False)
+    assert out["tools"][0]["evidence_verified"] is True
+
+
+def test_empty_quote_is_never_verified():
+    data = {"tools": [_tool(["   ", "Slider flashes plus"])]}
+    out = finalize(data, NOTES, had_measurement=False)
+    assert out["tools"][0]["evidence"] == ["Slider flashes plus"]

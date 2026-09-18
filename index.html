@@ -716,6 +716,10 @@
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 3h5v5"/><path d="M8 21H3v-5"/><path d="M21 3l-7 7"/><path d="M3 21l7-7"/></svg>
         Compare
       </button>
+      <button class="fv-tab" data-tab="decisions" onclick="switchTab('decisions')">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+        Decision Log
+      </button>
     </div>
 
     <!-- ── Scouting Tab ───────────────────────────────────────────── -->
@@ -975,6 +979,17 @@
     <!-- (Play Maker panel is appended after the Coach panel below) -->
 
     <!-- ── Basketball Tab Bar ──────────────────────────────────────── -->
+    <!-- ── Decision Log Tab ───────────────────────────────────────── -->
+    <div id="tab-decisions" class="fv-tab-panel" style="display:none;">
+      <p style="color:rgba(240,244,255,.45);font-size:.82rem;margin:0 0 20px;max-width:70ch;line-height:1.6;">
+        Every grade a scout overruled, with the reason they gave and when. The model
+        proposes; this is the record of who decided. Revisions append rather than
+        overwrite, so a changed mind stays visible.
+      </p>
+      <div id="fv-decisions-summary" style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:22px;"></div>
+      <div id="fv-decisions-body" style="color:rgba(240,244,255,.35);font-size:.85rem;">Loading…</div>
+    </div>
+
     <div id="fv-tabbar-basketball" style="display:none;gap:8px;margin-bottom:24px;border-bottom:1px solid rgba(255,255,255,.08);padding-bottom:0;">
       <button class="fv-tab bb-tab bb-active" data-bbtab="bb-scouting" onclick="switchBBTab('bb-scouting')">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
@@ -1931,6 +1946,7 @@ document.querySelectorAll('[data-topline]').forEach(line => {
     if (panel) panel.style.display = '';
     if (name === 'players')  renderPlayers();
     if (name === 'combined') renderCombinedContext();
+    if (name === 'decisions') renderDecisionLog();
   };
 
   // ── Paste input ──────────────────────────────────────────────────────────
@@ -2230,15 +2246,53 @@ document.querySelectorAll('[data-topline]').forEach(line => {
       </div>`;
   };
 
+  // The scout's override is the moment a human takes responsibility for a grade,
+  // so it is mirrored to the server-side decision log. The write is deliberately
+  // fire-and-forget: a scout working against an unreachable backend must still be
+  // able to overrule the model locally.
+  function scoutSessionId () {
+    try {
+      let id = localStorage.getItem('fv-scout-session');
+      if (!id) {
+        id = 's-' + Math.random().toString(36).slice(2, 10);
+        localStorage.setItem('fv-scout-session', id);
+      }
+      return id;
+    } catch (e) { return ''; }
+  }
+
+  function aiGradeFor (r, key) {
+    const s = r.structured;
+    if (!s) return null;
+    if (key === '__overall__') return s.grade || null;
+    return (s.tools || []).find(t => t.name === key)?.grade || null;
+  }
+
+  function logDecision (r, key, scoutGrade, reason, action) {
+    const body = {
+      player: (r.structured && r.structured.name) || r.label || 'Unknown',
+      tool: key,
+      ai_grade: aiGradeFor(r, key),
+      scout_grade: scoutGrade,
+      reason: reason || '',
+      action: action,
+      session_id: scoutSessionId(),
+    };
+    fetch('/api/audit/override', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+    }).catch(() => { /* log unreachable — the local override still stands */ });
+  }
+
   window.fvSaveOverride = function (ri, key) {
     const r = lastResults[ri];
     const slotId = `fv-ovr-form-${ri}-${key === '__overall__' ? '__overall__' : key.replace(/[^a-zA-Z0-9]/g, '_')}`;
+    const grade = document.getElementById(slotId + '-g').value;
+    const note  = document.getElementById(slotId + '-n').value.trim();
     r.overrides = r.overrides || {};
-    r.overrides[key] = {
-      grade: document.getElementById(slotId + '-g').value,
-      note: document.getElementById(slotId + '-n').value.trim(),
-      at: new Date().toISOString(),
-    };
+    r.overrides[key] = { grade, note, at: new Date().toISOString() };
+    logDecision(r, key, grade, note, 'set');
     saveSession();
     redrawReports();
   };
@@ -2246,8 +2300,93 @@ document.querySelectorAll('[data-topline]').forEach(line => {
   window.fvClearOverride = function (ri, key) {
     const r = lastResults[ri];
     if (r.overrides) delete r.overrides[key];
+    logDecision(r, key, null, '', 'cleared');
     saveSession();
     redrawReports();
+  };
+
+  // ── Decision Log ─────────────────────────────────────────
+  function escAudit (t) {
+    return String(t == null ? '' : t)
+      .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;');
+  }
+
+  const DIRECTION_STYLE = {
+    upgrade:   { label: 'raised',    color: '#34d399' },
+    downgrade: { label: 'lowered',   color: '#f87171' },
+    unchanged: { label: 'held',      color: 'rgba(240,244,255,.45)' },
+    unknown:   { label: '—',         color: 'rgba(240,244,255,.35)' },
+  };
+
+  function statTile (value, label, color) {
+    return `<div style="flex:1;min-width:112px;padding:12px 14px;border-radius:10px;
+      background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.08);">
+      <div style="font-size:1.4rem;font-weight:700;color:${color};font-variant-numeric:tabular-nums;">${value}</div>
+      <div style="font-size:.68rem;color:rgba(240,244,255,.4);text-transform:uppercase;letter-spacing:.06em;margin-top:2px;">${label}</div>
+    </div>`;
+  }
+
+  window.renderDecisionLog = async function () {
+    const body = document.getElementById('fv-decisions-body');
+    const sumEl = document.getElementById('fv-decisions-summary');
+    try {
+      const [logRes, sumRes] = await Promise.all([
+        fetch('/api/audit/log?limit=100'),
+        fetch('/api/audit/summary'),
+      ]);
+      if (!logRes.ok || !sumRes.ok) throw new Error('decision log unavailable');
+      const { entries } = await logRes.json();
+      const sum = await sumRes.json();
+
+      const d = sum.directions || {};
+      sumEl.innerHTML =
+        statTile(sum.total_overrides, 'overrides', '#f0f4ff') +
+        statTile(sum.players_touched, 'players', '#f0f4ff') +
+        statTile(d.downgrade || 0, 'grades lowered', '#f87171') +
+        statTile(d.upgrade || 0, 'grades raised', '#34d399');
+
+      if (!entries.length) {
+        body.innerHTML = 'No overrides recorded yet. Overrule a grade on a scouting report and it appears here.';
+        return;
+      }
+
+      const rows = entries.map(e => {
+        const dir = DIRECTION_STYLE[e.direction] || DIRECTION_STYLE.unknown;
+        const cleared = e.action === 'cleared';
+        return `<tr style="border-top:1px solid rgba(255,255,255,.06);">
+          <td style="padding:9px 12px 9px 0;white-space:nowrap;color:rgba(240,244,255,.4);
+                     font-size:.72rem;font-variant-numeric:tabular-nums;">${escAudit(e.ts).replace('T', ' ').replace('+00:00', 'Z')}</td>
+          <td style="padding:9px 12px 9px 0;font-weight:600;">${escAudit(e.player)}</td>
+          <td style="padding:9px 12px 9px 0;color:rgba(240,244,255,.6);">${e.tool === '__overall__' ? 'Overall' : escAudit(e.tool)}</td>
+          <td style="padding:9px 12px 9px 0;white-space:nowrap;">
+            <span style="color:rgba(240,244,255,.45);">${escAudit(e.ai_grade) || '—'}</span>
+            <span style="color:rgba(240,244,255,.25);margin:0 5px;">→</span>
+            <span style="font-weight:700;color:${cleared ? 'rgba(240,244,255,.35)' : dir.color};">${cleared ? 'removed' : (escAudit(e.scout_grade) || '—')}</span>
+          </td>
+          <td style="padding:9px 0;color:rgba(240,244,255,.55);font-size:.8rem;">${escAudit(e.reason) || '<span style="opacity:.4;">no reason given</span>'}</td>
+        </tr>`;
+      }).join('');
+
+      const note = sum.durable ? '' :
+        `<p style="margin:16px 0 0;font-size:.72rem;color:rgba(240,244,255,.3);line-height:1.5;">
+           Stored on the app container's local disk, so this log resets when the host restarts.
+           Set <code style="color:rgba(240,244,255,.5);">FV_AUDIT_DB</code> to a path on a mounted
+           volume to make it durable.
+         </p>`;
+
+      body.innerHTML = `<div style="overflow-x:auto;"><table style="width:100%;border-collapse:collapse;font-size:.85rem;">
+        <thead><tr style="text-align:left;color:rgba(240,244,255,.35);font-size:.68rem;
+                          text-transform:uppercase;letter-spacing:.06em;">
+          <th style="padding:0 12px 8px 0;font-weight:600;">When (UTC)</th>
+          <th style="padding:0 12px 8px 0;font-weight:600;">Player</th>
+          <th style="padding:0 12px 8px 0;font-weight:600;">Tool</th>
+          <th style="padding:0 12px 8px 0;font-weight:600;">AI → Scout</th>
+          <th style="padding:0 0 8px;font-weight:600;">Reason</th>
+        </tr></thead><tbody>${rows}</tbody></table></div>${note}`;
+    } catch (e) {
+      body.innerHTML = 'Decision log unavailable. Overrides still apply locally.';
+    }
   };
 
   // ── Session persistence (localStorage) ───────────────────────────────────

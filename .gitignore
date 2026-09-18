@@ -12,3 +12,7 @@ __pycache__/
 # Local env
 .venv/
 .claude-flow/
+
+# Decision audit log (local runs; production points FV_AUDIT_DB at a volume)
+fieldvision_audit.db
+*.db-journal

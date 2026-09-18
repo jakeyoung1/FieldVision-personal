@@ -23,6 +23,7 @@ Plus, per tool and overall:
 - **Computed confidence** (High/Medium/Low) — derived server-side from evidence count + measurement availability, not model self-assessment
 - **Conflict detection** — ⚠️ flags when notes and Trackman data genuinely disagree
 - **Scout override** — the scout can correct any grade with a reason; AI assessment and scout override display side by side
+- **Decision audit trail** — every override is appended to a server-side log (player, tool, AI grade, scout grade, reason, UTC timestamp). Revising a grade appends rather than overwrites, so a changed mind stays on the record. The **Decision Log** tab shows every point where a human overruled the model and why
 - **Take / Follow / Hold recommendation** and **"What would change this evaluation?"** — the information-gap section
 - **Player Decision Report** — exports as a front-office-style artifact: tools table, evidence, risk, overrides, sources, timestamps
 
@@ -32,6 +33,7 @@ Plus, per tool and overall:
 - **Trackman** — instant pitch charts, zero LLM cost: MLB percentile sliders (velo + spin vs approximate league distributions — labeled as approximations), movement plot (IVB/HB, catcher's view), plate location with strike zone; AI interpretation on demand
 - **Compare** — head-to-head AI verdict on any two scouted players: category edges, risk profiles, who to take first
 - **Players** — session talent pool with grade badges, search, filters; **persists across refreshes** (localStorage)
+- **Decision Log** — the override record, plus aggregate disagreement stats: how often scouts raised vs lowered the model's grades, and which tools get overridden most
 - **Combined Chat** — session-wide Q&A, **streamed word-by-word** (SSE)
 - **One-click demo data** everywhere — the platform demos with zero files
 
@@ -59,13 +61,18 @@ Also: box score CSV analysis (PPG/RPG/APG/TS%), a four-mode coaching assistant, 
 | AI | Anthropic Claude Sonnet 5 (text and Vision OCR) with adaptive thinking, effort tuned per call — `high` for scouting reports and comparisons, `medium` for chat. Structured JSON extraction runs on Haiku 4.5, a fifth the cost for a task that only reformats text the reasoning model already produced. Structured-JSON evaluations with server-side validation, evidence verification against source text, and computed confidence |
 | RAG | scikit-learn TF-IDF, dual indexes (deliberate zero-heavy-dependency choice for fast cold starts; see design notes below) |
 | Guardrails | Per-IP rate limiting, size caps, env-driven CORS |
+| Audit | Append-only SQLite decision log (stdlib `sqlite3`, path via `FV_AUDIT_DB`) |
 | CI | GitHub Actions — ruff + pytest on every push |
-| Tests | 34 pytest cases, all runnable without an API key |
+| Tests | 56 pytest cases, all runnable without an API key |
 
 ### Design notes
 - **Evidence verification:** quoted evidence is checked to be a verbatim substring of the source notes; unverifiable quotes are marked.
 - **Confidence is rules, not vibes:** ≥2 verified quotes + measurement → High; quotes or measurement alone → Medium; thin → Low.
 - **TF-IDF over embeddings, deliberately:** zero-dependency deploys and fast cold starts on small hosting; stat rows are converted to scouting-language blurbs (with position words and derived descriptors) so free-text notes can match them. Embedding upgrade is planned behind a retrieval evaluation harness, not vibes.
+- **The audit log is append-only:** an override that can be silently revised is not an accountability record. Clearing an override writes a `cleared` row rather than deleting history.
+- **Disagreement is a quality signal, not just compliance:** a tool scouts keep downgrading is a tool the model reads too generously, so the log aggregates direction of override per tool.
+- **Audit durability is stated, not implied:** storage is stdlib `sqlite3` at `FV_AUDIT_DB`. On ephemeral hosting the log lives for the container's lifetime; pointing that variable at a mounted volume makes it durable. The UI says which mode it is in rather than letting the reader assume.
+- **Evidence verification checks the whole quote:** an earlier version compared only the first 60 characters, which passed a quote that opened verbatim and then invented its tail. Comparison now normalizes whitespace (so a quote spanning a PDF line break still matches) and requires the full quote to appear in the notes.
 - **Percentiles are labeled approximations** vs public league distributions — transparency over fake precision.
 
 ---
@@ -89,9 +96,10 @@ FieldVision-personal/
 ├── index.html                     # SPA: landing + baseball + basketball
 ├── backend/
 │   ├── main.py                    # FastAPI entry + guardrails middleware
-│   ├── routes/                    # analyze, chat, trackman, trackman_viz, compare, basketball
+│   ├── routes/                    # analyze, chat, trackman, trackman_viz, compare, basketball, audit
 │   └── services/
 │       ├── scout_report.py        # Evidence Chain: structured eval + computed confidence
+│       ├── audit.py               # Append-only decision log (scout overrides)
 │       ├── claude.py rag.py files.py mlb_benchmarks.py
 │       └── basketball.py rag_basketball.py
 ├── data/                          # Branch Rickey corpus + NBA season CSVs
