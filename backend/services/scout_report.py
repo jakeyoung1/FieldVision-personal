@@ -75,6 +75,34 @@ def evaluate(notes: str, rag_context: str = "", trackman_context: str = "") -> d
     return finalize(data, notes, had_measurement=bool(trackman_context))
 
 
+_WS_RE = re.compile(r"\s+")
+# Quotes routinely arrive wrapped in smart quotes or trailing ellipses; those are
+# presentation, not content, so they are stripped before comparison.
+_EDGE_CHARS = " \t\n\r\"'\u201c\u201d\u2018\u2019.,;:\u2026"
+
+
+def _norm(text: str) -> str:
+    """Collapse whitespace and fold case.
+
+    A quote lifted from a PDF often spans a line break, so a raw substring test
+    rejects text that is genuinely verbatim. Normalizing both sides fixes that
+    without loosening what counts as a match.
+    """
+    return _WS_RE.sub(" ", str(text)).strip(_EDGE_CHARS).casefold()
+
+
+def _is_verbatim(quote: str, notes: str) -> bool:
+    """True when the whole quote appears in the notes.
+
+    The earlier check compared only the first 60 characters, so a quote that
+    opened with real text and then drifted into invention passed as verified.
+    The claim this backs is that every grade traces to exact note sentences, so
+    the whole quote has to survive the test, not its opening.
+    """
+    q = _norm(quote)
+    return bool(q) and q in _norm(notes)
+
+
 def finalize(data: dict, notes: str, had_measurement: bool) -> dict:
     """Validate model output and compute confidence server-side."""
     tools = []
@@ -82,8 +110,7 @@ def finalize(data: dict, notes: str, had_measurement: bool) -> dict:
         if not isinstance(t, dict) or not t.get("name"):
             continue
         evidence = [str(q)[:300] for q in (t.get("evidence") or []) if str(q).strip()][:3]
-        # Evidence must actually appear in the notes (light fuzz: casefold substring)
-        verified = [q for q in evidence if q.casefold()[:60] in notes.casefold()]
+        verified = [q for q in evidence if _is_verbatim(q, notes)]
         measurement = t.get("measurement") if had_measurement else None
         if isinstance(measurement, str) and not measurement.strip():
             measurement = None
