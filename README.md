@@ -75,6 +75,13 @@ Also: box score CSV analysis (PPG/RPG/APG/TS%), a four-mode coaching assistant, 
 - **Evidence verification checks the whole quote:** an earlier version compared only the first 60 characters, which passed a quote that opened verbatim and then invented its tail. Comparison now normalizes whitespace (so a quote spanning a PDF line break still matches) and requires the full quote to appear in the notes.
 - **Percentiles are labeled approximations** vs public league distributions — transparency over fake precision.
 
+## Capstone documents
+
+Two PDFs from the April 2026 capstone build, linked at the last commit that contained them:
+
+- [RAG evaluation report](https://github.com/jakeyoung1/FieldVision-personal/blob/c0d25b76d12561b617cc2d8c78b372e2315cf5c6/evaluation_report.pdf) (4 pages): retrieval relevance and generation-faithfulness scores from `evaluate_similarity.py`. That build retrieved with sentence-transformer embeddings and FAISS. The live app now uses TF-IDF.
+- [Capstone reference](https://github.com/jakeyoung1/FieldVision-personal/blob/c0d25b76d12561b617cc2d8c78b372e2315cf5c6/FieldVision_Reference.pdf) (26 pages): the fact pack the capstone report and presentation were written from. It documents the original Streamlit build.
+
 ---
 
 ## Run locally

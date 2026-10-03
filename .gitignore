@@ -19,3 +19,7 @@ fieldvision_audit.db
 
 # macOS
 .DS_Store
+
+# Generated PDFs (linked from the README at a pinned commit)
+evaluation_report.pdf
+FieldVision_Reference.pdf
