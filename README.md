@@ -63,7 +63,7 @@ Also: box score CSV analysis (PPG/RPG/APG/TS%), a four-mode coaching assistant, 
 | Guardrails | Per-IP rate limiting, size caps, env-driven CORS |
 | Audit | Append-only SQLite decision log (stdlib `sqlite3`, path via `FV_AUDIT_DB`) |
 | CI | GitHub Actions — ruff + pytest on every push |
-| Tests | 56 pytest cases, all runnable without an API key |
+| Tests | 64 pytest cases, all runnable without an API key |
 
 ### Design notes
 - **Evidence verification:** quoted evidence is checked to be a verbatim substring of the source notes; unverifiable quotes are marked.
