@@ -500,7 +500,7 @@
     </a>
 
     <!-- Links (desktop) -->
-    <div style="display:flex;align-items:center;gap:32px;" class="hidden-mobile">
+    <div style="align-items:center;gap:32px;" class="hidden-mobile">
       <a href="#app"       class="nav-link">App</a>
       <a href="#pipeline"  class="nav-link">Pipeline</a>
       <a href="#features"  class="nav-link">Features</a>
@@ -602,7 +602,7 @@
     <!-- Eyebrow -->
     <div class="reveal eyebrow">
       <span class="pulse-dot" style="display:inline-block;width:7px;height:7px;border-radius:50%;background:#C8102E;margin-right:8px;vertical-align:middle;"></span>
-      Baseball + Basketball Scouting Intelligence &nbsp;·&nbsp; Active Project
+      Baseball + Basketball Scouting Intelligence
     </div>
 
     <!-- Logo + Title -->
@@ -983,8 +983,8 @@
     <div id="tab-decisions" class="fv-tab-panel" style="display:none;">
       <p style="color:rgba(240,244,255,.45);font-size:.82rem;margin:0 0 20px;max-width:70ch;line-height:1.6;">
         Every grade a scout overruled, with the reason they gave and when. The model
-        proposes; this is the record of who decided. Revisions append rather than
-        overwrite, so a changed mind stays visible.
+        proposes and the scout decides; this log keeps every decision. Revisions append
+        rather than overwrite, so a changed mind stays visible.
       </p>
       <div id="fv-decisions-summary" style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:22px;"></div>
       <div id="fv-decisions-body" style="color:rgba(240,244,255,.35);font-size:.85rem;">Loading…</div>
@@ -1284,6 +1284,13 @@
 .fv-grade-F { background: rgba(100,100,100,.15);color: #9ca3af; border: 1px solid rgba(100,100,100,.25); }
 
 @media (max-width: 640px) { .fv-app-grid { grid-template-columns: 1fr !important; } }
+/* Six tabs are wider than a phone: scroll the bar, not the page */
+@media (max-width: 767px) {
+  #fv-tabbar-baseball, #fv-tabbar-basketball { overflow-x: auto; overflow-y: hidden; scrollbar-width: none; }
+  #fv-tabbar-baseball::-webkit-scrollbar, #fv-tabbar-basketball::-webkit-scrollbar { display: none; }
+  /* margin-bottom:0 keeps the active underline inside the scroll box, not clipped */
+  .fv-tab { flex-shrink: 0; white-space: nowrap; margin-bottom: 0; }
+}
 
 /* ── Sport switcher ─────────────────────────────────────────────────────── */
 .fv-sport-pill {
