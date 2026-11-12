@@ -12,8 +12,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
 
   <!-- ── Backend API URL ── -->
-  <!-- Empty = same origin. This fork serves its own full API (baseball + basketball);
-       the original group deployment at fieldvision.onrender.com is no longer a dependency. -->
+  <!-- Empty = same origin: this server provides the whole API (baseball + basketball). -->
   <script>
     window.FV_API_BASE = "";
   </script>
@@ -530,7 +529,7 @@
 
     <div class="fv-guide-sport">⚾ Baseball</div>
     <ol class="fv-guide-list">
-      <li><strong>Scouting Notes</strong> — upload PDF/TXT files (handwritten PDFs OK — Claude Vision reads them) or paste notes. Multiple players: name on the first line of each block, separated by <code>---</code>. Every report is grounded in 1,919 Branch Rickey historical scouting documents and graded A–F. Use <em>⚡ Load demo scouting notes</em> to try instantly.</li>
+      <li><strong>Scouting Notes</strong> — upload PDF/TXT/MD files (scanned PDFs OK; Claude Vision transcribes them) or paste notes. Multiple players: name on the first line of each block, separated by <code>---</code>. Each tool gets an A–F grade backed by quotes from your notes, and each report lists its five closest Branch Rickey comparisons with their scores. Use <em>⚡ Load demo scouting notes</em> to try instantly.</li>
       <li><strong>Trackman</strong> — drop a Trackman CSV. You get instant pitch charts: percentile sliders (velo + spin vs 2025 MLB pitchers' averages), a movement plot, and plate location — then click <em>Analyze Pitching Data</em> for the AI read. <em>⚡ Load demo Trackman data</em> works without a file.</li>
       <li><strong>Players</strong> — every analyzed player lands here with a grade badge. Search and filter by grade or source.</li>
       <li><strong>Compare</strong> — pick any two scouted players for an AI head-to-head: category-by-category edges, risk profiles, and a verdict.</li>
@@ -634,7 +633,7 @@
         Try It Now
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
       </a>
-      <a href="https://github.com/jakeyoung1/FieldVision" target="_blank" class="btn-secondary">
+      <a href="https://github.com/jakeyoung1/FieldVision-personal" target="_blank" class="btn-secondary">
         <svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg>
         View on GitHub
       </a>
@@ -652,7 +651,7 @@
       </div>
       <div class="card" style="padding:20px 12px;text-align:center;">
         <div class="stat-num">Top 5</div>
-        <div style="font-size:.68rem;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:rgba(240,244,255,.38);">RAG Hits</div>
+        <div style="font-size:.68rem;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:rgba(240,244,255,.38);">Rickey Matches Shown</div>
       </div>
       <div class="card" style="padding:20px 12px;text-align:center;">
         <div class="stat-num" style="font-size:1.1rem;padding-top:.3rem;">Sonnet&nbsp;5</div>
@@ -1328,7 +1327,7 @@
       <div class="eyebrow">The Pipeline</div>
       <h2 style="font-size:clamp(2rem,4vw,3rem);font-weight:800;letter-spacing:-.03em;margin-bottom:14px;">How It Works</h2>
       <p style="font-size:1rem;color:rgba(240,244,255,.5);max-width:540px;margin:0 auto;line-height:1.75;">
-        Three AI-powered steps from handwritten note to structured scouting intelligence
+        Three steps from a scout's notes to a graded report, with the evidence for every grade attached
       </p>
     </div>
 
@@ -1341,10 +1340,11 @@
           <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#C8102E" stroke-width="2" aria-hidden="true"><rect x="2" y="3" width="20" height="18" rx="2"/><path d="M8 7h8M8 11h8M8 15h5"/></svg>
         </div>
         <div style="font-family:'Fira Code',monospace;font-size:.72rem;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:rgba(200,16,46,.8);margin-bottom:10px;">Step 01</div>
-        <h3 style="font-size:1.2rem;font-weight:700;margin-bottom:12px;">OCR Transcription</h3>
+        <h3 style="font-size:1.2rem;font-weight:700;margin-bottom:12px;">Read the Notes</h3>
         <p style="color:rgba(240,244,255,.52);line-height:1.75;font-size:.9rem;">
-          Upload a photo or scan of handwritten scouting notes. Claude Vision reads every
-          abbreviation, player name, and shorthand — even messy field notes — with high accuracy.
+          Paste notes, or upload TXT, MD, or PDF. Typed PDFs are read directly; a scanned PDF with
+          no text layer is sent to Claude Vision for transcription. Players separated by
+          <code>---</code> get separate reports.
         </p>
       </div>
 
@@ -1355,10 +1355,11 @@
           <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#C8102E" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
         </div>
         <div style="font-family:'Fira Code',monospace;font-size:.72rem;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:rgba(200,16,46,.8);margin-bottom:10px;">Step 02</div>
-        <h3 style="font-size:1.2rem;font-weight:700;margin-bottom:12px;">Semantic Retrieval</h3>
+        <h3 style="font-size:1.2rem;font-weight:700;margin-bottom:12px;">Find Historical Comparisons</h3>
         <p style="color:rgba(240,244,255,.52);line-height:1.75;font-size:.9rem;">
-          Query is matched against 1,919 Branch Rickey scouting documents using
-          TF-IDF cosine similarity (20K-feature sklearn index). Top-5 most relevant reports retrieved.
+          The notes are matched against 1,919 Branch Rickey scouting reports (1951 to 1964) by word
+          overlap, keeping pitchers with pitchers and position players with position players. The top
+          five are shown with their scores. Only matches above a measured threshold reach the model.
         </p>
       </div>
 
@@ -1369,10 +1370,11 @@
           <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#C8102E" stroke-width="2" aria-hidden="true"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z"/><path d="M8 12l2 2 4-4"/></svg>
         </div>
         <div style="font-family:'Fira Code',monospace;font-size:.72rem;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:rgba(200,16,46,.8);margin-bottom:10px;">Step 03</div>
-        <h3 style="font-size:1.2rem;font-weight:700;margin-bottom:12px;">AI Report Generation</h3>
+        <h3 style="font-size:1.2rem;font-weight:700;margin-bottom:12px;">Grade With Evidence</h3>
         <p style="color:rgba(240,244,255,.52);line-height:1.75;font-size:.9rem;">
-          Claude Sonnet 5 synthesizes your notes with the retrieved historical context to generate
-          a summary, two actionable recommendations, and a Branch Rickey parallel insight.
+          Claude Sonnet 5 grades each tool the notes support, quoting the notes and citing Trackman
+          numbers. Quotes are checked word for word, confidence is set by rule, and the report ends in
+          Follow, Hold, or Priority Follow with what would change the call.
         </p>
       </div>
 
@@ -1419,10 +1421,10 @@
         <div class="icon-ring">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#C8102E" stroke-width="2" aria-hidden="true"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
         </div>
-        <h3 style="font-size:1.05rem;font-weight:700;margin-bottom:8px;">Branch Rickey RAG</h3>
+        <h3 style="font-size:1.05rem;font-weight:700;margin-bottom:8px;">Branch Rickey Comparisons</h3>
         <p style="color:rgba(240,244,255,.5);font-size:.88rem;line-height:1.72;">
-          1,919 historical scouting transcriptions from the Branch Rickey Papers indexed with TF-IDF.
-          Every report is benchmarked against decades of professional scouting wisdom.
+          1,919 transcribed Branch Rickey scouting reports from 1951 to 1964. Each report shows its five
+          closest matches with scores and excerpts, and says plainly when nothing in the archive is close.
         </p>
       </div>
 
@@ -1434,7 +1436,7 @@
         <h3 style="font-size:1.05rem;font-weight:700;margin-bottom:8px;">Trackman Game Analysis</h3>
         <p style="color:rgba(240,244,255,.5);font-size:.88rem;line-height:1.72;">
           Upload Trackman CSV exports for post-game pitch analytics. Velocity, spin rate,
-          break, and pitch mix summaries for both teams' pitchers — now live and approved.
+          break, and pitch mix for every pitcher in the file, with velocity and spin percentiles against 2025 MLB pitchers.
         </p>
       </div>
 
@@ -1458,7 +1460,7 @@
         <h3 style="font-size:1.05rem;font-weight:700;margin-bottom:8px;">PDF Report Export</h3>
         <p style="color:rgba(240,244,255,.5);font-size:.88rem;line-height:1.72;">
           Download a formatted PDF of any generated scouting report. Clean layout with
-          section headers, recommendations, and historical parallels — ready to share.
+          the tool grades, quoted evidence, scout overrides, Rickey comparisons with scores, and sources.
         </p>
       </div>
 
@@ -1490,7 +1492,7 @@
       <div class="eyebrow">Under the Hood</div>
       <h2 style="font-size:clamp(2rem,4vw,3rem);font-weight:800;letter-spacing:-.03em;margin-bottom:14px;">Tech Stack</h2>
       <p style="font-size:1rem;color:rgba(240,244,255,.5);max-width:480px;margin:0 auto;line-height:1.75;">
-        Production-grade components chosen for accuracy, speed, and a lean deployment footprint
+        Small dependencies chosen for fast cold starts on free hosting; every quality claim is measured on the Methods page
       </p>
     </div>
 
@@ -1537,7 +1539,7 @@
       <span style="color:rgba(200,16,46,.5);">→</span>
       <span style="padding:6px 14px;background:#0f1624;border:1px solid rgba(255,255,255,.08);border-radius:8px;color:rgba(240,244,255,.65);">TF-IDF Retrieval</span>
       <span style="color:rgba(200,16,46,.5);">→</span>
-      <span style="padding:6px 14px;background:#0f1624;border:1px solid rgba(255,255,255,.08);border-radius:8px;color:rgba(240,244,255,.65);">Rickey Top-5</span>
+      <span style="padding:6px 14px;background:#0f1624;border:1px solid rgba(255,255,255,.08);border-radius:8px;color:rgba(240,244,255,.65);">Rickey matches, scored</span>
       <span style="color:rgba(200,16,46,.5);">→</span>
       <span style="padding:6px 14px;background:rgba(200,16,46,.15);border:1px solid rgba(200,16,46,.3);border-radius:8px;color:#f07080;">Claude Sonnet</span>
       <span style="color:rgba(200,16,46,.5);">→</span>
@@ -1570,15 +1572,15 @@
       Ready to scout smarter?
     </h2>
     <p style="color:rgba(240,244,255,.52);font-size:1rem;line-height:1.8;max-width:480px;margin:0 auto 36px;">
-      Upload your first scouting note and see Branch Rickey's 1919–1945 wisdom
-      applied to today's game in seconds.
+      Paste a page of notes and get a graded report with every grade traced to your words,
+      next to the closest Branch Rickey reports and their scores.
     </p>
     <div style="display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:14px;">
       <a href="#app" class="btn-primary">
         Try FieldVision
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
       </a>
-      <a href="https://github.com/jakeyoung1/FieldVision" target="_blank" class="btn-secondary">
+      <a href="https://github.com/jakeyoung1/FieldVision-personal" target="_blank" class="btn-secondary">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg>
         Source Code
       </a>
@@ -1616,7 +1618,7 @@
          onmouseover="this.style.color='#f0f4ff'" onmouseout="this.style.color='rgba(240,244,255,.45)'">App</a>
       <a href="/methods" style="font-size:.82rem;color:rgba(240,244,255,.45);text-decoration:none;transition:color .2s ease;"
          onmouseover="this.style.color='#f0f4ff'" onmouseout="this.style.color='rgba(240,244,255,.45)'">Methods</a>
-      <a href="https://github.com/jakeyoung1/FieldVision" target="_blank"
+      <a href="https://github.com/jakeyoung1/FieldVision-personal" target="_blank"
          style="font-size:.82rem;color:rgba(240,244,255,.45);text-decoration:none;transition:color .2s ease;"
          onmouseover="this.style.color='#f0f4ff'" onmouseout="this.style.color='rgba(240,244,255,.45)'">GitHub</a>
     </div>
@@ -2184,15 +2186,55 @@ document.querySelectorAll('[data-topline]').forEach(line => {
                 text: () => 'No Rickey report shared vocabulary with these notes. The grades rest on your notes alone.' },
   };
 
+  const BAND_STYLE = {
+    strong:   'color:#4ade80;border-color:rgba(74,222,128,.4);',
+    moderate: 'color:#fbbf24;border-color:rgba(251,191,36,.4);',
+    weak:     'color:rgba(240,244,255,.5);border-color:rgba(255,255,255,.18);',
+  };
+  const ROLE_LABEL = { pitcher: 'pitcher report', hitter: 'position-player report' };
+
+  // The five Rickey reports the retriever found, with their scores, so the
+  // scout can judge each comparison instead of taking "historical context" on
+  // faith. Weak matches are listed too, marked as not used.
   function rickeyNotice (r) {
     const m = r.rickey;
     if (!m) return '';
     const q = RICKEY_QUALITY[m.quality] || RICKEY_QUALITY.none;
-    const best = m.matches && m.matches[0] ? ` Best score ${m.matches[0].score.toFixed(2)} (strong ≥ ${m.bands.strong_from}, usable ≥ ${m.bands.moderate_from}).` : '';
+    const matches = m.matches || [];
+    const rows = matches.map((h, i) => {
+      const used = h.confidence !== 'weak';
+      const text = String(h.text || '').replace(/\s+/g, ' ').trim();
+      const preview = text.length > 150 ? text.slice(0, 150) + '…' : text;
+      const meta = [h.year && h.year !== 'Undated' ? h.year : 'undated', ROLE_LABEL[h.role]].filter(Boolean).join(' · ');
+      return `
+        <div data-rickey-match="${i + 1}" style="padding:9px 0;border-top:1px solid rgba(255,255,255,.06);">
+          <div style="display:flex;align-items:center;gap:7px;flex-wrap:wrap;font-size:.72rem;">
+            <span style="font-family:ui-monospace,monospace;color:rgba(240,244,255,.4);">#${i + 1}</span>
+            <span style="font-family:ui-monospace,monospace;font-weight:700;color:rgba(240,244,255,.85);">${h.score.toFixed(2)}</span>
+            <span style="padding:0 7px;border:1px solid;border-radius:99px;${BAND_STYLE[h.confidence] || BAND_STYLE.weak}">${escAudit(h.confidence)}</span>
+            <span style="color:rgba(240,244,255,.4);">${escAudit(meta)}</span>
+            <span style="margin-left:auto;color:${used ? '#a5b4fc' : 'rgba(240,244,255,.35)'};">${used ? 'given to the model' : 'not used'}</span>
+          </div>
+          <details style="margin-top:4px;">
+            <summary style="cursor:pointer;font-size:.76rem;color:rgba(240,244,255,.6);list-style-position:outside;">${escAudit(preview)}</summary>
+            <div style="font-size:.76rem;color:rgba(240,244,255,.62);line-height:1.6;margin:6px 0 2px;padding-left:10px;border-left:2px solid rgba(255,255,255,.12);">
+              ${escAudit(text)}${text.length >= 590 ? ' …' : ''}
+              <div style="margin-top:5px;font-size:.7rem;color:rgba(240,244,255,.4);">${escAudit(h.source || '')}
+                ${h.scan_url ? ` · <a href="${escAudit(h.scan_url)}" target="_blank" rel="noopener" style="color:rgba(240,244,255,.55);">original scan</a>` : ''}</div>
+            </div>
+          </details>
+        </div>`;
+    }).join('');
     return `
-      <div data-rickey-quality="${m.quality}" style="margin-top:12px;padding:9px 12px;border-radius:8px;
-           border:1px solid rgba(255,255,255,.1);background:rgba(255,255,255,.02);font-size:.74rem;color:rgba(240,244,255,.55);">
-        <span style="font-weight:700;color:${q.color};">${q.label}.</span> ${q.text(m.used_as_evidence)}${best}
+      <div data-rickey-quality="${m.quality}" style="margin-top:12px;padding:11px 13px;border-radius:9px;
+           border:1px solid rgba(255,255,255,.1);background:rgba(255,255,255,.02);">
+        <div style="font-size:.7rem;font-weight:700;letter-spacing:.06em;color:rgba(240,244,255,.45);margin-bottom:4px;">
+          BRANCH RICKEY COMPARISONS · TOP ${matches.length}</div>
+        <div style="font-size:.74rem;color:rgba(240,244,255,.55);margin-bottom:${matches.length ? 6 : 0}px;">
+          <span style="font-weight:700;color:${q.color};">${q.label}.</span> ${q.text(m.used_as_evidence)}
+          Scores run 0 to 1; ${m.bands.moderate_from} and up is usable, ${m.bands.strong_from} and up is strong.
+          <a href="/methods#matching" style="color:rgba(240,244,255,.45);">How matching works</a></div>
+        ${rows}
       </div>`;
   }
 
@@ -2558,6 +2600,14 @@ document.querySelectorAll('[data-topline]').forEach(line => {
       <h2>Risk</h2><p>${s.risk || '—'}</p>
       ${s.what_would_change.length ? `<h2>What Would Change This Evaluation</h2><ul>${s.what_would_change.map(w => `<li>${w}</li>`).join('')}</ul>` : ''}
       <h2>Recommendation</h2><p><strong>${s.recommendation}</strong> — ${s.recommendation_reason}</p>
+      ${r.rickey && r.rickey.matches && r.rickey.matches.length ? `
+        <h2>Branch Rickey Comparisons</h2>
+        <table><thead><tr><th>#</th><th>Score</th><th>Band</th><th>Year</th><th>Used</th><th>Excerpt</th></tr></thead><tbody>
+        ${r.rickey.matches.map((h, i) => `<tr><td>${i + 1}</td><td>${h.score.toFixed(2)}</td><td>${escAudit(h.confidence)}</td>
+          <td>${escAudit(h.year || 'undated')}</td><td>${h.confidence !== 'weak' ? 'yes' : 'no'}</td>
+          <td style="font-size:.8rem;">${escAudit(String(h.text || '').replace(/\s+/g, ' ').slice(0, 160))}…</td></tr>`).join('')}
+        </tbody></table>
+        <p style="font-size:.8rem;color:#555;">Score is TF-IDF word overlap, 0 to 1. Matches below ${r.rickey.bands.moderate_from} were not given to the model.</p>` : ''}
       <div class="foot">
         Sources: scouting notes${s.had_measurement ? ' · Trackman session data' : ''}${r.context_used ? ' · Branch Rickey historical corpus' : ''}.
         ${r.rickey && !r.context_used ? 'No Branch Rickey report matched closely enough to be used as evidence.' : ''}

@@ -63,14 +63,14 @@ Also: box score CSV analysis (PPG/RPG/APG/TS%), a four-mode coaching assistant, 
 | Guardrails | Per-IP rate limiting, size caps, env-driven CORS |
 | Audit | Append-only SQLite decision log (stdlib `sqlite3`, path via `FV_AUDIT_DB`) |
 | CI | GitHub Actions — ruff + pytest on every push |
-| Tests | 125 pytest cases, all runnable without an API key |
+| Tests | 129 pytest cases, all runnable without an API key |
 
 ### Design notes
 - **Evidence verification:** quoted evidence is checked to be a verbatim substring of the source notes; unverifiable quotes are marked.
 - **Confidence is rules, not vibes:** ≥2 verified quotes + measurement → High; quotes or measurement alone → Medium; thin → Low.
 - **TF-IDF over embeddings, deliberately:** zero-dependency deploys and fast cold starts on small hosting; stat rows are converted to scouting-language blurbs (with position words and derived descriptors) so free-text notes can match them. Any embedding upgrade has to beat the retrieval evaluation below.
 - **Retrieval is measured, not assumed:** `python -m evaluation.retrieval_eval` scores the Rickey matcher on a 37-note gold set against random and BM25 baselines (precision@5, recall@5, MRR, wrong-role rate). The pitcher/position-player filter cut wrong-role matches in the top 5 from 15.7% to 3.8%; precision and recall did not improve. The gold notes are synthetic and the labels are AI-drafted and not yet human-audited, so the numbers are provisional. Results: [`evaluation/results/retrieval_eval.md`](evaluation/results/retrieval_eval.md).
-- **Weak matches are labeled weak:** every report shows how close the best Rickey match was. Matches below the evidence threshold are not given to the model, and the report says the grades rest on the notes alone.
+- **Weak matches are labeled weak:** every report lists its five closest Rickey reports with scores, a strong/usable/weak band, and an expandable excerpt linked to the original scan. Matches below the evidence threshold are not given to the model, and the report says the grades rest on the notes alone.
 - **The audit log is append-only:** an override that can be silently revised is not an accountability record. Clearing an override writes a `cleared` row rather than deleting history.
 - **Disagreement is a quality signal, not just compliance:** a tool scouts keep downgrading is a tool the model reads too generously, so the log aggregates direction of override per tool.
 - **Outcome claims are checked against the play-by-play:** when notes are play-by-play, every strikeout, groundout, walk, stolen base, or wild-pitch claim in the report is matched to the at-bats it came from, and unsupported claims are shown above the grades (`backend/services/play_by_play.py`).
