@@ -79,6 +79,8 @@
     <li><a href="#matching">Matching and confidence</a></li>
     <li><a href="#evaluation">Evaluation</a></li>
     <li><a href="#benchmarks">MLB benchmarks</a></li>
+    <li><a href="#time">Time per report</a></li>
+    <li><a href="#pilot">Pilot (planned)</a></li>
     <li><a href="#limitations">Limitations</a></li>
   </ul>
 
@@ -90,7 +92,9 @@
     <li>They want to upload notes in bulk, compare a recruit against a talent pool and his high school numbers, filter for the top players, and have AI help interpret the data.</li>
   </ul>
   <h3>The time cost</h3>
-  <p>The capstone estimated that typing up one page of handwritten notes takes 10 to 15 minutes. Cross-referencing a player against past reports adds more, and in practice rarely happens at all. <strong>That estimate has not been measured.</strong> Until it is, it is a planning number, not a result.</p>
+  <p>The capstone estimated that typing up one page of handwritten notes takes 10 to 15 minutes. Cross-referencing a player against past reports adds more, and in practice rarely happens at all. <strong>That estimate has not been measured.</strong> Until it is, it is a planning number, not a result. <a href="#time">How it will be measured</a>.</p>
+  <h3>Why baseball first</h3>
+  <p>The staff, the problem, the notes, and the Trackman data are all baseball, so every evaluation on this page is baseball. The basketball module runs the same pipeline (notes, comparisons, graded report, chat) on a second sport to check whether anything in it is baseball-specific. It is a generalization test, not a second product, and it has not been evaluated.</p>
 
   <h2 id="sources">Sources</h2>
   <div class="scroll"><table>
@@ -137,6 +141,40 @@
   <div class="scroll"><table id="bench-table"></table></div>
   <p class="small">Mean and spread of per-pitcher averages. A pitcher's percentile assumes these averages are normally distributed, so values far from the middle are approximate. The raw files are committed in <code>data/mlb/</code> and a test recomputes every number in this table from them.</p>
 
+  <h2 id="time">Time per report</h2>
+  <p>The claim worth testing is that a finished report takes less of a coach's time. A finished report means the same thing both ways: grades for each tool the notes support and a Take/Follow/Hold call, checked by the scout.</p>
+  <h3>Protocol</h3>
+  <ol>
+    <li>Use the ~10 players from the <a href="#pilot">pilot</a>, split into two comparable halves.</li>
+    <li><strong>By hand:</strong> for one half, a staff member writes the report the usual way and times it with a stopwatch, from blank page to finished report. Minutes go in <code>evaluation/time_study/hand_baseline.csv</code>.</li>
+    <li><strong>With FieldVision:</strong> for the other half, the same staff member pastes or uploads the notes, reads and checks the report, overrides any grade they disagree with, then clicks <em>Reviewed</em> (or exports the Decision Report). The app logs the minutes from the Analyze click to that moment, so the time includes waiting for the model and reviewing, not just how fast the server is.</li>
+    <li>On the next batch, swap the halves, so each scout does both methods and individual speed cancels out.</li>
+    <li>Compare medians and publish every individual time. With about ten reports per side, the raw times matter more than any average.</li>
+  </ol>
+  <div class="card" id="time-result">Loading…</div>
+
+  <h2 id="pilot">Pilot with Coach Costanza's staff</h2>
+  <div class="card warn"><strong>Planned. Not started.</strong> No pilot data exists. Everything in this section is a plan, and the success criteria were written down before any data was collected so they can't be fitted to the results.</div>
+  <h3>Scope</h3>
+  <ul>
+    <li>About 10 players the staff is actively scouting, over one recruiting window of two to three weeks.</li>
+    <li>Real notes from the staff, written the way they write them now. Trackman where they have it.</li>
+    <li>Each player gets an AI report and a blind coach grade (the coach grades from the notes without seeing the model's output). The coach's override log and the time study run alongside.</li>
+  </ul>
+  <h3>What success looks like</h3>
+  <div class="scroll"><table>
+    <thead><tr><th>Question</th><th>Measure</th><th>Success</th></tr></thead>
+    <tbody>
+      <tr><td>Does it save time?</td><td>Median minutes per finished report, FieldVision vs by hand</td><td>FieldVision at or under half the hand-written median</td></tr>
+      <tr><td>Does it grade like the staff?</td><td>Take/Follow/Hold agreement with blind coach calls</td><td>70% or higher</td></tr>
+      <tr><td></td><td>Average gap on overall grade, 20-80 scale</td><td>7.5 points or less (one and a half grade steps)</td></tr>
+      <tr><td>Is the evidence real?</td><td>Quoted evidence found word for word in the notes</td><td>90% of quotes or more</td></tr>
+      <tr><td></td><td>Play-by-play outcome errors that reach the report unflagged, on a manual spot check</td><td>Zero</td></tr>
+      <tr><td>Would they keep using it?</td><td>Staff decision after the pilot</td><td>They choose to use it on the next batch of players</td></tr>
+    </tbody>
+  </table></div>
+  <p>How results will be read: if time succeeds but agreement fails, FieldVision is a drafting aid whose grades need a coach's pass, and the agreement numbers say where it reads notes differently. If agreement succeeds but time fails, the review step is too slow and is the next thing to fix. The model's own run-to-run consistency (<a href="#evaluation">above</a>) caps the agreement it can reach, so the 70% target sits below its 90% agreement with itself.</p>
+
   <h2 id="limitations">Limitations</h2>
   <ul>
     <li><strong>Era gap.</strong> The historical reports are professional scouting from <span class="yr-range">the 1950s and 1960s</span>. College notes from 2026 use different words and describe a different game. Most comparisons score below the usable line, which is why weak matches are labeled and withheld from the model.</li>
@@ -146,6 +184,7 @@
     <li><strong>No coach grades yet.</strong> The grade comparison has the model's side only. Until a coach grades the same notes, there is no evidence the model grades the way a coach does.</li>
     <li><strong>The model varies between runs.</strong> Given the same notes twice, it gives the same letter grade <span class="same-letter">about two times in three</span>. A one-step difference from a coach is within that noise.</li>
     <li><strong>Grade scale.</strong> The app grades on letters. Comparing with the 20-80 scouting scale uses an assumed conversion (C = 40, five points per step). Rank correlation and Take/Follow/Hold agreement don't depend on it; the average gap does.</li>
+    <li><strong>Basketball is not evaluated.</strong> The basketball module has no gold set, no grade comparison, and no time study. It shows the pipeline runs on a second sport, not that it works well there.</li>
     <li><strong>Word overlap only.</strong> TF-IDF matches words, not meaning. "Electric arm" and "fast ball that takes off" score zero overlap.</li>
   </ul>
 </main>
@@ -240,6 +279,17 @@
       document.querySelectorAll('.same-letter').forEach(e => e.textContent = pct(t.same_letter) + ' of the time');
     }
     el.innerHTML = html;
+  }
+
+  // Time study
+  const ts = d.time_study, at = d.app_timings, tr = document.getElementById('time-result');
+  if (ts && ts.by_hand.reports && ts.fieldvision.reports) {
+    tr.innerHTML = `<strong>Median minutes per finished report:</strong> by hand ${ts.by_hand.median_minutes} (n=${ts.by_hand.reports}),
+      FieldVision ${ts.fieldvision.median_minutes} (n=${ts.fieldvision.reports}).`;
+  } else {
+    tr.innerHTML = `<strong style="color:var(--amber)">No measurement yet.</strong> Hand-written reports timed: ${ts ? ts.by_hand.reports : 0}.
+      Reports finished in FieldVision and logged by this server: ${at ? at.reports : 0}${at && at.reports ? ` (median ${at.median_minutes_to_finish} min, from usage that is not part of the protocol)` : ''}.
+      No comparison will be shown until the protocol has been run.`;
   }
 
   // Benchmarks

@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>FieldVision — Multi-Sport Scouting Intelligence</title>
+  <title>FieldVision · Baseball Scouting Intelligence</title>
   <meta name="description" content="AI-powered baseball scouting intelligence. Transform handwritten notes into actionable reports with Claude AI and Branch Rickey's 1,919 historical scouting documents." />
 
   <!-- Fonts: Fira Code (data/headings) + Inter (body) -->
@@ -536,7 +536,8 @@
       <li><strong>Combined Chat</strong> — ask anything about everything loaded this session (notes + Trackman together).</li>
     </ol>
 
-    <div class="fv-guide-sport">🏀 Basketball</div>
+    <div class="fv-guide-sport">🏀 Basketball (generalization test)</div>
+    <p style="font-size:.8rem;color:rgba(240,244,255,.45);margin:-4px 0 10px;">Baseball is the product. The basketball module runs the same notes → comparisons → graded report → chat pipeline on a second sport to check that nothing in it depends on baseball.</p>
     <ol class="fv-guide-list">
       <li><strong>Scouting Notes</strong> — paste or upload notes (same <code>---</code> convention). Reports include statistical comps from 5,000+ NBA player-seasons.</li>
       <li><strong>Box Scores</strong> — upload game or season stat CSVs (Basketball-Reference format works) for per-player averages, shooting splits, true-shooting, and an AI read.</li>
@@ -602,7 +603,7 @@
     <!-- Eyebrow -->
     <div class="reveal eyebrow">
       <span class="pulse-dot" style="display:inline-block;width:7px;height:7px;border-radius:50%;background:#C8102E;margin-right:8px;vertical-align:middle;"></span>
-      Baseball + Basketball Scouting Intelligence
+      Baseball Scouting Intelligence
     </div>
 
     <!-- Logo + Title -->
@@ -618,13 +619,13 @@
     <!-- Tagline -->
     <p class="reveal" style="transition-delay:.16s;font-size:clamp(1.1rem,2.5vw,1.4rem);
        font-weight:300;color:rgba(240,244,255,.65);margin-bottom:14px;">
-      Multi-Sport Scouting Intelligence
+      Scouting reports where every grade shows its evidence
     </p>
     <p class="reveal" style="transition-delay:.2s;font-size:.95rem;max-width:620px;margin:0 auto 44px;
        line-height:1.8;color:rgba(240,244,255,.45);">
-      Transform scouting notes into structured, actionable intelligence — for baseball and basketball.
-      Claude AI, 1,919 Branch Rickey historical reports, 5,000+ NBA statistical comps,
-      an AI coaching assistant, and an animated set-play designer.
+      Built for Saint Mary's baseball: turn handwritten notes and Trackman files into graded
+      reports, with quotes, measurements, and the closest Branch Rickey reports behind every grade.
+      A basketball module runs the same pipeline on a second sport to test whether the approach generalizes.
     </p>
 
     <!-- CTA Row -->
@@ -990,6 +991,12 @@
       <div id="fv-decisions-body" style="color:rgba(240,244,255,.35);font-size:.85rem;">Loading…</div>
     </div>
 
+    <div id="fv-bb-note" style="display:none;margin:0 0 14px;padding:9px 13px;border-radius:9px;border:1px solid rgba(249,115,22,.25);
+         background:rgba(249,115,22,.06);font-size:.78rem;color:rgba(240,244,255,.6);line-height:1.6;">
+      <strong style="color:#fb923c;">Generalization test.</strong> FieldVision is built for baseball. This module runs the
+      same pipeline on basketball to see whether the approach carries to a second sport. It has not been evaluated
+      the way the baseball side has. <a href="/methods#limitations" style="color:rgba(240,244,255,.55);">Methods</a>
+    </div>
     <div id="fv-tabbar-basketball" style="display:none;gap:8px;margin-bottom:24px;border-bottom:1px solid rgba(255,255,255,.08);padding-bottom:0;">
       <button class="fv-tab bb-tab bb-active" data-bbtab="bb-scouting" onclick="switchBBTab('bb-scouting')">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
@@ -1604,13 +1611,13 @@
            onerror="this.style.display='none'" />
       <div>
         <div style="font-weight:700;font-size:.9rem;color:rgba(240,244,255,.8);">FieldVision</div>
-        <div style="font-size:.75rem;color:rgba(240,244,255,.32);">Multi-Sport Scouting Intelligence</div>
+        <div style="font-size:.75rem;color:rgba(240,244,255,.32);">Baseball Scouting Intelligence</div>
       </div>
     </div>
 
     <div style="font-size:.78rem;color:rgba(240,244,255,.28);text-align:center;">
-      Built for college baseball &nbsp;·&nbsp;
-      Powered by <span style="color:rgba(200,16,46,.7);">Claude AI</span> + Branch Rickey Papers
+      Built for college baseball &nbsp;·&nbsp; Basketball module tests whether the approach generalizes
+      &nbsp;·&nbsp; Powered by <span style="color:rgba(200,16,46,.7);">Claude AI</span> + Branch Rickey Papers
     </div>
 
     <div style="display:flex;align-items:center;gap:20px;">
@@ -2017,6 +2024,7 @@ document.querySelectorAll('[data-topline]').forEach(line => {
     const btn = document.getElementById('fv-analyze-btn');
     btn.disabled = true;
     btn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="animation:spin .8s linear infinite"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg> Analyzing…';
+    analysisStartedAt = performance.now();   // minutes-per-report clock
 
     showReportLoading();
     chatHistory = [];
@@ -2118,6 +2126,8 @@ document.querySelectorAll('[data-topline]').forEach(line => {
     currentReport = results.map(r => r.report).join('\n\n---\n\n');
     sessionReports.push(...results.map(r => `[${r.label}]\n${r.report}`));
 
+    const readyAt = performance.now();
+    results.forEach(r => { r._startedAt = analysisStartedAt; r._readyAt = readyAt; });
     lastResults = results;
     redrawReports();
     document.getElementById('fv-chat-panel').style.display = '';
@@ -2125,6 +2135,36 @@ document.querySelectorAll('[data-topline]').forEach(line => {
 
   // ── Evidence Chain rendering ──────────────────────────────────────────────
   let lastResults = [];
+  let analysisStartedAt = null;
+
+  // Minutes per report. The clock runs from the Analyze click to the moment
+  // the scout marks the report reviewed or exports it, so it includes reading
+  // and checking, not just model latency. Logged once per report.
+  function finishReport (ri, how) {
+    const r = lastResults[ri];
+    if (!r || r._finished || r._startedAt == null) return;
+    r._finished = how;
+    const toReport = (r._readyAt - r._startedAt) / 1000;
+    const toFinish = (performance.now() - r._startedAt) / 1000;
+    r._minutes = toFinish / 60;
+    fetch(`${API_BASE}/api/timing/report`, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ player: (r.structured && r.structured.name) || r.label || '',
+        seconds_to_report: Math.max(toReport, 0.1), seconds_to_finish: Math.max(toFinish, toReport, 0.1),
+        finished_by: how, session_id: scoutSessionId() }),
+    }).catch(() => {});
+  }
+
+  function reviewedButton (r, ri) {
+    if (r._finished) {
+      return `<span data-reviewed style="font-size:.68rem;color:#4ade80;">✓ reviewed · ${r._minutes.toFixed(1)} min</span>`;
+    }
+    return `<button onclick="fvMarkReviewed(${ri})" title="Stops the minutes-per-report clock for this player"
+              style="padding:2px 9px;border-radius:5px;background:none;border:1px solid rgba(74,222,128,.35);
+                     color:#4ade80;font-size:.66rem;cursor:pointer;">✓ Reviewed</button>`;
+  }
+
+  window.fvMarkReviewed = function (ri) { finishReport(ri, 'reviewed'); redrawReports(); };
 
   const REC_STYLE = {
     'Priority Follow': 'background:rgba(34,197,94,.15);color:#4ade80;border-color:rgba(34,197,94,.4);',
@@ -2154,10 +2194,11 @@ document.querySelectorAll('[data-topline]').forEach(line => {
       const grade = p.grade || '?';
       const reportHtml = markdownToHtml(r.report);
       return `
-        <div style="margin-bottom:24px;" data-report-label="${p.name || r.label}" data-report-html="${encodeURIComponent(reportHtml)}" data-report-text="${encodeURIComponent(r.report)}">
+        <div style="margin-bottom:24px;" data-ri="${ri}" data-report-label="${p.name || r.label}" data-report-html="${encodeURIComponent(reportHtml)}" data-report-text="${encodeURIComponent(r.report)}">
           <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;flex-wrap:wrap;">
             <span style="font-weight:700;font-size:.95rem;">${p.name || r.label}</span>
             <span class="fv-grade-badge ${gradeClass(grade)}">${grade}</span>
+            ${reviewedButton(r, ri)}
             <button onclick="exportReportPDF(this)" style="margin-left:auto;padding:4px 12px;border-radius:5px;
               background:rgba(200,16,46,.12);border:1px solid rgba(200,16,46,.3);color:#C8102E;
               font-size:.72rem;font-weight:600;cursor:pointer;">↓ Export PDF</button>
@@ -2294,6 +2335,7 @@ document.querySelectorAll('[data-topline]').forEach(line => {
           <button onclick="fvOverride(${ri}, '__overall__')"
                   style="padding:2px 9px;border-radius:5px;background:none;border:1px solid rgba(255,255,255,.15);
                          color:rgba(240,244,255,.45);font-size:.66rem;cursor:pointer;">✎</button>
+          ${reviewedButton(r, ri)}
           <button onclick="exportReportPDF(this)" style="margin-left:auto;padding:4px 12px;border-radius:5px;
             background:rgba(200,16,46,.12);border:1px solid rgba(200,16,46,.3);color:#C8102E;
             font-size:.72rem;font-weight:600;cursor:pointer;">↓ Decision Report</button>
@@ -2524,6 +2566,7 @@ document.querySelectorAll('[data-topline]').forEach(line => {
     const label = card.dataset.reportLabel;
     const ri = card.dataset.ri;
     const r = ri != null ? lastResults[+ri] : null;
+    if (ri != null) { finishReport(+ri, 'exported'); setTimeout(redrawReports, 0); }
 
     let body;
     if (r && r.structured) {
@@ -3272,6 +3315,7 @@ document.querySelectorAll('[data-topline]').forEach(line => {
     const bsBar = document.getElementById('fv-tabbar-baseball');
     const bbBar = document.getElementById('fv-tabbar-basketball');
 
+    document.getElementById('fv-bb-note').style.display = isBB ? '' : 'none';
     if (isBB) {
       bsBar.style.display = 'none';
       document.querySelectorAll('.fv-tab-panel').forEach(p => p.style.display = 'none');
