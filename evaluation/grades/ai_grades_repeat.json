@@ -1,0 +1,275 @@
+{
+ "_meta": {
+  "generated_at": "2026-11-12T21:44:20+00:00",
+  "model": "claude-sonnet-5",
+  "pipeline": "backend.services.scout_report.evaluate",
+  "trackman": "none",
+  "note": "Real model output. Regenerating will change some grades."
+ },
+ "grades": [
+  {
+   "id": "demo1",
+   "grade": "B+",
+   "recommendation": "Priority Follow",
+   "confidence": "Low",
+   "rickey_context_used": false,
+   "tools": {
+    "Fastball": "A-",
+    "Slider": "A-",
+    "Changeup": "C+",
+    "Command": "B",
+    "Makeup": "A-"
+   }
+  },
+  {
+   "id": "demo2",
+   "grade": "C+",
+   "recommendation": "Follow",
+   "confidence": "Low",
+   "rickey_context_used": false,
+   "tools": {
+    "Fastball": "B",
+    "Curveball": "B+",
+    "Command": "B-",
+    "Field": "B+",
+    "Makeup/Durability": "B"
+   }
+  },
+  {
+   "id": "q01",
+   "grade": "C",
+   "recommendation": "Hold",
+   "confidence": "Medium",
+   "rickey_context_used": false,
+   "tools": {
+    "Fastball": "C-",
+    "Changeup": "B",
+    "Slider": "B-",
+    "Command": "C+"
+   }
+  },
+  {
+   "id": "q02",
+   "grade": "B-",
+   "recommendation": "Follow",
+   "confidence": "Low",
+   "rickey_context_used": true,
+   "tools": {
+    "Fastball": "B",
+    "Curveball": "B+",
+    "Changeup": "B",
+    "Command": "C+"
+   }
+  },
+  {
+   "id": "q03",
+   "grade": "C+",
+   "recommendation": "Follow",
+   "confidence": "Low",
+   "rickey_context_used": false,
+   "tools": {
+    "Command": "B",
+    "Fastball": "C+",
+    "Slider": "C",
+    "Changeup": "C-",
+    "Makeup": "B+"
+   }
+  },
+  {
+   "id": "q05",
+   "grade": "C",
+   "recommendation": "Hold",
+   "confidence": "Low",
+   "rickey_context_used": true,
+   "tools": {
+    "Fastball": "B",
+    "Command": "C-",
+    "Changeup/Repertoire": "D+",
+    "Makeup": "C"
+   }
+  },
+  {
+   "id": "q07",
+   "grade": "D",
+   "recommendation": "Do Not Follow",
+   "confidence": "Medium",
+   "rickey_context_used": true,
+   "tools": {
+    "Fastball": "F",
+    "Command": "F",
+    "Arm": "C"
+   }
+  },
+  {
+   "id": "q09",
+   "grade": "B-",
+   "recommendation": "Follow",
+   "confidence": "Low",
+   "rickey_context_used": true,
+   "tools": {
+    "Fastball": "C+",
+    "Curveball": "C+",
+    "Changeup": "B+",
+    "Command": "C"
+   }
+  },
+  {
+   "id": "q10",
+   "grade": "C+",
+   "recommendation": "Follow",
+   "confidence": "Medium",
+   "rickey_context_used": true,
+   "tools": {
+    "Fastball": "B+",
+    "Curveball": "B",
+    "Changeup": "B+",
+    "Command": "C"
+   }
+  },
+  {
+   "id": "q14",
+   "grade": "C",
+   "recommendation": "Follow",
+   "confidence": "Low",
+   "rickey_context_used": false,
+   "tools": {
+    "Fastball": "B",
+    "Command": "B",
+    "Slider": "D",
+    "Makeup": "A-"
+   }
+  },
+  {
+   "id": "q04",
+   "grade": "B",
+   "recommendation": "Follow",
+   "confidence": "Low",
+   "rickey_context_used": false,
+   "tools": {
+    "Speed": "A",
+    "Field": "A-",
+    "Hit": "B",
+    "Power": "C"
+   }
+  },
+  {
+   "id": "q06",
+   "grade": "B-",
+   "recommendation": "Follow",
+   "confidence": "Low",
+   "rickey_context_used": false,
+   "tools": {
+    "Field": "B+",
+    "Arm": "B-",
+    "Hit": "B-",
+    "Power": "D+",
+    "Speed": "D",
+    "Makeup": "B+"
+   }
+  },
+  {
+   "id": "q08",
+   "grade": "D",
+   "recommendation": "Do Not Follow",
+   "confidence": "Low",
+   "rickey_context_used": false,
+   "tools": {
+    "Hit": "D",
+    "Speed": "D",
+    "Arm": "D+",
+    "Makeup": "B+"
+   }
+  },
+  {
+   "id": "q11",
+   "grade": "C+",
+   "recommendation": "Hold",
+   "confidence": "Low",
+   "rickey_context_used": true,
+   "tools": {
+    "Arm": "B",
+    "Field": "C",
+    "Makeup": "C-"
+   }
+  },
+  {
+   "id": "q12",
+   "grade": "C+",
+   "recommendation": "Follow",
+   "confidence": "Low",
+   "rickey_context_used": false,
+   "tools": {
+    "Power": "B+",
+    "Hit": "B",
+    "Arm": "C",
+    "Field": "C+",
+    "Makeup": "C"
+   }
+  },
+  {
+   "id": "q13",
+   "grade": "C-",
+   "recommendation": "Hold",
+   "confidence": "Low",
+   "rickey_context_used": true,
+   "tools": {
+    "Field": "C-",
+    "Hit": "C",
+    "Speed": "D+"
+   }
+  },
+  {
+   "id": "q16",
+   "grade": "C",
+   "recommendation": "Follow",
+   "confidence": "Medium",
+   "rickey_context_used": false,
+   "tools": {
+    "Power": "C+",
+    "Hit": "D+",
+    "Speed": "C",
+    "Makeup": "C+"
+   }
+  },
+  {
+   "id": "q17",
+   "grade": "C",
+   "recommendation": "Hold",
+   "confidence": "Low",
+   "rickey_context_used": true,
+   "tools": {
+    "Hit": "C+",
+    "Speed": "C+",
+    "Arm": "C",
+    "Field": "C-",
+    "Makeup": "B-"
+   }
+  },
+  {
+   "id": "q19",
+   "grade": "C+",
+   "recommendation": "Follow",
+   "confidence": "Low",
+   "rickey_context_used": true,
+   "tools": {
+    "Hit": "C+",
+    "Speed": "B-",
+    "Arm": "C+",
+    "Makeup": "B+"
+   }
+  },
+  {
+   "id": "q20",
+   "grade": "D+",
+   "recommendation": "Do Not Follow",
+   "confidence": "Low",
+   "rickey_context_used": true,
+   "tools": {
+    "Arm": "D+",
+    "Hit": "D",
+    "Power": "C",
+    "Speed": "F"
+   }
+  }
+ ]
+}
