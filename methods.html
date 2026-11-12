@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Methods and Limitations · FieldVision</title>
+  <meta name="description" content="Who FieldVision is for, where its data comes from, how matching and confidence work, what the evaluations show, and what the system cannot do." />
+  <link rel="icon" href="/static/logo.svg" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@500;600&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg: #070b14; --panel: #0f1624; --line: rgba(255,255,255,.08);
+      --text: #f0f4ff; --muted: rgba(240,244,255,.62); --faint: rgba(240,244,255,.4);
+      --red: #C8102E; --amber: #fbbf24; --green: #4ade80;
+    }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body { margin: 0; background: var(--bg); color: var(--text); font-family: Inter, system-ui, sans-serif;
+           line-height: 1.7; font-size: 16px; }
+    a { color: #f07080; }
+    nav { position: sticky; top: 0; z-index: 10; background: rgba(7,11,20,.92); backdrop-filter: blur(14px);
+          border-bottom: 1px solid var(--line); }
+    nav .in { max-width: 920px; margin: 0 auto; padding: 0 16px; height: 60px; display: flex; align-items: center;
+              justify-content: space-between; gap: 16px; }
+    nav .brand { display: flex; align-items: center; gap: 10px; color: var(--text); text-decoration: none; font-weight: 700; }
+    nav .brand img { width: 34px; height: 34px; }
+    nav .links { display: flex; gap: 20px; font-size: .85rem; }
+    nav .links a { color: var(--muted); text-decoration: none; }
+    nav .links a:hover, nav .links a[aria-current] { color: var(--text); }
+    main { max-width: 920px; margin: 0 auto; padding: 48px 16px 80px; }
+    .eyebrow { font-family: "Fira Code", monospace; font-size: .72rem; letter-spacing: .14em; text-transform: uppercase;
+               color: rgba(200,16,46,.85); }
+    h1 { font-size: clamp(2rem, 5vw, 2.8rem); letter-spacing: -.03em; line-height: 1.15; margin: 8px 0 14px; }
+    h2 { font-size: 1.45rem; letter-spacing: -.02em; margin: 56px 0 12px; scroll-margin-top: 80px; }
+    h3 { font-size: 1.02rem; margin: 26px 0 6px; }
+    p, li { color: var(--muted); }
+    .lede { font-size: 1.08rem; color: var(--muted); max-width: 680px; }
+    .toc { display: flex; flex-wrap: wrap; gap: 8px; margin: 26px 0 0; padding: 0; list-style: none; }
+    .toc a { display: inline-block; padding: 5px 12px; border: 1px solid var(--line); border-radius: 99px;
+             font-size: .8rem; color: var(--muted); text-decoration: none; background: var(--panel); }
+    .card { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 18px 20px; margin: 14px 0; }
+    .warn { border-color: rgba(251,191,36,.35); background: rgba(251,191,36,.06); }
+    .warn strong { color: var(--amber); }
+    .scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+    table { width: 100%; border-collapse: collapse; font-size: .86rem; margin: 6px 0; }
+    th, td { text-align: left; padding: 8px 10px; border-bottom: 1px solid var(--line); vertical-align: top; }
+    th { color: var(--faint); font-weight: 600; font-size: .74rem; letter-spacing: .04em; text-transform: uppercase; }
+    td { color: rgba(240,244,255,.82); }
+    td.num, th.num { text-align: right; font-family: "Fira Code", monospace; white-space: nowrap; }
+    tr.hl td { color: var(--text); font-weight: 600; }
+    .small { font-size: .82rem; color: var(--faint); }
+    code { font-family: "Fira Code", monospace; font-size: .84em; background: rgba(255,255,255,.06); padding: 1px 5px; border-radius: 4px; }
+    footer { border-top: 1px solid var(--line); padding: 28px 16px; text-align: center; font-size: .8rem; color: var(--faint); }
+    footer a { color: var(--muted); margin: 0 8px; }
+    @media (max-width: 560px) { nav .links { gap: 14px; } nav .links .opt { display: none; } }
+  </style>
+</head>
+<body>
+<nav>
+  <div class="in">
+    <a class="brand" href="/"><img src="/static/logo.svg" alt="" />FieldVision</a>
+    <div class="links">
+      <a href="/#app">App</a>
+      <a class="opt" href="/#pipeline">Pipeline</a>
+      <a href="/methods" aria-current="page">Methods</a>
+    </div>
+  </div>
+</nav>
+
+<main>
+  <div class="eyebrow">Methods and limitations</div>
+  <h1>How FieldVision works, and where it stops working</h1>
+  <p class="lede">FieldVision turns a scout's notes into a graded report where every grade points back to the words and numbers behind it. This page covers who it is for, where its data comes from, how matching and confidence work, what the evaluations measured, and what the system cannot do.</p>
+  <ul class="toc">
+    <li><a href="#stakeholder">Who it's for</a></li>
+    <li><a href="#sources">Sources</a></li>
+    <li><a href="#matching">Matching and confidence</a></li>
+    <li><a href="#evaluation">Evaluation</a></li>
+    <li><a href="#benchmarks">MLB benchmarks</a></li>
+    <li><a href="#limitations">Limitations</a></li>
+  </ul>
+
+  <h2 id="stakeholder">Who it's for</h2>
+  <p>FieldVision was built for Coach Costanza's baseball staff at Saint Mary's College of California. In an April 2, 2026 meeting the staff described their workflow:</p>
+  <ul>
+    <li>Scouting notes are written by hand, on paper or an iPad, and saved to files. There is no paid scouting software.</li>
+    <li>Trackman data is available, and an analytics staffer turns it into visuals for players. Synergy and 643 are used to build reports.</li>
+    <li>They want to upload notes in bulk, compare a recruit against a talent pool and his high school numbers, filter for the top players, and have AI help interpret the data.</li>
+  </ul>
+  <h3>The time cost</h3>
+  <p>The capstone estimated that typing up one page of handwritten notes takes 10 to 15 minutes. Cross-referencing a player against past reports adds more, and in practice rarely happens at all. <strong>That estimate has not been measured.</strong> Until it is, it is a planning number, not a result.</p>
+
+  <h2 id="sources">Sources</h2>
+  <div class="scroll"><table>
+    <thead><tr><th>Source</th><th>What it is</th><th>Dates</th><th class="num">Size</th></tr></thead>
+    <tbody id="sources-body"><tr><td colspan="4" class="small">Loading…</td></tr></tbody>
+  </table></div>
+  <p class="small">The Rickey pages were transcribed by volunteers in the Library of Congress <em>By the People</em> campaign "Branch Rickey: Changing the Game". The collection series covers 1906 to 1971; the transcribed scouting reports used here are dated within the range shown.</p>
+  <div class="scroll"><table id="rickey-years"></table></div>
+
+  <h2 id="matching">Matching and confidence</h2>
+  <h3>Finding historical comparisons</h3>
+  <p>The notes are compared with every Rickey report using TF-IDF, a word-overlap score from 0 to 1. Three adjustments sit on top, each measured on its own in the evaluation below:</p>
+  <ul>
+    <li><strong>Shared vocabulary.</strong> Modern and 1950s terms are mapped to one spelling, so "changeup" matches "change of pace" and "command" matches "control".</li>
+    <li><strong>Role filter.</strong> Notes on a pitcher are not matched with reports on position players, and the reverse. The player's role is read from the position line of the notes.</li>
+    <li><strong>Duplicates.</strong> Some pages were transcribed twice. A duplicate never takes a second slot.</li>
+  </ul>
+  <h3>When a match counts</h3>
+  <div class="card" id="bands">Loading…</div>
+  <p>Below the usable line, a match is still shown on the report, labeled as weak, but it is not given to the model. The report then says its grades rest on the notes alone.</p>
+  <h3>Confidence in each grade</h3>
+  <p>The model never rates its own certainty. Confidence is a rule applied after the fact: two or more verified quotes plus a Trackman measurement is <strong>High</strong>; quotes or a measurement alone is <strong>Medium</strong>; anything thinner is <strong>Low</strong>.</p>
+  <h3>Checks on what the model says</h3>
+  <ul>
+    <li><strong>Quotes.</strong> Every quote the model cites must appear word for word in the notes. Quotes that don't are marked.</li>
+    <li><strong>Play-by-play outcomes.</strong> When the notes are play-by-play, every strikeout, groundout, walk, stolen base, or wild-pitch claim in the report is matched to the at-bat it describes. Claims that don't match are shown above the grades.</li>
+    <li><strong>Notes against data.</strong> When notes and Trackman disagree, the report shows the conflict instead of averaging it away.</li>
+    <li><strong>The scout decides.</strong> Any grade can be overridden with a reason. Overrides are logged, and revisions are added to the log, never written over.</li>
+  </ul>
+
+  <h2 id="evaluation">Evaluation</h2>
+  <div class="card warn"><strong>Read this first.</strong> <span id="eval-caveat">Loading…</span></div>
+  <h3>Retrieval: does it find the right Rickey reports?</h3>
+  <p>Each test note was written from one randomly drawn Rickey report and labeled with the reports on that same player. A system scores when those reports appear in its top five.</p>
+  <div class="scroll"><table id="retrieval-table"></table></div>
+  <p class="small" id="retrieval-note"></p>
+  <h3>How score relates to correctness</h3>
+  <div class="scroll"><table id="calibration-table"></table></div>
+  <h3>Grades: does the model grade like a coach?</h3>
+  <div id="grades"></div>
+
+  <h2 id="benchmarks">MLB benchmarks</h2>
+  <p id="bench-intro"></p>
+  <div class="scroll"><table id="bench-table"></table></div>
+  <p class="small">Mean and spread of per-pitcher averages. A pitcher's percentile assumes these averages are normally distributed, so values far from the middle are approximate. The raw files are committed in <code>data/mlb/</code> and a test recomputes every number in this table from them.</p>
+
+  <h2 id="limitations">Limitations</h2>
+  <ul>
+    <li><strong>Era gap.</strong> The historical reports are professional scouting from <span class="yr-range">the 1950s and 1960s</span>. College notes from 2026 use different words and describe a different game. Most comparisons score below the usable line, which is why weak matches are labeled and withheld from the model.</li>
+    <li><strong>MLB benchmarks for college players.</strong> Pitch percentiles compare a college pitcher with <span class="bench-label">MLB</span> pitchers. They say where an arm sits against the major leagues, not against his own level, and most college pitchers will rank low.</li>
+    <li><strong>Fictional demo players.</strong> Cole Braddock, Danny Vasquez, and every player in the demo Trackman file are invented. The demo files tag them with the SMC team code, but they are not Saint Mary's players.</li>
+    <li><strong>Small, synthetic test sets.</strong> The retrieval test has <span class="n-gold">37</span> notes. All of them are synthetic, and their labels were drafted by AI and have not been checked by a person. A difference of a few points between systems is noise.</li>
+    <li><strong>No coach grades yet.</strong> The grade comparison has the model's side only. Until a coach grades the same notes, there is no evidence the model grades the way a coach does.</li>
+    <li><strong>The model varies between runs.</strong> Given the same notes twice, it gives the same letter grade <span class="same-letter">about two times in three</span>. A one-step difference from a coach is within that noise.</li>
+    <li><strong>Grade scale.</strong> The app grades on letters. Comparing with the 20-80 scouting scale uses an assumed conversion (C = 40, five points per step). Rank correlation and Take/Follow/Hold agreement don't depend on it; the average gap does.</li>
+    <li><strong>Word overlap only.</strong> TF-IDF matches words, not meaning. "Electric arm" and "fast ball that takes off" score zero overlap.</li>
+  </ul>
+</main>
+
+<footer>
+  FieldVision · Baseball scouting first, with a basketball module that tests whether the approach carries to another sport.
+  <div style="margin-top:8px;"><a href="/">Home</a><a href="/#app">App</a><a href="/methods">Methods</a><a href="https://github.com/jakeyoung1/FieldVision-personal">Source</a></div>
+</footer>
+
+<script>
+(async function () {
+  const esc = s => String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  const pct = v => v == null ? 'n/a' : (100 * v).toFixed(1) + '%';
+  const f3 = v => v == null ? 'n/a' : Number(v).toFixed(3);
+  let d;
+  try {
+    d = await (await fetch('/api/methods')).json();
+  } catch (e) {
+    document.querySelectorAll('#sources-body, #bands, #eval-caveat').forEach(el => el.textContent = 'Could not load the evaluation data.');
+    return;
+  }
+
+  // Sources
+  const c = d.corpus, b = d.benchmarks, bb = d.basketball;
+  const seasons = Object.keys(bb.seasons);
+  document.getElementById('sources-body').innerHTML = `
+    <tr><td>Branch Rickey Papers, Library of Congress</td><td>Transcribed scouting reports, used for historical comparisons</td>
+        <td>${c.first_year} to ${c.last_year} (${c.by_year.Undated || 0} undated)</td><td class="num">${c.documents.toLocaleString()} pages</td></tr>
+    <tr><td>${esc(b.source)}</td><td>MLB velocity and spin by pitch type, for Trackman percentiles</td>
+        <td>${b.season} season, downloaded ${esc(b.fetched)}</td><td class="num">${Object.values(b.pitch_types)[0].pitchers.toLocaleString()} pitchers (fastball)</td></tr>
+    <tr><td>Basketball-Reference</td><td>NBA per-game stats, for basketball comparisons</td>
+        <td>${seasons.join(', ')}</td><td class="num">${bb.player_seasons.toLocaleString()} player-seasons</td></tr>
+    <tr><td>Your notes and Trackman files</td><td>What every report is built from</td><td>As uploaded</td><td class="num">n/a</td></tr>`;
+  document.querySelectorAll('.yr-range').forEach(el => el.textContent = `${c.first_year} to ${c.last_year}`);
+  document.getElementById('rickey-years').innerHTML =
+    `<thead><tr><th>Report year</th>${Object.keys(c.by_year).map(y => `<th class="num">${esc(y)}</th>`).join('')}</tr></thead>
+     <tbody><tr><td>Pages</td>${Object.values(c.by_year).map(n => `<td class="num">${n}</td>`).join('')}</tr></tbody>`;
+
+  // Retrieval
+  const r = d.retrieval;
+  if (r) {
+    const bands = r.bands;
+    document.getElementById('bands').innerHTML = `
+      <strong style="color:var(--green)">Strong</strong>: ${bands.strong_from.toFixed(2)} and above &nbsp;·&nbsp;
+      <strong style="color:var(--amber)">Usable</strong>: ${bands.moderate_from.toFixed(2)} to ${bands.strong_from.toFixed(2)} &nbsp;·&nbsp;
+      <strong>Weak</strong>: below ${bands.moderate_from.toFixed(2)}.
+      <div class="small" style="margin-top:6px;">Set from the calibration table in the evaluation below, on the same test set it is reported on.</div>`;
+    const g = r.gold;
+    document.querySelectorAll('.n-gold').forEach(el => el.textContent = g.queries);
+    document.getElementById('eval-caveat').textContent =
+      `The retrieval test uses ${g.queries} synthetic notes (fictional players, written by AI from real Rickey reports). ` +
+      `Labels are ${g.label_status === 'ai_drafted_unaudited' ? 'AI-drafted and not yet checked by a person' : g.label_status}. ` +
+      `No coach has graded anything yet. Treat every number below as provisional.`;
+    const names = { random: 'Random', bm25: 'BM25 (standard word-match baseline)', tfidf_before: 'FieldVision before fixes',
+      'tfidf_before + role filter': '+ role filter only', 'tfidf_before + vocabulary': '+ shared vocabulary only', production: 'FieldVision now' };
+    document.getElementById('retrieval-table').innerHTML = `
+      <thead><tr><th>System</th><th class="num">Precision@5</th><th class="num">Recall@5</th><th class="num">MRR</th><th class="num">Wrong role in top 5</th></tr></thead>
+      <tbody>${Object.entries(r.systems).map(([k, s]) => `<tr class="${k === 'production' ? 'hl' : ''}">
+        <td>${esc(names[k] || k)}</td><td class="num">${f3(s.precision_at_5)}</td><td class="num">${f3(s.recall_at_5)}</td>
+        <td class="num">${f3(s.mrr_at_10)}</td><td class="num">${pct(s.role_mismatch_at_5)}</td></tr>`).join('')}</tbody>`;
+    const before = r.systems.tfidf_before, now = r.systems.production;
+    document.getElementById('retrieval-note').textContent =
+      `The fixes cut wrong-role matches from ${pct(before.role_mismatch_at_5)} to ${pct(now.role_mismatch_at_5)}. ` +
+      `They did not improve relevance: precision, recall, and MRR moved by about one note in ${g.queries}. ` +
+      `Precision is a lower bound, since a good match on a different player counts as a miss.`;
+    document.getElementById('calibration-table').innerHTML = `
+      <thead><tr><th>Score</th><th class="num">Matches</th><th class="num">Was a labeled report</th><th class="num">Right role</th></tr></thead>
+      <tbody>${r.calibration.map(x => `<tr><td>${x.score_from.toFixed(2)} to ${x.score_to.toFixed(2)}</td><td class="num">${x.hits}</td>
+        <td class="num">${pct(x.labeled_report_rate)}</td><td class="num">${pct(x.role_compatible_rate)}</td></tr>`).join('')}</tbody>`;
+  }
+
+  // Grades
+  const gr = d.grades, el = document.getElementById('grades');
+  if (gr) {
+    const cmp = gr.comparison, t = gr.ai_retest;
+    let html = cmp ? `<div class="scroll"><table><tbody>
+        <tr><td>Average gap, 20-80 scale (n=${cmp.n_grades})</td><td class="num">${cmp.mae_2080}</td></tr>
+        <tr><td>Model minus coach, on average</td><td class="num">${cmp.bias_2080}</td></tr>
+        <tr><td>Rank agreement (Spearman)</td><td class="num">${cmp.spearman_rho}</td></tr>
+        <tr><td>Same Take/Follow/Hold (n=${cmp.n_decisions})</td><td class="num">${pct(cmp.decision_agreement)}</td></tr>
+      </tbody></table></div>`
+      : `<div class="card warn"><strong>No coach comparison yet.</strong> The model has graded ${gr.ai_grades} players. ${gr.placeholder_rows} of ${gr.coach_rows} coach rows are still empty placeholders, so there is no gap or agreement to report.</div>`;
+    if (t) {
+      html += `<p>What can be measured now is how consistent the model is with itself. The same ${gr.ai_grades} notes, graded twice:</p>
+        <div class="scroll"><table><tbody>
+        <tr><td>Same letter grade</td><td class="num">${pct(t.same_letter)}</td></tr>
+        <tr><td>Within one step</td><td class="num">${pct(t.within_one_step)}</td></tr>
+        <tr><td>Average gap, 20-80 scale</td><td class="num">${t.mae_2080}</td></tr>
+        <tr><td>Same Take/Follow/Hold</td><td class="num">${pct(t.decision_agreement)}</td></tr>
+        </tbody></table></div>
+        <p class="small">The model can't agree with a coach more consistently than it agrees with itself, so these numbers cap what the coach comparison can show.</p>`;
+      document.querySelectorAll('.same-letter').forEach(e => e.textContent = pct(t.same_letter) + ' of the time');
+    }
+    el.innerHTML = html;
+  }
+
+  // Benchmarks
+  document.querySelectorAll('.bench-label').forEach(e => e.textContent = b.label);
+  document.getElementById('bench-intro').textContent =
+    `Trackman pitch percentiles compare against ${b.label} pitchers: ${b.source}, ${b.season} regular season, downloaded ${b.fetched}.`;
+  document.getElementById('bench-table').innerHTML = `
+    <thead><tr><th>Pitch</th><th class="num">Velo mean</th><th class="num">Velo SD</th><th class="num">Spin mean</th><th class="num">Spin SD</th><th class="num">Pitchers</th></tr></thead>
+    <tbody>${Object.entries(b.pitch_types).map(([k, v]) => `<tr><td>${esc(k)}</td>
+      <td class="num">${v.velo_mean} mph</td><td class="num">${v.velo_sd}</td><td class="num">${v.spin_mean.toLocaleString()} rpm</td>
+      <td class="num">${v.spin_sd}</td><td class="num">${v.pitchers}</td></tr>`).join('')}</tbody>`;
+})();
+</script>
+</body>
+</html>

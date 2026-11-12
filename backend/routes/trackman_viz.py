@@ -65,8 +65,10 @@ def build_viz(df: pd.DataFrame) -> dict:
 
         pitchers[str(pitcher)] = {"pitches": pitches, "types": type_summary}
 
-    return {"pitchers": pitchers, "benchmark_note":
-            "Percentiles vs approximate MLB league distributions (public Statcast data)"}
+    return {"pitchers": pitchers,
+            "benchmark_note": mlb_benchmarks.NOTE,
+            "benchmark_label": mlb_benchmarks.LABEL,
+            "benchmark_season": mlb_benchmarks.SEASON}
 
 
 @router.post("/trackman/viz")

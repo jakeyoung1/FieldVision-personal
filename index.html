@@ -505,6 +505,7 @@
       <a href="#pipeline"  class="nav-link">Pipeline</a>
       <a href="#features"  class="nav-link">Features</a>
       <a href="#stack"     class="nav-link">Stack</a>
+      <a href="/methods"   class="nav-link">Methods</a>
       <a href="#" class="nav-link" onclick="fvToggleGuide(event)">Guide</a>
     </div>
 
@@ -530,7 +531,7 @@
     <div class="fv-guide-sport">⚾ Baseball</div>
     <ol class="fv-guide-list">
       <li><strong>Scouting Notes</strong> — upload PDF/TXT files (handwritten PDFs OK — Claude Vision reads them) or paste notes. Multiple players: name on the first line of each block, separated by <code>---</code>. Every report is grounded in 1,919 Branch Rickey historical scouting documents and graded A–F. Use <em>⚡ Load demo scouting notes</em> to try instantly.</li>
-      <li><strong>Trackman</strong> — drop a Trackman CSV. You get instant pitch charts: MLB percentile sliders (velo + spin vs league averages), a movement plot, and plate location — then click <em>Analyze Pitching Data</em> for the AI read. <em>⚡ Load demo Trackman data</em> works without a file.</li>
+      <li><strong>Trackman</strong> — drop a Trackman CSV. You get instant pitch charts: percentile sliders (velo + spin vs 2025 MLB pitchers' averages), a movement plot, and plate location — then click <em>Analyze Pitching Data</em> for the AI read. <em>⚡ Load demo Trackman data</em> works without a file.</li>
       <li><strong>Players</strong> — every analyzed player lands here with a grade badge. Search and filter by grade or source.</li>
       <li><strong>Compare</strong> — pick any two scouted players for an AI head-to-head: category-by-category edges, risk profiles, and a verdict.</li>
       <li><strong>Combined Chat</strong> — ask anything about everything loaded this session (notes + Trackman together).</li>
@@ -1613,6 +1614,8 @@
     <div style="display:flex;align-items:center;gap:20px;">
       <a href="#app" style="font-size:.82rem;color:rgba(240,244,255,.45);text-decoration:none;transition:color .2s ease;"
          onmouseover="this.style.color='#f0f4ff'" onmouseout="this.style.color='rgba(240,244,255,.45)'">App</a>
+      <a href="/methods" style="font-size:.82rem;color:rgba(240,244,255,.45);text-decoration:none;transition:color .2s ease;"
+         onmouseover="this.style.color='#f0f4ff'" onmouseout="this.style.color='rgba(240,244,255,.45)'">Methods</a>
       <a href="https://github.com/jakeyoung1/FieldVision" target="_blank"
          style="font-size:.82rem;color:rgba(240,244,255,.45);text-decoration:none;transition:color .2s ease;"
          onmouseover="this.style.color='#f0f4ff'" onmouseout="this.style.color='rgba(240,244,255,.45)'">GitHub</a>
@@ -2559,7 +2562,7 @@ document.querySelectorAll('[data-topline]').forEach(line => {
         Sources: scouting notes${s.had_measurement ? ' · Trackman session data' : ''}${r.context_used ? ' · Branch Rickey historical corpus' : ''}.
         ${r.rickey && !r.context_used ? 'No Branch Rickey report matched closely enough to be used as evidence.' : ''}
         AI-generated analysis with human scout review — the scout owns the final evaluation.
-        Percentile references are approximate league distributions, not official MLB percentiles.
+        Pitch percentiles compare against 2025 MLB pitchers (Baseball Savant, per-pitcher averages) and are approximations, not official Statcast percentiles. Methods and limitations: ${location.origin}/methods.
       </div>`;
   }
 
@@ -3891,7 +3894,7 @@ window.fvStreamFetch = async function (url, payload, onDelta) {
             let l = `${name} — ${t.type}: ${t.count} pitches`;
             if (t.avg_velo) l += `, ${t.avg_velo} mph avg (max ${t.max_velo})`;
             if (t.avg_spin) l += `, ${t.avg_spin} rpm`;
-            if (t.velo_pctile != null) l += `, ~${t.velo_pctile}th pct MLB velo`;
+            if (t.velo_pctile != null) l += `, ~${t.velo_pctile}th pct of ${data.benchmark_label || 'MLB'} pitchers for velo`;
             lines.push(l);
           }
         }
@@ -3935,7 +3938,7 @@ window.fvStreamFetch = async function (url, payload, onDelta) {
       const bars = [];
       if (t.velo_pctile != null) bars.push(bar('Velo', t.avg_velo + ' mph', t.velo_pctile));
       if (t.spin_pctile != null) bars.push(bar('Spin', t.avg_spin + ' rpm', t.spin_pctile));
-      if (!bars.length && t.avg_velo) bars.push(`<div style="font-size:.75rem;color:rgba(240,244,255,.4);">${t.avg_velo} mph avg — no MLB benchmark</div>`);
+      if (!bars.length && t.avg_velo) bars.push(`<div style="font-size:.75rem;color:rgba(240,244,255,.4);">${t.avg_velo} mph avg — no ${vizData.benchmark_label || 'MLB'} benchmark for this pitch type</div>`);
       return `
         <div style="margin-bottom:14px;">
           <div style="display:flex;align-items:center;gap:8px;font-size:.8rem;font-weight:600;margin-bottom:6px;">
@@ -3945,13 +3948,13 @@ window.fvStreamFetch = async function (url, payload, onDelta) {
           ${bars.join('')}
         </div>`;
     }).join('');
-    return `<div style="font-size:.8rem;font-weight:700;margin-bottom:12px;color:rgba(240,244,255,.7);">MLB Percentiles</div>${rows}`;
+    return `<div style="font-size:.8rem;font-weight:700;margin-bottom:12px;color:rgba(240,244,255,.7);">${vizData.benchmark_label || 'MLB'} Percentiles <a href="/methods#benchmarks" style="font-weight:400;font-size:.7rem;color:rgba(240,244,255,.4);">source</a></div>${rows}`;
   }
 
   function bar (label, value, pct) {
     return `
       <div style="display:flex;align-items:center;gap:8px;margin-bottom:5px;"
-           title="Approximate percentile vs public MLB league distributions — not an official MLB/Statcast percentile.">
+           title="Approximate percentile vs ${vizData.benchmark_label || 'MLB'} pitchers' averages (Baseball Savant). Not an official Statcast percentile.">
         <span style="width:34px;font-size:.7rem;color:rgba(240,244,255,.45);">${label}</span>
         <div style="flex:1;height:8px;border-radius:99px;background:rgba(255,255,255,.07);position:relative;">
           <div style="width:${pct}%;height:100%;border-radius:99px;background:${pctColor(pct)};"></div>
