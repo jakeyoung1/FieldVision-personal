@@ -1,9 +1,9 @@
 """Decision audit trail — record and read scout overrides of AI grades."""
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, Depends, HTTPException
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel
 
-from backend.services import audit, errors
+from backend.services import audit, auth, errors
 
 router = APIRouter()
 
@@ -18,13 +18,13 @@ class OverrideEvent(BaseModel):
     session_id: str = ""
 
 
-@router.post("/audit/override")
+@router.post("/audit/override", dependencies=[Depends(auth.require_scout_key)])
 def record_override(req: OverrideEvent):
     """Append one override event to the decision log.
 
-    The frontend calls this fire-and-forget: a scout's local override must keep
-    working whether or not the log accepts the write, so failures here never
-    block the UI.
+    Requires the scout key. The frontend calls this fire-and-forget: a scout's
+    local override keeps working whether or not the log accepts the write, and
+    the UI says when it did not.
     """
     try:
         return JSONResponse(audit.record(
@@ -36,7 +36,7 @@ def record_override(req: OverrideEvent):
         raise HTTPException(500, f"Audit write failed: {errors.report(e, __name__)}")
 
 
-@router.get("/audit/log")
+@router.get("/audit/log", dependencies=[Depends(auth.require_scout_key)])
 def read_log(player: str | None = None, limit: int = 100):
     try:
         return JSONResponse({"entries": audit.log(player=player, limit=limit)})
@@ -47,6 +47,7 @@ def read_log(player: str | None = None, limit: int = 100):
 @router.get("/audit/summary")
 def read_summary():
     try:
-        return JSONResponse(audit.summary())
+        # Aggregate counts only, no player names, so this stays public.
+        return JSONResponse({**audit.summary(), **auth.status()})
     except Exception as e:
         raise HTTPException(500, f"Audit read failed: {errors.report(e, __name__)}")

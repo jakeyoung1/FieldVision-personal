@@ -16,6 +16,7 @@ from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
+from starlette.exceptions import HTTPException as StarletteHTTPException
 
 from backend.routes import (analyze, audit, basketball, chat, compare, methods, timing,
                             trackman, trackman_viz)
@@ -105,13 +106,22 @@ def serve_root():
     return FileResponse(str(ROOT_HTML))
 
 
-@app.get("/{path:path}", include_in_schema=False)
-def serve_spa(path: str):
-    """Serve index.html for all non-API routes (SPA fallback).
+NOT_FOUND_HTML = Path(__file__).parent.parent / "not_found.html"
 
-    The URL is never mapped onto the filesystem. Doing so served any file the
-    process could read (.env, source, the audit DB, and via ../ anything on the
-    host). Assets live under /static, which StaticFiles serves with its own
-    traversal checks.
+
+@app.exception_handler(StarletteHTTPException)
+async def not_found(request: Request, exc: StarletteHTTPException):
+    """Real 404s instead of serving the homepage for every unknown URL.
+
+    The old SPA fallback answered any path with index.html and a 200, so a
+    typo, a dead link, or /api/anything looked like a working page and search
+    engines indexed duplicates. The app navigates by #anchors, so no client
+    route needs a server fallback. API callers get JSON; browsers get a page.
+    The URL is still never mapped onto the filesystem.
     """
-    return FileResponse(str(ROOT_HTML))
+    if exc.status_code != 404:
+        return JSONResponse({"detail": exc.detail}, status_code=exc.status_code, headers=exc.headers)
+    if request.url.path.startswith("/api/"):
+        detail = exc.detail if exc.detail != "Not Found" else "No such API route"
+        return JSONResponse({"detail": detail}, status_code=404)
+    return FileResponse(str(NOT_FOUND_HTML), status_code=404)

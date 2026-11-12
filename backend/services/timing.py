@@ -8,36 +8,18 @@ The hand-written baseline is not something the app can observe. It is
 collected with the protocol on /methods#time and compared offline by
 evaluation/time_study.py.
 
-Rows live in the same SQLite file as the decision log (FV_AUDIT_DB), with the
-same durability.
+Rows live in the same store as the decision log (backend/services/store.py),
+with the same durability.
 """
 from __future__ import annotations
 
 import statistics
-import threading
 from datetime import datetime, timezone
 
-from backend.services import audit
+from backend.services import store
 
-_lock = threading.Lock()
 FINISH_EVENTS = ("reviewed", "exported")
 MAX_SECONDS = 4 * 60 * 60     # a report "finished" four hours later is an abandoned tab
-
-
-def _connect():
-    conn = audit._connect()
-    conn.execute("""
-        CREATE TABLE IF NOT EXISTS report_timings (
-            id                INTEGER PRIMARY KEY AUTOINCREMENT,
-            ts                TEXT NOT NULL,
-            session_id        TEXT NOT NULL DEFAULT '',
-            player            TEXT NOT NULL DEFAULT '',
-            seconds_to_report REAL NOT NULL,
-            seconds_to_finish REAL NOT NULL,
-            finished_by       TEXT NOT NULL
-        )
-    """)
-    return conn
 
 
 def record(player: str, seconds_to_report: float, seconds_to_finish: float,
@@ -54,30 +36,13 @@ def record(player: str, seconds_to_report: float, seconds_to_finish: float,
         "seconds_to_finish": round(float(seconds_to_finish), 1),
         "finished_by": finished_by,
     }
-    with _lock:
-        conn = _connect()
-        try:
-            cur = conn.execute(
-                "INSERT INTO report_timings (ts, session_id, player, seconds_to_report,"
-                " seconds_to_finish, finished_by) VALUES (?,?,?,?,?,?)",
-                (row["ts"], row["session_id"], row["player"], row["seconds_to_report"],
-                 row["seconds_to_finish"], row["finished_by"]),
-            )
-            conn.commit()
-            row["id"] = cur.lastrowid
-        finally:
-            conn.close()
+    row["id"] = store.insert("report_timings", row)
     return row
 
 
 def rows(limit: int = 1000) -> list[dict]:
-    with _lock:
-        conn = _connect()
-        try:
-            out = conn.execute("SELECT * FROM report_timings ORDER BY id DESC LIMIT ?",
-                               (max(1, min(int(limit), 5000)),)).fetchall()
-        finally:
-            conn.close()
+    out = store.select("SELECT * FROM report_timings ORDER BY id DESC LIMIT ?",
+                       (max(1, min(int(limit), 5000)),))
     return [dict(r) for r in out]
 
 

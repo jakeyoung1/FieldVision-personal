@@ -11,52 +11,19 @@ writes a new row rather than mutating the old one, so the log answers "what did
 this scout think, and when did they change their mind?" — not just "what do they
 think now."
 
-Storage is stdlib sqlite3, consistent with the project's zero-heavy-dependency
-posture. FV_AUDIT_DB sets the file path; on ephemeral hosting (Render free tier)
-the log lives for the container's lifetime, and pointing that variable at a
-mounted volume makes it durable. Stated plainly rather than implied, because a
-half-durable audit log is worse than one whose limits are known.
+Storage is backend/services/store.py: Postgres when DATABASE_URL is set
+(survives restarts and redeploys), otherwise SQLite at FV_AUDIT_DB. On Render's
+free plan a SQLite file is wiped on every restart. summary() says which mode is
+active, because a half-durable audit log is worse than one whose limits are known.
 """
 from __future__ import annotations
 
-import os
-import sqlite3
-import threading
 from datetime import datetime, timezone
-from pathlib import Path
 
-DEFAULT_DB = Path(__file__).parent.parent.parent / "fieldvision_audit.db"
+from backend.services import store
+
 ACTIONS = ("set", "cleared")
 GRADE_ORDER = ["F", "D", "D+", "C-", "C", "C+", "B-", "B", "B+", "A-", "A"]
-
-# sqlite3 connections are not shareable across threads, and FastAPI serves on a
-# threadpool. One lock plus a per-call connection keeps writes serialized without
-# a connection pool; write volume here is a handful of rows per scouting session.
-_lock = threading.Lock()
-
-
-def _db_path() -> Path:
-    return Path(os.environ.get("FV_AUDIT_DB") or DEFAULT_DB)
-
-
-def _connect() -> sqlite3.Connection:
-    conn = sqlite3.connect(_db_path(), timeout=5)
-    conn.row_factory = sqlite3.Row
-    conn.execute("""
-        CREATE TABLE IF NOT EXISTS overrides (
-            id           INTEGER PRIMARY KEY AUTOINCREMENT,
-            ts           TEXT NOT NULL,
-            session_id   TEXT NOT NULL DEFAULT '',
-            player       TEXT NOT NULL,
-            tool         TEXT NOT NULL,
-            ai_grade     TEXT,
-            scout_grade  TEXT,
-            reason       TEXT NOT NULL DEFAULT '',
-            action       TEXT NOT NULL DEFAULT 'set'
-        )
-    """)
-    conn.execute("CREATE INDEX IF NOT EXISTS idx_overrides_player ON overrides(player)")
-    return conn
 
 
 def _direction(ai_grade: str | None, scout_grade: str | None) -> str:
@@ -86,19 +53,7 @@ def record(player: str, tool: str, ai_grade: str | None, scout_grade: str | None
         "reason": str(reason).strip()[:300],
         "action": action,
     }
-    with _lock:
-        conn = _connect()
-        try:
-            cur = conn.execute(
-                "INSERT INTO overrides (ts, session_id, player, tool, ai_grade,"
-                " scout_grade, reason, action) VALUES (?,?,?,?,?,?,?,?)",
-                (row["ts"], row["session_id"], row["player"], row["tool"],
-                 row["ai_grade"], row["scout_grade"], row["reason"], row["action"]),
-            )
-            conn.commit()
-            row["id"] = cur.lastrowid
-        finally:
-            conn.close()
+    row["id"] = store.insert("overrides", row)
     row["direction"] = _direction(row["ai_grade"], row["scout_grade"])
     return row
 
@@ -106,20 +61,11 @@ def record(player: str, tool: str, ai_grade: str | None, scout_grade: str | None
 def log(player: str | None = None, limit: int = 100) -> list[dict]:
     """Most recent override events, newest first."""
     limit = max(1, min(int(limit), 500))
-    with _lock:
-        conn = _connect()
-        try:
-            if player:
-                rows = conn.execute(
-                    "SELECT * FROM overrides WHERE player = ? ORDER BY id DESC LIMIT ?",
-                    (str(player)[:80], limit),
-                ).fetchall()
-            else:
-                rows = conn.execute(
-                    "SELECT * FROM overrides ORDER BY id DESC LIMIT ?", (limit,)
-                ).fetchall()
-        finally:
-            conn.close()
+    if player:
+        rows = store.select("SELECT * FROM overrides WHERE player = ? ORDER BY id DESC LIMIT ?",
+                            (str(player)[:80], limit))
+    else:
+        rows = store.select("SELECT * FROM overrides ORDER BY id DESC LIMIT ?", (limit,))
     out = []
     for r in rows:
         d = dict(r)
@@ -146,5 +92,5 @@ def summary() -> dict:
         "players_touched": len({e["player"] for e in entries}),
         "directions": directions,
         "most_overridden_tools": [{"tool": t, "count": c} for t, c in top],
-        "durable": bool(os.environ.get("FV_AUDIT_DB")),
+        **store.describe(),
     }

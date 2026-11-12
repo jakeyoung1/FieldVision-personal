@@ -1,7 +1,7 @@
 """Minutes per finished report: by hand vs with FieldVision.
 
     .venv/bin/python -m evaluation.time_study                     # local files only
-    .venv/bin/python -m evaluation.time_study --app-url URL       # pull the app's timing log first
+    FV_SCOUT_KEY=... .venv/bin/python -m evaluation.time_study --app-url URL   # pull the app's log first
 
 Inputs
   time_study/hand_baseline.csv   one row per report a scout wrote the usual way,
@@ -15,6 +15,7 @@ side, the script says there is no measurement instead of printing a number.
 import argparse
 import csv
 import json
+import os
 import statistics
 import urllib.request
 from pathlib import Path
@@ -64,7 +65,9 @@ def compare(hand: list[float], app: list[float]) -> dict:
 
 def pull(app_url: str) -> int:
     """Save the app's timing log to app_timings.csv."""
-    with urllib.request.urlopen(app_url.rstrip("/") + "/api/timing/log", timeout=30) as resp:
+    req = urllib.request.Request(app_url.rstrip("/") + "/api/timing/log",
+                                 headers={"X-Scout-Key": os.environ.get("FV_SCOUT_KEY", "")})
+    with urllib.request.urlopen(req, timeout=30) as resp:
         rows = json.loads(resp.read())["rows"]
     with APP.open("w", newline="") as f:
         w = csv.DictWriter(f, fieldnames=APP_COLUMNS)

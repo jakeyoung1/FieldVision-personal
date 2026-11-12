@@ -61,9 +61,9 @@ Also: box score CSV analysis (PPG/RPG/APG/TS%), a four-mode coaching assistant, 
 | AI | Anthropic Claude Sonnet 5 (text and Vision OCR) with adaptive thinking, effort tuned per call — `high` for scouting reports and comparisons, `medium` for chat. Structured JSON extraction runs on Haiku 4.5, a fifth the cost for a task that only reformats text the reasoning model already produced. Structured-JSON evaluations with server-side validation, evidence verification against source text, and computed confidence |
 | RAG | scikit-learn TF-IDF, dual indexes (deliberate zero-heavy-dependency choice for fast cold starts; see design notes below) |
 | Guardrails | Per-IP rate limiting, size caps, env-driven CORS |
-| Audit | Append-only SQLite decision log (stdlib `sqlite3`, path via `FV_AUDIT_DB`) |
+| Audit | Append-only decision log and report timings: Postgres when `DATABASE_URL` is set, otherwise SQLite (`FV_AUDIT_DB`). Writes need the staff scout key (`FV_SCOUT_KEY`) |
 | CI | GitHub Actions — ruff + pytest on every push |
-| Tests | 138 pytest cases, all runnable without an API key |
+| Tests | 161 pytest cases (4 run only against Postgres; CI starts one), all runnable without an API key |
 
 ### Design notes
 - **Evidence verification:** quoted evidence is checked to be a verbatim substring of the source notes; unverifiable quotes are marked.
@@ -76,7 +76,9 @@ Also: box score CSV analysis (PPG/RPG/APG/TS%), a four-mode coaching assistant, 
 - **Outcome claims are checked against the play-by-play:** when notes are play-by-play, every strikeout, groundout, walk, stolen base, or wild-pitch claim in the report is matched to the at-bats it came from, and unsupported claims are shown above the grades (`backend/services/play_by_play.py`).
 - **Time saved is measured, not estimated:** the app logs minutes from Analyze to a reviewed or exported report; `python -m evaluation.time_study` compares that with stopwatch times for reports written by hand (protocol on `/methods#time`). No times have been collected yet. A pilot with Coach Costanza's staff on about 10 players is planned, with success criteria fixed in advance on `/methods#pilot`.
 - **AI grades are compared to a coach's, blind:** `python -m evaluation.grade_validation` grades 20 note sets with the production pipeline and compares them with a coach's grades on the same notes (MAE on 20-80, bias, Spearman rho, Take/Follow/Hold agreement, Cohen's kappa). No coach grades have been collected yet, so it reports no comparison rather than a number. It does report the model against itself: two identical runs agree on the exact letter 65% of the time, within one step 95%, and on Take/Follow/Hold 90%.
-- **Audit durability is stated, not implied:** storage is stdlib `sqlite3` at `FV_AUDIT_DB`. On ephemeral hosting the log lives for the container's lifetime; pointing that variable at a mounted volume makes it durable. The UI says which mode it is in rather than letting the reader assume.
+- **Audit durability is stated, not implied:** with `DATABASE_URL` set, overrides and timings live in Postgres and survive restarts and redeploys. Without it they go to a SQLite file, which Render's free plan wipes on every restart, and the Decision Log tab says so. The same tests run against both backends.
+- **Writes need the staff's key:** grade overrides, report timings, and the player-level logs require the `X-Scout-Key` header to match `FV_SCOUT_KEY` (constant-time compare). With no key configured the server refuses those requests instead of opening them. Aggregate counts stay public.
+- **Unknown URLs are real 404s:** pages get a not-found page, `/api/*` gets JSON. The old fallback served the homepage with a 200 for every path.
 - **Evidence verification checks the whole quote:** an earlier version compared only the first 60 characters, which passed a quote that opened verbatim and then invented its tail. Comparison now normalizes whitespace (so a quote spanning a PDF line break still matches) and requires the full quote to appear in the notes.
 - **Percentiles cite their season:** pitch percentiles compare against 2025 MLB pitchers (Baseball Savant pitch-arsenals leaderboard, min. 100 pitches). The raw files are in `data/mlb/` and a test recomputes every benchmark from them.
 
@@ -93,13 +95,13 @@ Two PDFs from the April 2026 capstone build, linked at the last commit that cont
 
 ```bash
 python3 -m venv .venv && .venv/bin/pip install -r requirements.txt
-cp .env.example .env   # add your ANTHROPIC_API_KEY
+cp .env.example .env   # add ANTHROPIC_API_KEY; set FV_SCOUT_KEY (or FV_ALLOW_OPEN_WRITES=1 locally)
 .venv/bin/uvicorn backend.main:app --port 8001
 ```
 
 Tests: `.venv/bin/pip install -r requirements-dev.txt && .venv/bin/python -m pytest tests/`
 
-Deploy: `render.yaml` blueprint included — point Render at this repo, set `ANTHROPIC_API_KEY`.
+Deploy: `render.yaml` blueprint included. Point Render at this repo and set `ANTHROPIC_API_KEY` and `FV_SCOUT_KEY` in the dashboard. Set `DATABASE_URL` to a Postgres database to keep overrides and timings across restarts; see `.env.example`.
 
 ## Project structure
 
