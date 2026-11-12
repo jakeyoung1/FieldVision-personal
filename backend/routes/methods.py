@@ -12,7 +12,7 @@ from pathlib import Path
 from fastapi import APIRouter
 from fastapi.responses import FileResponse, JSONResponse
 
-from backend.services import mlb_benchmarks, rag
+from backend.services import mlb_benchmarks, rag, timing
 
 ROOT = Path(__file__).resolve().parents[2]
 RESULTS = ROOT / "evaluation" / "results"
@@ -61,6 +61,8 @@ def methods_data() -> dict:
         "corpus": _corpus(),
         "benchmarks": mlb_benchmarks.describe(),
         "basketball": _basketball(),
+        "time_study": _read("time_study.json"),
+        "app_timings": timing.summary(),
     }
 
 

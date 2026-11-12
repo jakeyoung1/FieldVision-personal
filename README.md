@@ -1,4 +1,4 @@
-# FieldVision — Baseball Scouting Intelligence
+# FieldVision: Baseball Scouting Intelligence
 
 AI-assisted scouting platform built around a principle pro evaluators actually care about: **show your evidence**. Every grade traces back to the exact note sentences and Trackman numbers that produced it, confidence is computed from evidence availability (never self-reported by the model), the system flags when notes and data disagree — and the human scout owns the final evaluation.
 
@@ -42,7 +42,7 @@ Plus, per tool and overall:
 
 ---
 
-## Basketball module — proving the architecture generalizes
+## Basketball module: a generalization test
 
 The same pipeline (notes → RAG comps → structured report → coaching chat) was ported to basketball to test sport-agnosticism, plus one sport-specific showpiece: **Play Maker** — drag five dots on an SVG half court, describe each player's strengths, and the AI designs a set play the dots then run as an animation with live coaching captions.
 
@@ -63,7 +63,7 @@ Also: box score CSV analysis (PPG/RPG/APG/TS%), a four-mode coaching assistant, 
 | Guardrails | Per-IP rate limiting, size caps, env-driven CORS |
 | Audit | Append-only SQLite decision log (stdlib `sqlite3`, path via `FV_AUDIT_DB`) |
 | CI | GitHub Actions — ruff + pytest on every push |
-| Tests | 129 pytest cases, all runnable without an API key |
+| Tests | 138 pytest cases, all runnable without an API key |
 
 ### Design notes
 - **Evidence verification:** quoted evidence is checked to be a verbatim substring of the source notes; unverifiable quotes are marked.
@@ -74,6 +74,7 @@ Also: box score CSV analysis (PPG/RPG/APG/TS%), a four-mode coaching assistant, 
 - **The audit log is append-only:** an override that can be silently revised is not an accountability record. Clearing an override writes a `cleared` row rather than deleting history.
 - **Disagreement is a quality signal, not just compliance:** a tool scouts keep downgrading is a tool the model reads too generously, so the log aggregates direction of override per tool.
 - **Outcome claims are checked against the play-by-play:** when notes are play-by-play, every strikeout, groundout, walk, stolen base, or wild-pitch claim in the report is matched to the at-bats it came from, and unsupported claims are shown above the grades (`backend/services/play_by_play.py`).
+- **Time saved is measured, not estimated:** the app logs minutes from Analyze to a reviewed or exported report; `python -m evaluation.time_study` compares that with stopwatch times for reports written by hand (protocol on `/methods#time`). No times have been collected yet. A pilot with Coach Costanza's staff on about 10 players is planned, with success criteria fixed in advance on `/methods#pilot`.
 - **AI grades are compared to a coach's, blind:** `python -m evaluation.grade_validation` grades 20 note sets with the production pipeline and compares them with a coach's grades on the same notes (MAE on 20-80, bias, Spearman rho, Take/Follow/Hold agreement, Cohen's kappa). No coach grades have been collected yet, so it reports no comparison rather than a number. It does report the model against itself: two identical runs agree on the exact letter 65% of the time, within one step 95%, and on Take/Follow/Hold 90%.
 - **Audit durability is stated, not implied:** storage is stdlib `sqlite3` at `FV_AUDIT_DB`. On ephemeral hosting the log lives for the container's lifetime; pointing that variable at a mounted volume makes it durable. The UI says which mode it is in rather than letting the reader assume.
 - **Evidence verification checks the whole quote:** an earlier version compared only the first 60 characters, which passed a quote that opened verbatim and then invented its tail. Comparison now normalizes whitespace (so a quote spanning a PDF line break still matches) and requires the full quote to appear in the notes.

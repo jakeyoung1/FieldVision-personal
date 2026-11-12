@@ -17,7 +17,8 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 
-from backend.routes import analyze, audit, basketball, chat, compare, methods, trackman, trackman_viz
+from backend.routes import (analyze, audit, basketball, chat, compare, methods, timing,
+                            trackman, trackman_viz)
 
 # ── App ───────────────────────────────────────────────────────────────────────
 app = FastAPI(
@@ -75,6 +76,7 @@ app.include_router(basketball.router, prefix="/api")
 app.include_router(trackman_viz.router, prefix="/api")
 app.include_router(compare.router, prefix="/api")
 app.include_router(audit.router, prefix="/api")
+app.include_router(timing.router, prefix="/api")
 app.include_router(methods.router)   # /methods page + /api/methods data
 
 
