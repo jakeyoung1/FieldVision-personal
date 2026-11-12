@@ -2158,11 +2158,38 @@ document.querySelectorAll('[data-topline]').forEach(line => {
               font-size:.72rem;font-weight:600;cursor:pointer;">↓ Export PDF</button>
           </div>
           <div class="fv-report-md">${reportHtml}</div>
+          ${rickeyNotice(r)}
         </div>`;
     }).join('<hr style="border:none;border-top:1px solid rgba(255,255,255,.07);margin:20px 0;">');
 
     document.getElementById('fv-report-content').innerHTML =
       `<div style="max-height:560px;overflow-y:auto;padding-right:4px;">${html}</div>`;
+  }
+
+  // How good the Branch Rickey match was. Weak matches are named as weak and
+  // were not handed to the model; the scout should never read a 1950s comp as
+  // support when the retriever found nothing close.
+  const RICKEY_QUALITY = {
+    strong:   { label: 'Strong historical match', color: '#4ade80',
+                text: n => `${n} Rickey report${n === 1 ? '' : 's'} used as context.` },
+    moderate: { label: 'Partial historical match', color: '#fbbf24',
+                text: n => `${n} Rickey report${n === 1 ? '' : 's'} used as context. Treat the historical comparison as loose.` },
+    weak:     { label: 'No close historical match', color: 'rgba(240,244,255,.55)',
+                text: () => 'The closest Rickey reports scored below the evidence threshold, so none were given to the model. The grades rest on your notes alone.' },
+    none:     { label: 'No historical match', color: 'rgba(240,244,255,.55)',
+                text: () => 'No Rickey report shared vocabulary with these notes. The grades rest on your notes alone.' },
+  };
+
+  function rickeyNotice (r) {
+    const m = r.rickey;
+    if (!m) return '';
+    const q = RICKEY_QUALITY[m.quality] || RICKEY_QUALITY.none;
+    const best = m.matches && m.matches[0] ? ` Best score ${m.matches[0].score.toFixed(2)} (strong ≥ ${m.bands.strong_from}, usable ≥ ${m.bands.moderate_from}).` : '';
+    return `
+      <div data-rickey-quality="${m.quality}" style="margin-top:12px;padding:9px 12px;border-radius:8px;
+           border:1px solid rgba(255,255,255,.1);background:rgba(255,255,255,.02);font-size:.74rem;color:rgba(240,244,255,.55);">
+        <span style="font-weight:700;color:${q.color};">${q.label}.</span> ${q.text(m.used_as_evidence)}${best}
+      </div>`;
   }
 
   function structuredCard (r, ri) {
@@ -2221,6 +2248,7 @@ document.querySelectorAll('[data-topline]').forEach(line => {
             <div style="font-size:.7rem;font-weight:700;letter-spacing:.06em;color:#a5b4fc;margin-bottom:6px;">WHAT WOULD CHANGE THIS EVALUATION</div>
             ${s.what_would_change.map(w => `<div style="font-size:.78rem;color:rgba(240,244,255,.6);margin:3px 0;">· ${w}</div>`).join('')}
           </div>` : ''}
+        ${rickeyNotice(r)}
         <div style="font-size:.68rem;color:rgba(240,244,255,.28);margin-top:10px;">
           Sources: scouting notes${s.had_measurement ? ' · Trackman session data' : ''}${r.context_used ? ' · Branch Rickey corpus' : ''}
           · AI analysis with scout review — human owns the final evaluation
@@ -2510,6 +2538,7 @@ document.querySelectorAll('[data-topline]').forEach(line => {
       <h2>Recommendation</h2><p><strong>${s.recommendation}</strong> — ${s.recommendation_reason}</p>
       <div class="foot">
         Sources: scouting notes${s.had_measurement ? ' · Trackman session data' : ''}${r.context_used ? ' · Branch Rickey historical corpus' : ''}.
+        ${r.rickey && !r.context_used ? 'No Branch Rickey report matched closely enough to be used as evidence.' : ''}
         AI-generated analysis with human scout review — the scout owns the final evaluation.
         Percentile references are approximate league distributions, not official MLB percentiles.
       </div>`;
