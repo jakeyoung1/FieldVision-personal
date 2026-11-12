@@ -29,6 +29,7 @@ from pathlib import Path
 HERE = Path(__file__).parent / "grades"
 PLAYERS = HERE / "players.json"
 AI_GRADES = HERE / "ai_grades.json"
+AI_REPEAT = HERE / "ai_grades_repeat.json"
 COACH_GRADES = HERE / "coach_grades.csv"
 RESULTS = Path(__file__).parent / "results"
 
@@ -133,10 +134,10 @@ def load_players() -> list[dict]:
     return json.loads(PLAYERS.read_text())["players"]
 
 
-def load_ai() -> dict[str, dict]:
-    if not AI_GRADES.exists():
+def load_ai(path: Path = AI_GRADES) -> dict[str, dict]:
+    if not path.exists():
         return {}
-    return {g["id"]: g for g in json.loads(AI_GRADES.read_text())["grades"]}
+    return {g["id"]: g for g in json.loads(path.read_text())["grades"]}
 
 
 def load_coach() -> list[dict]:
@@ -154,7 +155,7 @@ def real_coach_rows(rows: list[dict]) -> list[dict]:
 
 
 # ── Commands ─────────────────────────────────────────────────────────────────
-def generate(workers: int = 4) -> None:
+def generate(workers: int = 4, out: Path = AI_GRADES) -> None:
     """Grade every player with the production Evidence Chain. Costs API calls."""
     try:
         from dotenv import load_dotenv
@@ -173,12 +174,32 @@ def generate(workers: int = 4) -> None:
     players = load_players()
     with ThreadPoolExecutor(max_workers=workers) as pool:
         grades = list(pool.map(one, players))
-    AI_GRADES.write_text(json.dumps({
+    out.write_text(json.dumps({
         "_meta": {"generated_at": datetime.now(timezone.utc).isoformat(timespec="seconds"),
                   "model": claude.MODEL, "pipeline": "backend.services.scout_report.evaluate",
                   "trackman": "none", "note": "Real model output. Regenerating will change some grades."},
         "grades": grades}, indent=1) + "\n")
-    print(f"wrote {len(grades)} AI grades to {AI_GRADES}")
+    print(f"wrote {len(grades)} AI grades to {out}")
+
+
+def retest(ai: dict[str, dict], repeat: dict[str, dict]) -> dict | None:
+    """The model against itself: same notes, same pipeline, a second run.
+
+    However closely the model agrees with a coach, it cannot be more
+    consistent with a coach than it is with itself, so this bounds what the
+    coach comparison can show.
+    """
+    ids = sorted(set(ai) & set(repeat))
+    if not ids:
+        return None
+    pairs = [{"ai_2080": to_2080(ai[i]["grade"]), "coach_2080": to_2080(repeat[i]["grade"]),
+              "ai_decision": DECISION[ai[i]["recommendation"]],
+              "coach_decision": DECISION[repeat[i]["recommendation"]]} for i in ids]
+    c = compare(pairs)
+    c["same_letter"] = round(sum(ai[i]["grade"] == repeat[i]["grade"] for i in ids) / len(ids), 3)
+    c["within_one_step"] = round(sum(abs(to_2080(ai[i]["grade"]) - to_2080(repeat[i]["grade"])) <= 5
+                                     for i in ids) / len(ids), 3)
+    return c
 
 
 def sheet() -> None:
@@ -212,6 +233,7 @@ def score() -> dict:
         "placeholder_rows": sum(r.get("status", "").strip().upper() == "PLACEHOLDER" for r in rows),
         "coach_rows_filled": len(real),
         "comparison": compare(pairs) if pairs else None,
+        "ai_retest": retest(ai, load_ai(AI_REPEAT)),
         "ai_distribution": {
             "grades": {k: sum(g["grade"] == k for g in ai.values()) for k in LETTER_TO_2080},
             "decisions": {d: sum(DECISION[g["recommendation"]] == d for g in ai.values()) for d in DECISIONS},
@@ -240,6 +262,18 @@ def to_markdown(r: dict) -> str:
                   f"| Spearman rho | {c['spearman_rho']} |",
                   f"| Take/Follow/Hold agreement (n={c['n_decisions']}) | {c['decision_agreement']} |",
                   f"| Cohen's kappa | {c['cohens_kappa']} |", ""]
+    t = r.get("ai_retest")
+    if t:
+        lines += ["## AI against itself (test-retest)", "",
+                  "Same 20 notes, same pipeline, run twice. No coach involved.", "",
+                  "| Metric | Value |", "|---|---|",
+                  f"| Same letter grade | {t['same_letter']:.0%} |",
+                  f"| Within one step (5 points on 20-80) | {t['within_one_step']:.0%} |",
+                  f"| MAE between runs, 20-80 | {t['mae_2080']} |",
+                  f"| Spearman rho between runs | {t['spearman_rho']} |",
+                  f"| Same Take/Follow/Hold | {t['decision_agreement']:.0%} |",
+                  f"| Cohen's kappa | {t['cohens_kappa']} |", "",
+                  "The model cannot agree with a coach more consistently than it agrees with itself.", ""]
     d = r["ai_distribution"]
     lines += [f"## AI side ({r['ai_grades']} players, real model output)", "",
               "Grades: " + ", ".join(f"{k} {v}" for k, v in d["grades"].items() if v),
@@ -252,8 +286,13 @@ def to_markdown(r: dict) -> str:
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     parser.add_argument("command", choices=["generate", "sheet", "score"])
+    parser.add_argument("--repeat", action="store_true",
+                        help="with generate: write a second run for the test-retest check")
     args = parser.parse_args()
-    {"generate": generate, "sheet": sheet, "score": score}[args.command]()
+    if args.command == "generate":
+        generate(out=AI_REPEAT if args.repeat else AI_GRADES)
+    else:
+        {"sheet": sheet, "score": score}[args.command]()
 
 
 if __name__ == "__main__":

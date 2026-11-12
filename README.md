@@ -63,7 +63,7 @@ Also: box score CSV analysis (PPG/RPG/APG/TS%), a four-mode coaching assistant, 
 | Guardrails | Per-IP rate limiting, size caps, env-driven CORS |
 | Audit | Append-only SQLite decision log (stdlib `sqlite3`, path via `FV_AUDIT_DB`) |
 | CI | GitHub Actions — ruff + pytest on every push |
-| Tests | 108 pytest cases, all runnable without an API key |
+| Tests | 110 pytest cases, all runnable without an API key |
 
 ### Design notes
 - **Evidence verification:** quoted evidence is checked to be a verbatim substring of the source notes; unverifiable quotes are marked.
@@ -74,7 +74,7 @@ Also: box score CSV analysis (PPG/RPG/APG/TS%), a four-mode coaching assistant, 
 - **The audit log is append-only:** an override that can be silently revised is not an accountability record. Clearing an override writes a `cleared` row rather than deleting history.
 - **Disagreement is a quality signal, not just compliance:** a tool scouts keep downgrading is a tool the model reads too generously, so the log aggregates direction of override per tool.
 - **Outcome claims are checked against the play-by-play:** when notes are play-by-play, every strikeout, groundout, walk, stolen base, or wild-pitch claim in the report is matched to the at-bats it came from, and unsupported claims are shown above the grades (`backend/services/play_by_play.py`).
-- **AI grades are compared to a coach's, blind:** `python -m evaluation.grade_validation` grades 20 note sets with the production pipeline and compares them with a coach's grades on the same notes (MAE on 20-80, bias, Spearman rho, Take/Follow/Hold agreement, Cohen's kappa). No coach grades have been collected yet, so it reports no comparison rather than a number.
+- **AI grades are compared to a coach's, blind:** `python -m evaluation.grade_validation` grades 20 note sets with the production pipeline and compares them with a coach's grades on the same notes (MAE on 20-80, bias, Spearman rho, Take/Follow/Hold agreement, Cohen's kappa). No coach grades have been collected yet, so it reports no comparison rather than a number. It does report the model against itself: two identical runs agree on the exact letter 65% of the time, within one step 95%, and on Take/Follow/Hold 90%.
 - **Audit durability is stated, not implied:** storage is stdlib `sqlite3` at `FV_AUDIT_DB`. On ephemeral hosting the log lives for the container's lifetime; pointing that variable at a mounted volume makes it durable. The UI says which mode it is in rather than letting the reader assume.
 - **Evidence verification checks the whole quote:** an earlier version compared only the first 60 characters, which passed a quote that opened verbatim and then invented its tail. Comparison now normalizes whitespace (so a quote spanning a PDF line break still matches) and requires the full quote to appear in the notes.
 - **Percentiles are labeled approximations** vs public league distributions — transparency over fake precision.

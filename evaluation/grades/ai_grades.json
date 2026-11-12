@@ -1,6 +1,6 @@
 {
  "_meta": {
-  "generated_at": "2026-11-12T21:33:02+00:00",
+  "generated_at": "2026-11-12T21:42:17+00:00",
   "model": "claude-sonnet-5",
   "pipeline": "backend.services.scout_report.evaluate",
   "trackman": "none",
@@ -9,43 +9,42 @@
  "grades": [
   {
    "id": "demo1",
-   "grade": "B+",
-   "recommendation": "Follow",
-   "confidence": "Low",
-   "rickey_context_used": true,
+   "grade": "A-",
+   "recommendation": "Priority Follow",
+   "confidence": "Medium",
+   "rickey_context_used": false,
    "tools": {
     "Fastball": "A-",
     "Slider": "A-",
     "Changeup": "C+",
-    "Command": "B-",
+    "Command": "B",
     "Makeup": "A-"
    }
   },
   {
    "id": "demo2",
-   "grade": "B+",
+   "grade": "B",
    "recommendation": "Follow",
    "confidence": "Low",
-   "rickey_context_used": true,
+   "rickey_context_used": false,
    "tools": {
-    "Fastball": "B+",
-    "Curveball": "A-",
+    "Fastball": "B",
+    "Curveball": "B+",
     "Command": "B",
-    "Field": "B+",
-    "Durability": "B+"
+    "Field": "B+"
    }
   },
   {
    "id": "q01",
-   "grade": "C-",
+   "grade": "C",
    "recommendation": "Hold",
-   "confidence": "Low",
-   "rickey_context_used": true,
+   "confidence": "Medium",
+   "rickey_context_used": false,
    "tools": {
-    "Fastball": "D+",
-    "Changeup": "B-",
-    "Curveball": "B-",
-    "Pitchability/Approach": "C+"
+    "Fastball": "C-",
+    "Changeup": "B",
+    "Curveball": "B",
+    "Command": "C+"
    }
   },
   {
@@ -66,25 +65,25 @@
    "grade": "C+",
    "recommendation": "Follow",
    "confidence": "Low",
-   "rickey_context_used": true,
+   "rickey_context_used": false,
    "tools": {
     "Command": "B",
-    "Fastball": "C",
-    "Curveball": "C",
-    "Changeup": "D+",
+    "Fastball": "C+",
+    "Breaking Ball": "C",
+    "Changeup": "C-",
     "Makeup": "B+"
    }
   },
   {
    "id": "q05",
-   "grade": "C+",
-   "recommendation": "Hold",
+   "grade": "C",
+   "recommendation": "Follow",
    "confidence": "Low",
    "rickey_context_used": true,
    "tools": {
     "Fastball": "B",
-    "Command": "C-",
-    "Secondary/Changeup": "D+",
+    "Command": "D+",
+    "Arsenal/Changeup": "C-",
     "Makeup": "C"
    }
   },
@@ -97,33 +96,34 @@
    "tools": {
     "Fastball": "F",
     "Command": "F",
-    "Arm": "C"
+    "Arm": "C",
+    "Makeup": "C"
    }
   },
   {
    "id": "q09",
-   "grade": "B-",
+   "grade": "C+",
    "recommendation": "Follow",
    "confidence": "Low",
    "rickey_context_used": true,
    "tools": {
     "Fastball": "C+",
     "Changeup": "B+",
-    "Curveball": "C+",
+    "Curveball": "C",
     "Command": "C"
    }
   },
   {
    "id": "q10",
-   "grade": "B-",
+   "grade": "C+",
    "recommendation": "Follow",
    "confidence": "Low",
    "rickey_context_used": true,
    "tools": {
-    "Fastball": "B+",
-    "Curveball": "B",
-    "Changeup": "B+",
-    "Command": "C+"
+    "Fastball": "B",
+    "Command": "C",
+    "Curveball": "B-",
+    "Changeup": "B+"
    }
   },
   {
@@ -131,13 +131,12 @@
    "grade": "C+",
    "recommendation": "Follow",
    "confidence": "Low",
-   "rickey_context_used": true,
+   "rickey_context_used": false,
    "tools": {
-    "Fastball": "B",
-    "Command": "B-",
-    "Slider": "D",
-    "Makeup": "B+",
-    "Power (bat)": "D"
+    "Fastball": "B+",
+    "Slider": "D+",
+    "Changeup": "F",
+    "Makeup": "A-"
    }
   },
   {
@@ -145,34 +144,34 @@
    "grade": "B+",
    "recommendation": "Follow",
    "confidence": "Low",
-   "rickey_context_used": true,
+   "rickey_context_used": false,
    "tools": {
-    "Speed": "A",
-    "Field": "A-",
+    "Speed": "A-",
+    "Field": "B+",
     "Hit": "B",
     "Power": "C+"
    }
   },
   {
    "id": "q06",
-   "grade": "B-",
+   "grade": "C+",
    "recommendation": "Follow",
    "confidence": "Low",
-   "rickey_context_used": true,
+   "rickey_context_used": false,
    "tools": {
-    "Field": "B+",
-    "Arm": "B",
+    "Field": "B",
+    "Arm": "B-",
     "Hit": "B-",
-    "Power": "C",
+    "Power": "C-",
     "Speed": "D+"
    }
   },
   {
    "id": "q08",
-   "grade": "D+",
+   "grade": "D",
    "recommendation": "Do Not Follow",
    "confidence": "Low",
-   "rickey_context_used": true,
+   "rickey_context_used": false,
    "tools": {
     "Hit": "D",
     "Speed": "D",
@@ -187,10 +186,9 @@
    "confidence": "Low",
    "rickey_context_used": true,
    "tools": {
-    "Arm": "B+",
-    "Footwork": "C-",
-    "Command (return throws)": "C",
-    "Makeup": "B-"
+    "Arm": "B-",
+    "Field": "C",
+    "Makeup": "C-"
    }
   },
   {
@@ -198,13 +196,13 @@
    "grade": "C+",
    "recommendation": "Follow",
    "confidence": "Low",
-   "rickey_context_used": true,
+   "rickey_context_used": false,
    "tools": {
     "Power": "B+",
     "Hit": "B",
     "Arm": "C",
-    "Field": "C+",
-    "Makeup": "C+"
+    "Field": "C",
+    "Makeup": "C"
    }
   },
   {
@@ -221,19 +219,20 @@
   },
   {
    "id": "q16",
-   "grade": "C+",
+   "grade": "C",
    "recommendation": "Follow",
-   "confidence": "Low",
-   "rickey_context_used": true,
+   "confidence": "Medium",
+   "rickey_context_used": false,
    "tools": {
     "Hit": "D+",
     "Power": "C+",
-    "Speed": "C"
+    "Speed": "C",
+    "Makeup": "C+"
    }
   },
   {
    "id": "q17",
-   "grade": "C+",
+   "grade": "C",
    "recommendation": "Hold",
    "confidence": "Low",
    "rickey_context_used": true,
@@ -247,15 +246,15 @@
   },
   {
    "id": "q19",
-   "grade": "B-",
-   "recommendation": "Follow",
+   "grade": "C+",
+   "recommendation": "Hold",
    "confidence": "Low",
    "rickey_context_used": true,
    "tools": {
-    "Hit": "B-",
-    "Speed": "B",
-    "Arm": "B-",
-    "Makeup": "A-"
+    "Hit": "C+",
+    "Speed": "C+",
+    "Arm": "C+",
+    "Makeup": "B+"
    }
   },
   {
@@ -267,8 +266,8 @@
    "tools": {
     "Arm": "D+",
     "Hit": "D",
-    "Power": "C-",
-    "Speed": "D"
+    "Speed": "D",
+    "Power": "C-"
    }
   }
  ]

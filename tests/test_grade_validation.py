@@ -82,6 +82,25 @@ def test_ai_grades_cover_every_player_with_valid_values():
         assert g["recommendation"] in G.DECISION
 
 
+def test_retest_compares_two_ai_runs():
+    a = {"x": {"grade": "B", "recommendation": "Follow"}, "y": {"grade": "C", "recommendation": "Hold"},
+         "z": {"grade": "A", "recommendation": "Priority Follow"}}
+    b = {"x": {"grade": "B-", "recommendation": "Follow"}, "y": {"grade": "C", "recommendation": "Hold"},
+         "z": {"grade": "A", "recommendation": "Follow"}}
+    t = G.retest(a, b)
+    assert t["same_letter"] == pytest.approx(2 / 3, abs=0.001)
+    assert t["within_one_step"] == 1.0
+    assert t["decision_agreement"] == pytest.approx(2 / 3, abs=0.001)
+    assert G.retest(a, {}) is None
+
+
+def test_committed_retest_matches_the_two_committed_runs():
+    result = json.loads((G.RESULTS / "grade_validation.json").read_text())
+    fresh = G.retest(G.load_ai(), G.load_ai(G.AI_REPEAT))
+    assert result["ai_retest"] == fresh
+    assert set(G.load_ai(G.AI_REPEAT)) == set(G.load_ai())
+
+
 def test_committed_results_report_no_comparison_until_coach_grades_exist():
     result = json.loads((G.RESULTS / "grade_validation.json").read_text())
     assert result["coach_rows_filled"] == 0
