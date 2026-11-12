@@ -4,11 +4,11 @@ import pytest
 from fastapi import HTTPException
 
 from backend.routes.trackman_viz import build_viz
-from backend.services.mlb_benchmarks import match_pitch_type, percentile
+from backend.services.mlb_benchmarks import BENCHMARKS, match_pitch_type, percentile
 
 
 def test_percentile_at_league_mean_is_50():
-    assert percentile("Fastball", "velo", 94.2) == 50
+    assert percentile("Fastball", "velo", BENCHMARKS["Fastball"]["velo"][0]) == 50
 
 
 def test_percentile_hot_and_cold():
