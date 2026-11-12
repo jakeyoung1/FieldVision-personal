@@ -21,7 +21,7 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.feature_extraction.text import CountVectorizer, TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
 
 BASE_DIR = Path(__file__).resolve().parents[2]
@@ -174,6 +174,24 @@ def confidence_band(score: float) -> str:
 _YEAR_RE = re.compile(r"Scouting reports; (\d{4}|Undated)")
 
 
+MAX_FEATURES = 20_000
+
+
+def _top_terms(texts: list[str], limit: int) -> list[str]:
+    """The `limit` most frequent unigrams and bigrams, ties broken by spelling.
+
+    scikit-learn's own max_features cut breaks frequency ties with an unstable
+    sort, so the vocabulary (and every score) shifted between numpy versions:
+    CI and a laptop disagreed on the same evaluation. This cut is the same
+    everywhere.
+    """
+    counter = CountVectorizer(ngram_range=(1, 2))
+    counts = np.asarray(counter.fit_transform(texts).sum(axis=0)).ravel()
+    terms = counter.get_feature_names_out()
+    order = sorted(range(len(terms)), key=lambda i: (-counts[i], terms[i]))[:limit]
+    return sorted(terms[i] for i in order)
+
+
 @lru_cache(maxsize=2)
 def _load_index(normalized: bool = True):
     """Load CSV, build TF-IDF matrix (cached after first call).
@@ -192,7 +210,7 @@ def _load_index(normalized: bool = True):
     indexed = corpus_norm if normalized else texts
 
     vectorizer = TfidfVectorizer(
-        max_features=20_000,
+        vocabulary=_top_terms(indexed, MAX_FEATURES),
         ngram_range=(1, 2),
         sublinear_tf=True,
     )
@@ -251,7 +269,7 @@ def retrieve(query: str, k: int = TOP_K, *, normalized: bool = True,
     query_role = infer_role(query) if role_filter else ROLE_UNKNOWN
 
     results, seen = [], set()
-    for idx in np.argsort(scores)[::-1]:
+    for idx in np.argsort(-scores, kind="stable"):
         if len(results) >= k or scores[idx] == 0:
             break
         doc = docs[idx]

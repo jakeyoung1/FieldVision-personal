@@ -133,7 +133,7 @@ def _bm25_system():
 
     def run(query: str) -> list[dict]:
         scores = bm25.scores(query)
-        top = np.argsort(scores)[::-1][:DEPTH]
+        top = np.argsort(-scores, kind="stable")[:DEPTH]
         return [{"asset": docs[i]["asset"], "score": float(scores[i])}
                 for i in top if scores[i] > 0]
     return run
