@@ -4,7 +4,7 @@ from fastapi import APIRouter, File, Form, HTTPException, UploadFile
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel
 
-from backend.services import errors, claude, files, rag, scout_report
+from backend.services import errors, claude, files, play_by_play, rag, scout_report
 
 router = APIRouter()
 
@@ -93,6 +93,9 @@ def analyze(
                 "evidence_chain": structured is not None,
                 "context_used": bool(context),
                 "rickey": rag.match_summary(hits, text[:500]),
+                # Play-by-play notes: every outcome the report states is
+                # checked against the at-bats it came from.
+                "outcome_flags": play_by_play.check_report(report, text),
             }
 
         # Each player is an independent, network-bound evaluation, so run them

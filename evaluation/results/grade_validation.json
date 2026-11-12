@@ -1,0 +1,28 @@
+{
+  "players": 20,
+  "ai_grades": 20,
+  "coach_rows": 20,
+  "placeholder_rows": 20,
+  "coach_rows_filled": 0,
+  "comparison": null,
+  "ai_distribution": {
+    "grades": {
+      "A": 0,
+      "A-": 0,
+      "B+": 3,
+      "B": 1,
+      "B-": 4,
+      "C+": 7,
+      "C": 0,
+      "C-": 2,
+      "D+": 2,
+      "D": 1,
+      "F": 0
+    },
+    "decisions": {
+      "Take": 0,
+      "Follow": 12,
+      "Hold": 8
+    }
+  }
+}

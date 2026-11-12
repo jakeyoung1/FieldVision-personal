@@ -1,0 +1,41 @@
+id,status,notes,coach_grade,coach_decision,grader,graded_on
+demo1,PLACEHOLDER,"Cole Braddock
+RHP, junior, 6'3 205. Fastball sits 94-96, touched 97 twice this spring — ride through the zone, misses bats up. Slider is the out pitch, mid-80s with late two-plane bite; lands it for strikes and buries it with two strikes. Changeup flashes average, arm speed holds but it stays firm. Delivery is clean and repeatable, slight crossfire. Competes like a bulldog — wanted the ball in the ninth against Pepperdine. Command grades ahead of control; will nibble when he doesn't trust the changeup. Frame projects five more pounds. Draft follow.",,,,
+demo2,PLACEHOLDER,"Danny Vasquez
+RHP, sophomore, 6'1 190. Sinkerballer, 90-93 with heavy run and sink — gets ground balls in bunches, 62% GB rate this year. Curveball is a true 12-6 hammer at 76-79, freezes hitters. Cutter is new this year, keeps lefties honest. Doesn't miss many bats but doesn't need to; three-pitch mix plays fast in the zone. Fielding is plus, controls the run game well. Gets in trouble when the sinker flattens up in the zone. Durable — went 7+ three times in conference play. Weekend starter profile at the next level.",,,,
+q01,PLACEHOLDER,"Tyler Renko
+RHP, junior, 6'0 185. Fastball is light, 84-86, and gets hit hard when he leaves it in the zone against good hitters. Has to pitch backwards: changeup and curveball are his outs and he needs to throw them in any count. If he keeps challenging people with the heater he tops out as a midweek arm.",,,,
+q02,PLACEHOLDER,"Marcus Dell
+RHP, sophomore, 6'2 195. Three-pitch mix and all three are usable: firm fastball, big slow curveball with real depth, and a changeup good enough to keep hitters off the fastball. Doesn't need a fourth pitch. Whole thing comes down to strike throwing; tends to take something off just to get it over. Needs to trust the breaking ball and changeup when behind in the count.",,,,
+q03,PLACEHOLDER,"Evan Brandt
+LHP, junior, 6'0 175. Strike thrower, fills the zone with a low three-quarter, nearly sidearm fastball that stays at the knees. Curveball has bite but isn't consistent yet. Very coachable: fixed a glove-side tipping habit as soon as it was pointed out. Changeup still a work in progress and he's reluctant to use it in games.",,,,
+q05,PLACEHOLDER,"Jace Mullen
+RHP, freshman. Big arm with plenty of stuff but can't find the zone, constantly behind 2-0 and 3-0. Two-pitch guy right now, fastball and breaking ball, no changeup or won't throw it. Immature on the mound; needs innings and needs to learn how to pitch, not just throw.",,,,
+q07,PLACEHOLDER,"Grant Okafor
+RHP, senior. Velocity is gone. Used to be a power arm, now can't throw hard at all and has no feel for the strike zone. Walked four and hit two in 3.1 innings. Only looks like himself when he drops down and throws from underneath, and even that is half of what it was. Hard to watch; arm may be done.",,,,
+q09,PLACEHOLDER,"Luke Hartsfield
+RHP, freshman, 6'5, 20 years old. Fastball is solid, not overpowering. Curveball is adequate. Changeup is the separator, a really good one off the fastball. Slight differences in his delivery from pitch to pitch that can be cleaned up. Three pitches are enough, don't add a fourth. He'll go as far as his command takes him.",,,,
+q10,PLACEHOLDER,"Sam Petrovic
+RHP, sophomore, 6'0 180. Big-league velocity when he reaches back, but command goes when he overthrows. Curveball is a good one that he throws from two slots, three-quarters and nearly sidearm; needs to be more consistent with it. Changeup has a chance to be a real weapon, spin on it is right. Timeline depends on locating the fastball and curve.",,,,
+q14,PLACEHOLDER,"Will Kessinger
+RHP (converted OF), junior, 6'5. Came in as an outfielder but the bat never developed, so we're trying him on the mound. Fastball is good and he commands it. That's all he has right now: breaking ball isn't there yet and no changeup. Off-the-charts aptitude though, picks up anything you show him right away.",,,,
+q04,PLACEHOLDER,"Dee Whitlow
+SS, sophomore, 5'10 170. Plus-plus runner, flies down the line. Quick release and soft hands at short, covers a ton of ground. Left-handed bat with a disciplined approach, doesn't chase, tough out, and sneaky pop now and then. Everyday shortstop profile.",,,,
+q06,PLACEHOLDER,"Nico Farrell
+C, junior, 5'9 165. Small-framed catcher, moves well behind the plate and handles a staff, smart kid. Arm is accurate and good enough, throws with sound mechanics. Contact bat with no real power, but he doesn't strike out. Below-average runner. Everything but the speed plays.",,,,
+q08,PLACEHOLDER,"Ray Castellano
+UTIL IF, fifth-year senior, right-handed hitter. Tools are all below average: doesn't hit, doesn't run, arm is short. But he's a heady, scrappy, aggressive player who knows every trick in the game. Future is in coaching, not playing; would make a good manager.",,,,
+q11,PLACEHOLDER,"Owen Tash
+C, sophomore. Needs daily reps behind the plate. Footwork on his throws is the issue: takes an extra step before releasing, even though the arm is strong enough to throw from the catch. Return throws to the pitcher are erratic, possibly a mental block. Should catch every bullpen just to work on getting the ball back quickly and accurately.",,,,
+q12,PLACEHOLDER,"Brock Dennehy
+C, junior, short and stocky build. Real raw power in the bat, good setup and swing with no obvious holes, should hit. Long, looping arm action on his throws. Some people question his receiving, but I didn't see a problem that reps won't fix. Word is he rates himself pretty highly.",,,,
+q13,PLACEHOLDER,"Tony Varga
+3B/IF, sophomore. Not a true third baseman: he can catch it and throw it but that's it; doesn't know how to apply a tag. At least he's swinging the bat now instead of taking strikes. Baserunning is the big problem: short stationary lead, no jump, no feel for getting a break, especially off second base.",,,,
+q16,PLACEHOLDER,"Dominic Ruiz
+1B/OF, freshman, big strong kid, very young. Swing-and-miss is a major concern: pulls his head off the ball and can't square anything up, will strike out a lot. But you can't write off that size and strength at his age; could look different in two years. Runs okay. Worth following.",,,,
+q17,PLACEHOLDER,"Aiden Marsh
+SS/UTIL, junior. Solid across the board without a carrying tool: decent bat, decent runner, decent arm. Plays shortstop too shallow and doesn't know how to hold a runner at second. Arm isn't enough to make the play deep in the hole. Versatile, can play anywhere; value is as a utility man.",,,,
+q19,PLACEHOLDER,"Mickey Dolan
+2B/OF, freshman, 18, 160 lbs, throws right, bats left. Does everything well, nothing spectacular: good runner, good arm, good hitter without power. Smart, aggressive baserunner who makes the most of his speed. Gamer, the kind of player who makes a lineup hard to beat.",,,,
+q20,PLACEHOLDER,"Hank Brody
+C, junior, 21, big strong right-handed-hitting catcher. Arm didn't show well; the backup threw better. Looked lost at the plate, 0-for with weak at-bats. Doesn't run. Not a draft guy.",,,,

@@ -2157,6 +2157,7 @@ document.querySelectorAll('[data-topline]').forEach(line => {
               background:rgba(200,16,46,.12);border:1px solid rgba(200,16,46,.3);color:#C8102E;
               font-size:.72rem;font-weight:600;cursor:pointer;">↓ Export PDF</button>
           </div>
+          ${outcomeFlags(r)}
           <div class="fv-report-md">${reportHtml}</div>
           ${rickeyNotice(r)}
         </div>`;
@@ -2189,6 +2190,23 @@ document.querySelectorAll('[data-topline]').forEach(line => {
       <div data-rickey-quality="${m.quality}" style="margin-top:12px;padding:9px 12px;border-radius:8px;
            border:1px solid rgba(255,255,255,.1);background:rgba(255,255,255,.02);font-size:.74rem;color:rgba(240,244,255,.55);">
         <span style="font-weight:700;color:${q.color};">${q.label}.</span> ${q.text(m.used_as_evidence)}${best}
+      </div>`;
+  }
+
+  // Outcome claims the play-by-play does not support ("struck out on 0-1" when
+  // the 0-1 at-bat was a groundout). Shown above the grades so the scout sees
+  // the correction before reading the reasoning built on it.
+  function outcomeFlags (r) {
+    const flags = r.outcome_flags || [];
+    if (!flags.length) return '';
+    return `
+      <div data-outcome-flags="${flags.length}" style="margin:0 0 12px;padding:10px 13px;border-radius:9px;
+           background:rgba(245,158,11,.08);border:1px solid rgba(245,158,11,.35);">
+        <div style="font-size:.72rem;font-weight:700;letter-spacing:.05em;color:#fbbf24;margin-bottom:6px;">
+          ⚠ ${flags.length} CLAIM${flags.length === 1 ? '' : 'S'} NOT SUPPORTED BY THE PLAY-BY-PLAY</div>
+        ${flags.map(f => `<div style="font-size:.76rem;color:rgba(240,244,255,.7);margin:5px 0;">
+            <span style="font-style:italic;color:rgba(240,244,255,.5);">“${escAudit(f.sentence)}”</span><br>
+            ${escAudit(f.problem)}</div>`).join('')}
       </div>`;
   }
 
@@ -2240,6 +2258,7 @@ document.querySelectorAll('[data-topline]').forEach(line => {
           ${s.recommendation}${s.recommendation_reason ? ` — <span style="font-weight:400;">${s.recommendation_reason}</span>` : ''}
         </div>
         <div id="fv-ovr-form-${ri}-__overall__"></div>
+        ${outcomeFlags(r)}
         <p style="font-size:.85rem;color:rgba(240,244,255,.6);margin-bottom:14px;line-height:1.65;">${s.summary}</p>
         ${tools}
         ${s.risk ? `<div style="font-size:.8rem;color:rgba(240,244,255,.55);margin-top:12px;"><strong style="color:rgba(240,244,255,.75);">Risk:</strong> ${s.risk}</div>` : ''}
