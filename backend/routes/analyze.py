@@ -53,7 +53,11 @@ def analyze(
             label, text = item
             if not text.strip():
                 return None
-            context = rag.context_block(text[:500])
+            # Retrieve once. Every hit goes back to the UI with its score and
+            # band; only hits above the weak band reach the model, so a poor
+            # match is shown as a poor match instead of being cited as evidence.
+            hits = rag.retrieve(text[:500])
+            context = rag.format_context(hits)
 
             # Evidence Chain evaluation; legacy two-call path is the fallback.
             structured = None
@@ -88,6 +92,7 @@ def analyze(
                 "structured": structured,
                 "evidence_chain": structured is not None,
                 "context_used": bool(context),
+                "rickey": rag.match_summary(hits, text[:500]),
             }
 
         # Each player is an independent, network-bound evaluation, so run them
