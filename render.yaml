@@ -9,6 +9,10 @@ services:
     envVars:
       - key: ANTHROPIC_API_KEY
         sync: false          # set in Render dashboard, never committed
+      - key: FV_SCOUT_KEY
+        sync: false          # staff secret for overrides and timings; routes refuse writes until set
+      - key: DATABASE_URL
+        sync: false          # Postgres for durable overrides/timings; blank = SQLite, wiped on restart
       - key: FV_RATE_LIMIT
         value: "20"
       - key: FV_RATE_WINDOW

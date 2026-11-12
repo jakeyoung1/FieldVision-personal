@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="robots" content="noindex" />
+  <title>Page Not Found · FieldVision</title>
+  <link rel="icon" href="/static/logo.svg" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@600&family=Inter:wght@400;600;800&display=swap" rel="stylesheet" />
+  <style>
+    :root { --bg: #070b14; --panel: #0f1624; --line: rgba(255,255,255,.08); --text: #f0f4ff; --muted: rgba(240,244,255,.6); --red: #C8102E; }
+    * { box-sizing: border-box; }
+    body { margin: 0; min-height: 100vh; display: flex; flex-direction: column; background: var(--bg); color: var(--text);
+           font-family: Inter, system-ui, sans-serif; }
+    main { flex: 1; display: flex; align-items: center; justify-content: center; padding: 48px 16px; }
+    .box { max-width: 460px; text-align: center; }
+    img { width: 72px; height: 72px; margin-bottom: 18px; }
+    .code { font-family: "Fira Code", monospace; font-size: .78rem; letter-spacing: .16em; color: rgba(200,16,46,.85); }
+    h1 { font-size: clamp(1.8rem, 6vw, 2.4rem); letter-spacing: -.03em; margin: 8px 0 12px; }
+    p { color: var(--muted); line-height: 1.7; margin: 0 0 26px; }
+    .links { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; }
+    a.btn { padding: 10px 18px; border-radius: 9px; text-decoration: none; font-weight: 600; font-size: .88rem;
+            border: 1px solid var(--line); color: var(--text); background: var(--panel); }
+    a.btn.primary { background: var(--red); border-color: var(--red); }
+    footer { text-align: center; padding: 22px 16px; font-size: .78rem; color: rgba(240,244,255,.35); border-top: 1px solid var(--line); }
+  </style>
+</head>
+<body>
+<main>
+  <div class="box">
+    <img src="/static/logo.svg" alt="FieldVision" />
+    <div class="code">404 · NOT FOUND</div>
+    <h1>That page isn't in the lineup</h1>
+    <p>The address doesn't match anything on FieldVision. It may have been mistyped, or the link may be out of date.</p>
+    <div class="links">
+      <a class="btn primary" href="/">Go to FieldVision</a>
+      <a class="btn" href="/#app">Open the app</a>
+      <a class="btn" href="/methods">Methods</a>
+    </div>
+  </div>
+</main>
+<footer>FieldVision · Baseball scouting, with a basketball module that tests whether the approach generalizes.</footer>
+</body>
+</html>

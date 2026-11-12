@@ -1,9 +1,9 @@
 """Report timing: POST one finished report, read the log and summary."""
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, Depends, HTTPException
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel
 
-from backend.services import errors, timing
+from backend.services import auth, errors, timing
 
 router = APIRouter()
 
@@ -16,7 +16,7 @@ class ReportTiming(BaseModel):
     session_id: str = ""
 
 
-@router.post("/timing/report")
+@router.post("/timing/report", dependencies=[Depends(auth.require_scout_key)])
 def record_timing(req: ReportTiming):
     try:
         return JSONResponse(timing.record(
@@ -34,6 +34,6 @@ def timing_summary():
     return JSONResponse(timing.summary())
 
 
-@router.get("/timing/log")
+@router.get("/timing/log", dependencies=[Depends(auth.require_scout_key)])
 def timing_log(limit: int = 1000):
     return JSONResponse({"rows": timing.rows(limit)})

@@ -49,13 +49,15 @@ def test_summary_reports_nothing_from_no_rows_then_medians():
     assert s["median_minutes_to_report"] == 0.5
 
 
-def test_timing_api_round_trip(client):
-    r = client.post("/api/timing/report", json={"player": "Cole Braddock", "seconds_to_report": 25,
-                                                "seconds_to_finish": 190, "finished_by": "reviewed"})
+def test_timing_api_round_trip(client, monkeypatch):
+    monkeypatch.setenv("FV_SCOUT_KEY", "test-key")
+    h = {"X-Scout-Key": "test-key"}
+    r = client.post("/api/timing/report", headers=h, json={"player": "Cole Braddock", "seconds_to_report": 25,
+                                                           "seconds_to_finish": 190, "finished_by": "reviewed"})
     assert r.status_code == 200
-    assert client.post("/api/timing/report", json={"seconds_to_report": 9, "seconds_to_finish": 3,
-                                                   "finished_by": "reviewed"}).status_code == 422
-    assert client.get("/api/timing/log").json()["rows"][0]["player"] == "Cole Braddock"
+    assert client.post("/api/timing/report", headers=h, json={"seconds_to_report": 9, "seconds_to_finish": 3,
+                                                              "finished_by": "reviewed"}).status_code == 422
+    assert client.get("/api/timing/log", headers=h).json()["rows"][0]["player"] == "Cole Braddock"
 
 
 def test_time_study_never_counts_placeholder_rows():

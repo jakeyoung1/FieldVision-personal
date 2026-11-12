@@ -2147,12 +2147,14 @@ document.querySelectorAll('[data-topline]').forEach(line => {
     const toReport = (r._readyAt - r._startedAt) / 1000;
     const toFinish = (performance.now() - r._startedAt) / 1000;
     r._minutes = toFinish / 60;
-    fetch(`${API_BASE}/api/timing/report`, {
+    // Logged only for staff whose browser holds the scout key, so demo
+    // visitors never enter the time study and are never prompted.
+    scoutFetch('/api/timing/report', {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ player: (r.structured && r.structured.name) || r.label || '',
         seconds_to_report: Math.max(toReport, 0.1), seconds_to_finish: Math.max(toFinish, toReport, 0.1),
         finished_by: how, session_id: scoutSessionId() }),
-    }).catch(() => {});
+    }, { ask: false }).catch(() => {});
   }
 
   function reviewedButton (r, ri) {
@@ -2419,11 +2421,44 @@ document.querySelectorAll('[data-topline]').forEach(line => {
       action: action,
       session_id: scoutSessionId(),
     };
-    fetch('/api/audit/override', {
+    scoutFetch('/api/audit/override', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(body),
-    }).catch(() => { /* log unreachable — the local override still stands */ });
+    }).then(res => {
+      if (!res.ok) fvToast(res.status === 401 || res.status === 503
+        ? 'Override applied here, but not saved to the decision log: a scout key is needed.'
+        : 'Override applied here, but the decision log did not accept it.');
+    }).catch(() => fvToast('Override applied here, but the decision log could not be reached.'));
+  }
+
+  // ── Scout key ────────────────────────────────────────────────────────────
+  // One shared staff key guards writes to the decision log and the player-level
+  // logs. It lives in this browser only. Asked for once, when the server first
+  // refuses a request; a wrong key is forgotten so the next attempt asks again.
+  function getScoutKey () { try { return localStorage.getItem('fv-scout-key') || ''; } catch (e) { return ''; } }
+  function setScoutKey (k) { try { k ? localStorage.setItem('fv-scout-key', k) : localStorage.removeItem('fv-scout-key'); } catch (e) {} }
+
+  async function scoutFetch (url, opts = {}, { ask = true } = {}) {
+    const withKey = () => fetch(`${API_BASE}${url}`, { ...opts, headers: { ...(opts.headers || {}), 'X-Scout-Key': getScoutKey() } });
+    let res = await withKey();
+    if (res.status === 401 && ask) {
+      setScoutKey('');
+      const k = window.prompt('Scout key (from your staff) to save this to the decision log:');
+      if (k && k.trim()) { setScoutKey(k.trim()); res = await withKey(); }
+      if (res.status === 401) setScoutKey('');
+    }
+    return res;
+  }
+
+  function fvToast (msg) {
+    const el = document.createElement('div');
+    el.setAttribute('role', 'status');
+    el.textContent = msg;
+    el.style.cssText = 'position:fixed;left:50%;bottom:22px;transform:translateX(-50%);z-index:200;max-width:min(92vw,520px);' +
+      'padding:10px 16px;border-radius:9px;background:#1b2436;border:1px solid rgba(251,191,36,.4);color:#f0f4ff;font-size:.8rem;';
+    document.body.appendChild(el);
+    setTimeout(() => el.remove(), 5000);
   }
 
   window.fvSaveOverride = function (ri, key) {
@@ -2468,14 +2503,33 @@ document.querySelectorAll('[data-topline]').forEach(line => {
     </div>`;
   }
 
+  window.fvUnlockLog = function () {
+    const k = document.getElementById('fv-scout-key-input').value.trim();
+    if (k) { setScoutKey(k); window.renderDecisionLog(); }
+  };
+
   window.renderDecisionLog = async function () {
     const body = document.getElementById('fv-decisions-body');
     const sumEl = document.getElementById('fv-decisions-summary');
     try {
       const [logRes, sumRes] = await Promise.all([
-        fetch('/api/audit/log?limit=100'),
-        fetch('/api/audit/summary'),
+        scoutFetch('/api/audit/log?limit=100', {}, { ask: false }),
+        fetch(`${API_BASE}/api/audit/summary`),
       ]);
+      if (logRes.status === 401 || logRes.status === 503) {
+        body.innerHTML = `
+          <div style="max-width:440px;">
+            <p style="margin:0 0 10px;color:rgba(240,244,255,.55);">The decision log names real players, so it is visible to the coaching staff only.</p>
+            <div style="display:flex;gap:8px;flex-wrap:wrap;">
+              <input id="fv-scout-key-input" type="password" placeholder="Scout key" autocomplete="current-password"
+                     style="flex:1;min-width:180px;padding:7px 11px;border-radius:7px;background:#0f1624;border:1px solid rgba(255,255,255,.15);color:#f0f4ff;font-size:.82rem;">
+              <button onclick="fvUnlockLog()" style="padding:7px 14px;border-radius:7px;background:#C8102E;color:#fff;font-weight:700;font-size:.78rem;border:none;cursor:pointer;">Unlock</button>
+            </div>
+            ${logRes.status === 503 ? '<p style="margin:8px 0 0;font-size:.72rem;color:rgba(240,244,255,.35);">This server has no scout key configured, so the log is closed to everyone.</p>' : ''}
+          </div>`;
+        sumEl.innerHTML = '';
+        return;
+      }
       if (!logRes.ok || !sumRes.ok) throw new Error('decision log unavailable');
       const { entries } = await logRes.json();
       const sum = await sumRes.json();
@@ -2512,8 +2566,8 @@ document.querySelectorAll('[data-topline]').forEach(line => {
       const note = sum.durable ? '' :
         `<p style="margin:16px 0 0;font-size:.72rem;color:rgba(240,244,255,.3);line-height:1.5;">
            Stored on the app container's local disk, so this log resets when the host restarts.
-           Set <code style="color:rgba(240,244,255,.5);">FV_AUDIT_DB</code> to a path on a mounted
-           volume to make it durable.
+           Set <code style="color:rgba(240,244,255,.5);">DATABASE_URL</code> to a Postgres database
+           to make it durable.
          </p>`;
 
       body.innerHTML = `<div style="overflow-x:auto;"><table style="width:100%;border-collapse:collapse;font-size:.85rem;">

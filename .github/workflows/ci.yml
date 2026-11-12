@@ -8,6 +8,17 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
+    # A throwaway Postgres so the storage tests run on both backends.
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: fv
+          POSTGRES_PASSWORD: fv
+          POSTGRES_DB: fv_test
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U fv" --health-interval 5s --health-timeout 5s --health-retries 10
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -21,4 +32,6 @@ jobs:
       - name: Lint (errors only)
         run: ruff check backend/ tests/ --select E9,F63,F7,F82
       - name: Tests
+        env:
+          FV_TEST_DATABASE_URL: postgresql://fv:fv@localhost:5432/fv_test
         run: python -m pytest tests/ -q
