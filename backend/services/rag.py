@@ -28,6 +28,9 @@ BASE_DIR = Path(__file__).resolve().parents[2]
 DATA_DIR  = BASE_DIR / "data"
 CSV_PATH  = DATA_DIR / "branch-rickey-scouting.csv"
 TOP_K     = 5
+# Only this much of a player's notes is used as the matching query. Disclosed
+# on /methods; a test keeps the page, the app, and the evaluation on one number.
+QUERY_CHARS = 500
 
 ROLE_PITCHER = "pitcher"
 ROLE_HITTER  = "hitter"      # any position player

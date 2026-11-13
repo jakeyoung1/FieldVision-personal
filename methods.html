@@ -107,6 +107,7 @@
   <h2 id="matching">Matching and confidence</h2>
   <h3>Finding historical comparisons</h3>
   <p>The notes are compared with every Rickey report using TF-IDF, a word-overlap score from 0 to 1. Three adjustments sit on top, each measured on its own in the evaluation below:</p>
+  <p id="first-500"><strong>Only the first 500 characters of a player's notes are used for matching</strong>, which is roughly the first 80 words. The model still grades from the full notes, but anything past that point has no effect on which Rickey reports come back. Notes that open with a roster line or game context, and get to the player's tools later, will match worse than notes that lead with the tools. The evaluation below uses the same 500-character cut.</p>
   <ul>
     <li><strong>Shared vocabulary.</strong> Modern and 1950s terms are mapped to one spelling, so "changeup" matches "change of pace" and "command" matches "control".</li>
     <li><strong>Role filter.</strong> Notes on a pitcher are not matched with reports on position players, and the reverse. The player's role is read from the position line of the notes.</li>
@@ -135,6 +136,9 @@
   <div class="scroll"><table id="calibration-table"></table></div>
   <h3>Grades: does the model grade like a coach?</h3>
   <div id="grades"></div>
+  <h3 id="decision-mapping">Four recommendations, three decisions</h3>
+  <p>The app gives one of four recommendations: Priority Follow, Follow, Hold, or Do Not Follow. Coaches in this comparison pick from three decisions: Take, Follow, or Hold. To compare them, Priority Follow counts as Take, Follow stays Follow, and both Hold and Do Not Follow count as Hold.</p>
+  <p id="mapping-result">Loading…</p>
 
   <h2 id="benchmarks">MLB benchmarks</h2>
   <p id="bench-intro"></p>
@@ -180,6 +184,8 @@
     <li><strong>Era gap.</strong> The historical reports are professional scouting from <span class="yr-range">the 1950s and 1960s</span>. College notes from 2026 use different words and describe a different game. Most comparisons score below the usable line, which is why weak matches are labeled and withheld from the model.</li>
     <li><strong>MLB benchmarks for college players.</strong> Pitch percentiles compare a college pitcher with <span class="bench-label">MLB</span> pitchers. They say where an arm sits against the major leagues, not against his own level, and most college pitchers will rank low.</li>
     <li><strong>Fictional demo players.</strong> Cole Braddock, Danny Vasquez, and every player in the demo Trackman file are invented. The demo files tag them with the SMC team code, but they are not Saint Mary's players.</li>
+    <li><strong>Handwriting transcription is unmeasured.</strong> Scanned and handwritten PDFs are transcribed by Claude Vision before anything else happens. No test here measures how accurately it reads handwriting, and a misread name or number flows into the report. Image files (JPG, PNG) are not accepted.</li>
+    <li><strong>Matching reads only the opening of the notes.</strong> The first 500 characters decide which Rickey reports are shown (<a href="#first-500">details</a>).</li>
     <li><strong>Small, synthetic test sets.</strong> The retrieval test has <span class="n-gold">37</span> notes. All of them are synthetic, and their labels were drafted by AI and have not been checked by a person. A difference of a few points between systems is noise.</li>
     <li><strong>No coach grades yet.</strong> The grade comparison has the model's side only. Until a coach grades the same notes, there is no evidence the model grades the way a coach does.</li>
     <li><strong>The model varies between runs.</strong> Given the same notes twice, it gives the same letter grade <span class="same-letter">about two times in three</span>. A one-step difference from a coach is within that noise.</li>
@@ -279,6 +285,17 @@
       document.querySelectorAll('.same-letter').forEach(e => e.textContent = pct(t.same_letter) + ' of the time');
     }
     el.innerHTML = html;
+    const m = d.decision_mapping;
+    if (m) {
+      document.getElementById('mapping-result').textContent =
+        `Folding four labels into three could hide disagreement between Hold and Do Not Follow, so both versions are reported. ` +
+        `Across the two AI runs, the same four-way recommendation came back for ${m.four_way_same} of ${m.players} players, ` +
+        `and the same three-way decision for ${m.three_way_same} of ${m.players}. ` +
+        (m.four_way_same === m.three_way_same
+          ? `The two match, so the mapping hid nothing in this set. `
+          : `The mapping accounts for the difference. `) +
+        `The comparison with coaches can only use the three-way version, because that is the scale coaches answer on.`;
+    }
   }
 
   // Time study

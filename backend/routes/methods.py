@@ -54,6 +54,23 @@ def _basketball() -> dict:
     return {"seasons": seasons, "player_seasons": sum(seasons.values())}
 
 
+def _decision_mapping() -> dict | None:
+    """Agreement between the two AI runs on the app's four labels and on the
+    three decisions they are folded into, so the folding can be checked."""
+    from evaluation import grade_validation as G
+    first, second = G.load_ai(), G.load_ai(G.AI_REPEAT)
+    ids = sorted(set(first) & set(second))
+    if not ids:
+        return None
+    pairs = [(first[i]["recommendation"], second[i]["recommendation"]) for i in ids]
+    return {
+        "players": len(ids),
+        "four_way_same": sum(a == b for a, b in pairs),
+        "three_way_same": sum(G.DECISION[a] == G.DECISION[b] for a, b in pairs),
+        "mapping": G.DECISION,
+    }
+
+
 def methods_data() -> dict:
     return {
         "retrieval": _strip_per_query(_read("retrieval_eval.json")),
@@ -61,6 +78,8 @@ def methods_data() -> dict:
         "corpus": _corpus(),
         "benchmarks": mlb_benchmarks.describe(),
         "basketball": _basketball(),
+        "decision_mapping": _decision_mapping(),
+        "matching_characters": rag.QUERY_CHARS,
         "time_study": _read("time_study.json"),
         "app_timings": timing.summary(),
     }
