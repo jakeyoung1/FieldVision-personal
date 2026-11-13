@@ -17,7 +17,7 @@ from collections import defaultdict, deque
 
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import FileResponse, JSONResponse
+from fastapi.responses import FileResponse, JSONResponse, PlainTextResponse
 from fastapi.staticfiles import StaticFiles
 from starlette.exceptions import HTTPException as StarletteHTTPException
 
@@ -107,6 +107,24 @@ if STATIC_DIR.exists():
 @app.get("/", include_in_schema=False)
 def serve_root():
     return FileResponse(str(ROOT_HTML))
+
+
+@app.get("/favicon.ico", include_in_schema=False)
+def favicon():
+    """Browsers ask for this path whatever the page declares; it used to 404."""
+    return FileResponse(str(STATIC_DIR / "favicon.ico"), media_type="image/x-icon")
+
+
+ROBOTS_TXT = """User-agent: *
+Allow: /
+Disallow: /api/
+"""
+
+
+@app.get("/robots.txt", include_in_schema=False)
+def robots():
+    """Pages may be crawled. The API costs money per call and returns no pages."""
+    return PlainTextResponse(ROBOTS_TXT)
 
 
 NOT_FOUND_HTML = Path(__file__).parent.parent / "not_found.html"

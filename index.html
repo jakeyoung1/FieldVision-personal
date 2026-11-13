@@ -6,6 +6,9 @@
   <title>FieldVision · Baseball Scouting Intelligence</title>
   <meta name="description" content="Graded baseball scouting reports from a scout's notes and Trackman data, with the quotes and measurements behind every grade and the closest Branch Rickey reports shown with their scores." />
 
+  <link rel="icon" href="/static/logo.svg" type="image/svg+xml" />
+  <link rel="alternate icon" href="/favicon.ico" sizes="any" />
+
   <!-- Fonts: Fira Code (data/headings) + Inter (body) -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -15,25 +18,6 @@
   <!-- Empty = same origin: this server provides the whole API (baseball + basketball). -->
   <script>
     window.FV_API_BASE = "";
-  </script>
-
-  <!-- Tailwind CDN -->
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script>
-    tailwind.config = {
-      theme: {
-        extend: {
-          fontFamily: {
-            sans:  ['Inter', 'system-ui', 'sans-serif'],
-            mono:  ['Fira Code', 'monospace'],
-          },
-          colors: {
-            navy:  '#002147',
-            fvred: '#C8102E',
-          },
-        },
-      },
-    };
   </script>
 
   <style>
@@ -465,6 +449,11 @@
     @media (min-width: 768px) { .coach-grid { grid-template-columns: 1fr 1fr; } }
     @media (max-width: 640px) { .stat-num { font-size: 1.5rem; } }
   </style>
+
+  <!-- Tailwind, compiled locally (scripts/build_css.sh). Linked after the page
+       styles on purpose: the CDN build injected its CSS at the end of <head>,
+       and this keeps the same cascade order. -->
+  <link rel="stylesheet" href="static/css/tailwind.css" />
 </head>
 
 <body class="grid-bg">
