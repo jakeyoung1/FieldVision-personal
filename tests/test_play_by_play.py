@@ -119,6 +119,40 @@ def test_counts_and_scores_are_told_apart():
     assert P._counts_in("(0-1 K)") == ["0-1"]
 
 
+@pytest.mark.parametrize("text,count", [
+    ("Popped up 2-2", "2-2"),
+    ("down 0-2", "0-2"),
+    ("ahead 2-0", "2-0"),
+    ("fell behind 0-2", "0-2"),
+    ("He got ahead 0-2 and struck him out", "0-2"),
+    ("lost the zone and fell behind 2-0", "2-0"),
+    ("they were down 0-2 in the count", "0-2"),
+    ("The RHP was down 2-0 to the leadoff man", "2-0"),
+])
+def test_count_idioms_are_kept(text, count):
+    """Regression (PR #9 review): bare up/down/ahead/behind/fell were treated as
+    score words, so these real counts were dropped."""
+    assert P._counts_in(text) == [count]
+
+
+@pytest.mark.parametrize("text", [
+    "With SMC up 2-1",
+    "CRE went up 3-2 in the 5th",
+    "they were down 3-0 early",
+    "SMC fell behind 2-0 in the first",
+    "SMC fell 3-2",
+    "fell to CRE 3-2",
+])
+def test_team_margins_and_results_are_still_scores(text):
+    assert P._counts_in(text) == []
+
+
+def test_a_dropped_count_no_longer_hides_a_wrong_claim():
+    """With the bug, 'fell behind 0-1' gave no count, so this claim went unchecked."""
+    flags = P.check_report("Sniffen fell behind 0-1 and struck out.", SOURCE)
+    assert len(flags) == 1 and "groundout" in flags[0]["problem"]
+
+
 def test_a_score_in_the_source_does_not_become_an_at_bats_count():
     events = P.parse("Bottom of 9th\nSmith, John singled to left; SMC leads 3-2\nJones, Al walked (3-1 BBBKB)")
     assert [(e["name"][0], e["count"]) for e in events] == [("Smith", None), ("Jones", "3-1")]

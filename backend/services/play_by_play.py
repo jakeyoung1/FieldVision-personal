@@ -36,13 +36,30 @@ _EVENT_RE = re.compile(
 )
 _COUNT_RE = re.compile(r"(?<![\d-])([0-3])-([0-2])(?![\d-])")
 # "3-2" is a full count or a final score. The words around it say which.
-_COUNT_AFTER = re.compile(r"\s*(?:count|pitch|offering)\b", re.I)
+_COUNT_AFTER = re.compile(r"\s*(?:in the\s+)?(?:count|pitch|offering)\b", re.I)
 _SCORE_AFTER = re.compile(
     r"\s*(?:win|loss|lead|victory|final|deficit|game|score|decision|defeat|advantage|margin|comeback)\b", re.I)
+# Words that only describe a game result. "up", "down", "ahead", "behind" and
+# "fell" are not here: a hitter is "down 0-2" and "fell behind 0-2" far more
+# often than a team is, so on their own they say nothing about a score.
 _SCORE_BEFORE = re.compile(
     r"\b(?:won|wins?|winning|lost|loses?|losing|led(?!\s+off)|leads?(?!\s+off)|leading(?!\s+off)|"
-    r"trailed|trails?|trailing|score[ds]?|final|tied|ties?|ahead|behind|beat|beats|beating|"
-    r"defeated|defeats?|victory|fell|falls?|up|down)\s+(?:[\w'.]+\s+){0,3}$", re.I)
+    r"trailed|trails?|trailing|score[ds]?|final|tied|ties?|beat|beats|beating|"
+    r"defeated|defeats?|victory)\s+(?:[\w'.]+\s+){0,3}$", re.I)
+# "SMC fell 3-2" and "fell to CRE 3-2" are results; "fell behind 0-2" is a count.
+_SCORE_FELL = re.compile(r"\b(?:fell|falls?)\s+(?:to\s+[\w'.]+\s+)?$", re.I)
+# A team that is up, down, ahead or behind is a score: "SMC up 2-1", "they
+# were down 3-0". Case-sensitive, so a team code is told from an ordinary word;
+# position and stat abbreviations are not teams.
+_TEAM_MARGIN = re.compile(
+    r"(?:\b(?!(?:RHP|LHP|RBI|ERA|HBP|OF|IF|SS|CF|LF|RF|DH|BB|SO|FB|CB|SL|CH)\b)[A-Z]{2,5}\b"
+    r"|\b(?:[Ww]e|[Tt]hey|[Tt]eam|[Cc]lub|[Ss]quad)\b)\s+"
+    r"(?:(?:is|are|was|were|went|go|goes|stayed|stays|pulled|pulls|jumped|jumps|fell|falls?)\s+)?"
+    r"(?:up|down|ahead|behind)\s+(?:by\s+)?$")
+# Phrases that put a hitter or pitcher in a count.
+_COUNT_IDIOM = re.compile(
+    r"\b(?:popp?ed up|f(?:e|a)lls? behind|falling behind|g[eo]ts? (?:ahead|behind)|getting (?:ahead|behind)|"
+    r"(?:worked|battled|came|fought) back (?:to|from))\s+$", re.I)
 
 
 def _counts_in(text: str) -> list[str]:
@@ -50,17 +67,31 @@ def _counts_in(text: str) -> list[str]:
 
     "struck out on a 3-2 pitch" is a count. "lost 3-2" and "a 3-2 win" are
     scores, and reading them as counts produced flags about a plate
-    appearance that never existed. When the words around a number say
-    nothing either way, it is treated as a count, as before.
+    appearance that never existed. Checked in this order, first match wins:
+
+      1. "count" or "pitch" next to the number   -> count
+      2. a team that is up/down/ahead/behind     -> score
+      3. a count idiom ("fell behind", "popped up") -> count
+      4. a result word (won, lost, lead, final)  -> score
+      5. nothing either way                      -> count, as before
     """
     counts = []
     for m in _COUNT_RE.finditer(text):
         before, after = text[max(0, m.start() - 40):m.start()], text[m.end():m.end() + 25]
-        is_count = bool(_COUNT_AFTER.match(after)) or "count" in before[-25:].lower()
-        is_score = bool(_SCORE_AFTER.match(after)) or bool(_SCORE_BEFORE.search(before))
-        if is_count or not is_score:
+        if _COUNT_AFTER.match(after) or "count" in before[-25:].lower():
+            is_count = True
+        elif _TEAM_MARGIN.search(before):
+            is_count = False
+        elif _COUNT_IDIOM.search(before):
+            is_count = True
+        else:
+            is_count = not (_SCORE_AFTER.match(after) or _SCORE_BEFORE.search(before)
+                            or _SCORE_FELL.search(before))
+        if is_count:
             counts.append(f"{m.group(1)}-{m.group(2)}")
     return counts
+
+
 _INNING_RE = re.compile(r"\b(\d)(?:st|nd|rd|th)\s+[Ii]nning|\bof\s+(\d)(?:st|nd|rd|th)\b")
 
 # How a report phrases each checkable outcome.
