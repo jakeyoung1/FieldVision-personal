@@ -22,7 +22,7 @@ _EVENT_PHRASES = [
     ("groundout", r"grounded (?:out|into)"),
     ("flyout",    r"flied out|fouled out|popped (?:up|out)|lined out"),
     ("hit",       r"singled|doubled|tripled|homered"),
-    ("walk",      r"walked"),
+    ("walk",      r"walked(?![- ](?:off|up)\b)"),
     ("hbp",       r"hit by pitch"),
     ("reached",   r"reached"),
     ("steal",     r"stole"),
@@ -35,13 +35,40 @@ _EVENT_RE = re.compile(
     _NAME + r"\s+(" + "|".join(p for _, p in _EVENT_PHRASES) + r")"
 )
 _COUNT_RE = re.compile(r"(?<![\d-])([0-3])-([0-2])(?![\d-])")
+# "3-2" is a full count or a final score. The words around it say which.
+_COUNT_AFTER = re.compile(r"\s*(?:count|pitch|offering)\b", re.I)
+_SCORE_AFTER = re.compile(
+    r"\s*(?:win|loss|lead|victory|final|deficit|game|score|decision|defeat|advantage|margin|comeback)\b", re.I)
+_SCORE_BEFORE = re.compile(
+    r"\b(?:won|wins?|winning|lost|loses?|losing|led(?!\s+off)|leads?(?!\s+off)|leading(?!\s+off)|"
+    r"trailed|trails?|trailing|score[ds]?|final|tied|ties?|ahead|behind|beat|beats|beating|"
+    r"defeated|defeats?|victory|fell|falls?|up|down)\s+(?:[\w'.]+\s+){0,3}$", re.I)
+
+
+def _counts_in(text: str) -> list[str]:
+    """Ball-strike counts in `text`, leaving out game scores.
+
+    "struck out on a 3-2 pitch" is a count. "lost 3-2" and "a 3-2 win" are
+    scores, and reading them as counts produced flags about a plate
+    appearance that never existed. When the words around a number say
+    nothing either way, it is treated as a count, as before.
+    """
+    counts = []
+    for m in _COUNT_RE.finditer(text):
+        before, after = text[max(0, m.start() - 40):m.start()], text[m.end():m.end() + 25]
+        is_count = bool(_COUNT_AFTER.match(after)) or "count" in before[-25:].lower()
+        is_score = bool(_SCORE_AFTER.match(after)) or bool(_SCORE_BEFORE.search(before))
+        if is_count or not is_score:
+            counts.append(f"{m.group(1)}-{m.group(2)}")
+    return counts
 _INNING_RE = re.compile(r"\b(\d)(?:st|nd|rd|th)\s+[Ii]nning|\bof\s+(\d)(?:st|nd|rd|th)\b")
 
 # How a report phrases each checkable outcome.
 _CLAIM_PHRASES = {
     "strikeout":  r"struck out|strikeouts?|strikes out|punched out",
     "groundout":  r"grounded out|groundouts?|ground(?:ed)? into",
-    "walk":       r"\bwalk(?:ed|s)?\b|base on balls",
+    # "walk-off" and "walk-up" are a game-ending hit and a batter's music, not a base on balls.
+    "walk":       r"\bwalk(?:ed|s)?\b(?![- ](?:offs?|ups?)\b)|base on balls",
     "hbp":        r"hit by (?:a )?pitch",
     "steal":      r"\bstole\b|stolen bases?|steals?\b",
     "wild_pitch": r"wild pitch(?:es)?",
@@ -88,7 +115,7 @@ def parse(text: str) -> list[dict]:
     for i, m in enumerate(matches):
         end = matches[i + 1].start() if i + 1 < len(matches) else len(flat)
         clause = flat[m.start():end]
-        count = _COUNT_RE.search(clause)
+        counts = _counts_in(clause)
         inning = None
         for pos, n in innings:
             if pos <= m.start():
@@ -97,7 +124,7 @@ def parse(text: str) -> list[dict]:
         events.append({
             "name": (m.group(1), m.group(2)),
             "kind": kind,
-            "count": f"{count.group(1)}-{count.group(2)}" if count and kind in PLATE_APPEARANCES else None,
+            "count": counts[0] if counts and kind in PLATE_APPEARANCES else None,
             "inning": inning,
             "wild_pitch": "wild pitch" in clause.lower(),
             "text": clause.strip(" ;"),
@@ -165,7 +192,7 @@ def check_report(report: str, source: str) -> list[dict]:
         # kind of plate appearance: "a strikeout and a groundout (1-2, 0-1)"
         # does not say which count went with which.
         pa_claims = [c for c in claimed if c in PLATE_APPEARANCES]
-        counts = [f"{a}-{b}" for a, b in _COUNT_RE.findall(claim_text)] if len(pa_claims) == 1 else []
+        counts = _counts_in(claim_text) if len(pa_claims) == 1 else []
         for claim in claimed:
             if claim == "wild_pitch":
                 support = [e for e in mine if e["wild_pitch"]]

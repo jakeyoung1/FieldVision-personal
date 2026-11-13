@@ -30,6 +30,24 @@ def test_normalize_maps_rickey_spellings_to_the_same_terms():
     assert "fastball" in out and "changeup" in out and "curveball" in out
 
 
+@pytest.mark.parametrize("text,kept", [
+    ("pop time 1.95 to second", "pop time"),
+    ("1.9 pop times on throws", "pop times"),
+    ("lazy pop fly to left", "pop fly"),
+    ("two pop flies", "pop flies"),
+    ("a pop up to short", "pop up"),
+    ("pop out to second", "pop out"),
+])
+def test_pop_time_and_pop_fly_are_not_rewritten_as_power(text, kept):
+    out = rag.normalize(text)
+    assert kept in out and "power" not in out
+
+
+def test_standalone_pop_still_means_power():
+    assert rag.normalize("sneaky pop now and then") == "sneaky power now and then"
+    assert rag.normalize("enough pop.") == "enough power."
+
+
 def test_position_abbreviations_expand_only_on_the_position_line():
     note = "Tyler Renko\nRHP, junior\nHe pitched IF the bullpen was rested. OF note, he competes."
     out = rag.normalize(note)
