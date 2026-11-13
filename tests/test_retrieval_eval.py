@@ -37,6 +37,11 @@ def test_normalize_maps_rickey_spellings_to_the_same_terms():
     ("two pop flies", "pop flies"),
     ("a pop up to short", "pop up"),
     ("pop out to second", "pop out"),
+    ("catchable foul pop, got there late", "foul pop"),
+    ("a foul pop behind the plate", "foul pop"),
+    ("foul-pop to the catcher", "foul-pop"),
+    ("pop foul near the dugout", "pop foul"),
+    ("two pop fouls", "pop fouls"),
 ])
 def test_pop_time_and_pop_fly_are_not_rewritten_as_power(text, kept):
     out = rag.normalize(text)
@@ -46,6 +51,18 @@ def test_pop_time_and_pop_fly_are_not_rewritten_as_power(text, kept):
 def test_standalone_pop_still_means_power():
     assert rag.normalize("sneaky pop now and then") == "sneaky power now and then"
     assert rag.normalize("enough pop.") == "enough power."
+    # "foul" elsewhere in the sentence does not protect an unrelated "pop".
+    assert rag.normalize("no pop; foul territory") == "no power; foul territory"
+    assert rag.normalize("fouls off pitches, some pop") == "fouls off pitches, some power"
+
+
+def test_the_gold_note_with_foul_pop_is_no_longer_read_as_power():
+    """q25 describes a catcher slow on 'a catchable foul pop'. It used to be
+    indexed as 'foul power', a hitting word in a sentence about receiving."""
+    note = next(q["note"] for q in E.load_gold()["queries"] if q["id"] == "q25")
+    assert "foul pop" in note
+    out = rag.normalize(note)
+    assert "foul pop" in out and "foul power" not in out
 
 
 def test_position_abbreviations_expand_only_on_the_position_line():
