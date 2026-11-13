@@ -29,7 +29,8 @@ Plus, per tool and overall:
 
 ## Baseball features
 
-- **Scouting Notes** — PDF/TXT upload (handwritten PDFs via a pdfplumber → pypdf → Claude Vision OCR fallback chain) or pasted text; `---` separates players. Reports grounded in **1,919 Branch Rickey historical scouting documents** (TF-IDF RAG)
+- **Scouting Notes** — PDF/TXT/MD upload or pasted text; `---` separates players. Typed files are read directly. Scanned or handwritten PDFs go through a pdfplumber → pypdf → Claude Vision fallback chain. How accurately that reads handwriting has not been measured, so check names and numbers against the page. Image files are not accepted.
+- **Branch Rickey comparisons** — each report lists its five closest matches from **1,919 Branch Rickey scouting reports (1951–1964)**, with scores (TF-IDF word overlap). Most matches are weak. Weak matches are labeled and withheld from the grade, so most grades rest on the scout's notes and Trackman numbers alone.
 - **Trackman** — instant pitch charts, zero LLM cost: MLB percentile sliders (velo + spin vs approximate league distributions — labeled as approximations), movement plot (IVB/HB, catcher's view), plate location with strike zone; AI interpretation on demand
 - **Compare** — head-to-head AI verdict on any two scouted players: category edges, risk profiles, who to take first
 - **Players** — session talent pool with grade badges, search, filters; **persists across refreshes** (localStorage)
