@@ -6,7 +6,8 @@ Two backends behind one small interface:
             file on Render's free plan does not. Any Postgres works: a Render
             Postgres instance, or an external one.
   SQLite    otherwise, at FV_AUDIT_DB (default: fieldvision_audit.db in the
-            repo). Durable only if that path is on a persistent disk.
+            repo). It survives a restart only if that path is on a persistent
+            disk, which the app cannot verify, so it is never reported durable.
 
 Callers write SQL with "?" placeholders; they are translated for Postgres.
 """
@@ -65,11 +66,17 @@ def sqlite_path() -> Path:
 
 
 def describe() -> dict:
-    """What the UI and /api/audit/summary report about where records live."""
+    """What the UI and /api/audit/summary report about where records live.
+
+    Only Postgres is reported durable. A SQLite file is durable only if its
+    path sits on a persistent disk, and the app cannot tell: on Render's free
+    plan every path is wiped on restart. Setting FV_AUDIT_DB changes where the
+    file is, not whether it survives, so it is never reported as durable.
+    """
     if backend() == "postgres":
         return {"storage": "postgres", "durable": True}
     if os.environ.get("FV_AUDIT_DB"):
-        return {"storage": "sqlite-file", "durable": True}
+        return {"storage": "sqlite-file", "durable": False}
     return {"storage": "sqlite-ephemeral", "durable": False}
 
 

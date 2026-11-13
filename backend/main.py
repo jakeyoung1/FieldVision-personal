@@ -2,12 +2,15 @@
 import os
 from pathlib import Path
 
-# Load .env if present (local dev)
-try:
-    from dotenv import load_dotenv
-    load_dotenv(Path(__file__).parent.parent / ".env")
-except ImportError:
-    pass
+# Load .env if present (local dev). The test suite sets FV_SKIP_DOTENV so a
+# developer's .env, which can hold the production DATABASE_URL, never reaches
+# a test run.
+if not os.environ.get("FV_SKIP_DOTENV"):
+    try:
+        from dotenv import load_dotenv
+        load_dotenv(Path(__file__).parent.parent / ".env")
+    except ImportError:
+        pass
 
 import time
 from collections import defaultdict, deque
