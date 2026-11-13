@@ -4,7 +4,10 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>FieldVision · Baseball Scouting Intelligence</title>
-  <meta name="description" content="AI-powered baseball scouting intelligence. Transform handwritten notes into actionable reports with Claude AI and Branch Rickey's 1,919 historical scouting documents." />
+  <meta name="description" content="Graded baseball scouting reports from a scout's notes and Trackman data, with the quotes and measurements behind every grade and the closest Branch Rickey reports shown with their scores." />
+
+  <link rel="icon" href="/static/logo.svg" type="image/svg+xml" />
+  <link rel="alternate icon" href="/favicon.ico" sizes="any" />
 
   <!-- Fonts: Fira Code (data/headings) + Inter (body) -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -15,25 +18,6 @@
   <!-- Empty = same origin: this server provides the whole API (baseball + basketball). -->
   <script>
     window.FV_API_BASE = "";
-  </script>
-
-  <!-- Tailwind CDN -->
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script>
-    tailwind.config = {
-      theme: {
-        extend: {
-          fontFamily: {
-            sans:  ['Inter', 'system-ui', 'sans-serif'],
-            mono:  ['Fira Code', 'monospace'],
-          },
-          colors: {
-            navy:  '#002147',
-            fvred: '#C8102E',
-          },
-        },
-      },
-    };
   </script>
 
   <style>
@@ -465,6 +449,11 @@
     @media (min-width: 768px) { .coach-grid { grid-template-columns: 1fr 1fr; } }
     @media (max-width: 640px) { .stat-num { font-size: 1.5rem; } }
   </style>
+
+  <!-- Tailwind, compiled locally (scripts/build_css.sh). Linked after the page
+       styles on purpose: the CDN build injected its CSS at the end of <head>,
+       and this keeps the same cascade order. -->
+  <link rel="stylesheet" href="static/css/tailwind.css" />
 </head>
 
 <body class="grid-bg">
@@ -529,7 +518,7 @@
 
     <div class="fv-guide-sport">⚾ Baseball</div>
     <ol class="fv-guide-list">
-      <li><strong>Scouting Notes</strong> — upload PDF/TXT/MD files (scanned PDFs OK; Claude Vision transcribes them) or paste notes. Multiple players: name on the first line of each block, separated by <code>---</code>. Each tool gets an A–F grade backed by quotes from your notes, and each report lists its five closest Branch Rickey comparisons with their scores. Use <em>⚡ Load demo scouting notes</em> to try instantly.</li>
+      <li><strong>Scouting Notes</strong> — upload PDF/TXT/MD files (scanned PDFs are transcribed by Claude Vision; handwriting accuracy is not measured, so check the result) or paste notes. Multiple players: name on the first line of each block, separated by <code>---</code>. Each tool gets an A–F grade backed by quotes from your notes, and each report lists its five closest Branch Rickey comparisons with their scores. Use <em>⚡ Load demo scouting notes</em> to try instantly.</li>
       <li><strong>Trackman</strong> — drop a Trackman CSV. You get instant pitch charts: percentile sliders (velo + spin vs 2025 MLB pitchers' averages), a movement plot, and plate location — then click <em>Analyze Pitching Data</em> for the AI read. <em>⚡ Load demo Trackman data</em> works without a file.</li>
       <li><strong>Players</strong> — every analyzed player lands here with a grade badge. Search and filter by grade or source.</li>
       <li><strong>Compare</strong> — pick any two scouted players for an AI head-to-head: category-by-category edges, risk profiles, and a verdict.</li>
@@ -623,8 +612,10 @@
     </p>
     <p class="reveal" style="transition-delay:.2s;font-size:.95rem;max-width:620px;margin:0 auto 44px;
        line-height:1.8;color:rgba(240,244,255,.45);">
-      Built for Saint Mary's baseball: turn handwritten notes and Trackman files into graded
-      reports, with quotes, measurements, and the closest Branch Rickey reports behind every grade.
+      Built for Saint Mary's baseball: turn scouting notes and Trackman files into graded reports,
+      with the scout's own words and measurements behind every grade. Each report also lists its
+      closest Branch Rickey reports with scores; most are weak matches, labeled as weak and left out of
+      the grade. A pilot with the staff is planned and has not started.
       A basketball module runs the same pipeline on a second sport to test whether the approach generalizes.
     </p>
 
@@ -1350,8 +1341,8 @@
         <h3 style="font-size:1.2rem;font-weight:700;margin-bottom:12px;">Read the Notes</h3>
         <p style="color:rgba(240,244,255,.52);line-height:1.75;font-size:.9rem;">
           Paste notes, or upload TXT, MD, or PDF. Typed PDFs are read directly; a scanned PDF with
-          no text layer is sent to Claude Vision for transcription. Players separated by
-          <code>---</code> get separate reports.
+          no text layer is sent to Claude Vision for transcription, and how well that reads
+          handwriting has not been measured. Players separated by <code>---</code> get separate reports.
         </p>
       </div>
 
@@ -1416,10 +1407,11 @@
         <div class="icon-ring">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#C8102E" stroke-width="2" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
         </div>
-        <h3 style="font-size:1.05rem;font-weight:700;margin-bottom:8px;">Handwritten Note Upload</h3>
+        <h3 style="font-size:1.05rem;font-weight:700;margin-bottom:8px;">Note Upload</h3>
         <p style="color:rgba(240,244,255,.5);font-size:.88rem;line-height:1.72;">
-          Upload PDF, TXT, or MD scouting notes. Multi-page PDF support included.
-          Vision OCR handles messy handwriting, abbreviations, and field shorthand.
+          Upload PDF, TXT, or MD scouting notes, including multi-page PDFs. Typed files are read directly.
+          Scanned or handwritten PDFs are transcribed by Claude Vision. Transcription accuracy on handwriting
+          has not been measured, so check names and numbers against the page. Image files are not accepted.
         </p>
       </div>
 
@@ -1499,7 +1491,9 @@
       <div class="eyebrow">Under the Hood</div>
       <h2 style="font-size:clamp(2rem,4vw,3rem);font-weight:800;letter-spacing:-.03em;margin-bottom:14px;">Tech Stack</h2>
       <p style="font-size:1rem;color:rgba(240,244,255,.5);max-width:480px;margin:0 auto;line-height:1.75;">
-        Small dependencies chosen for fast cold starts on free hosting; every quality claim is measured on the Methods page
+        Small dependencies chosen for fast cold starts on free hosting. The <a href="/methods" style="color:rgba(240,244,255,.7);">Methods page</a>
+        shows what has been measured (matching, the model's consistency with itself) and what has not yet
+        (agreement with coaches, time saved, handwriting transcription)
       </p>
     </div>
 
@@ -1637,6 +1631,7 @@
 <!-- ════════════════════════════════════════════════════════════════════════
      JAVASCRIPT
 ═════════════════════════════════════════════════════════════════════════ -->
+<script src="static/js/report_timing.js"></script>
 <script>
 // ── Scroll reveal ─────────────────────────────────────────────────────────
 const revealObs = new IntersectionObserver((entries) => {
@@ -2127,7 +2122,12 @@ document.querySelectorAll('[data-topline]').forEach(line => {
     sessionReports.push(...results.map(r => `[${r.label}]\n${r.report}`));
 
     const readyAt = performance.now();
-    results.forEach(r => { r._startedAt = analysisStartedAt; r._readyAt = readyAt; });
+    results.forEach(r => {
+      FVTiming.start(r, analysisStartedAt, readyAt);
+      // A single report is on screen the moment it renders. In a batch each
+      // report stays closed until the scout opens it; that starts its clock.
+      if (results.length === 1) { r._open = true; FVTiming.open(r, readyAt); }
+    });
     lastResults = results;
     redrawReports();
     document.getElementById('fv-chat-panel').style.display = '';
@@ -2137,36 +2137,76 @@ document.querySelectorAll('[data-topline]').forEach(line => {
   let lastResults = [];
   let analysisStartedAt = null;
 
-  // Minutes per report. The clock runs from the Analyze click to the moment
-  // the scout marks the report reviewed or exports it, so it includes reading
-  // and checking, not just model latency. Logged once per report.
-  function finishReport (ri, how) {
+  // Minutes per report. Each player's clock starts when that player's report
+  // is opened and stops on Reviewed or Export (static/js/report_timing.js).
+  // The report is marked reviewed only after the server stored the time; a
+  // failed save shows why and offers a retry that resends the same time.
+  async function finishReport (ri, how, { askForKey = false } = {}) {
     const r = lastResults[ri];
-    if (!r || r._finished || r._startedAt == null) return;
-    r._finished = how;
-    const toReport = (r._readyAt - r._startedAt) / 1000;
-    const toFinish = (performance.now() - r._startedAt) / 1000;
-    r._minutes = toFinish / 60;
-    // Logged only for staff whose browser holds the scout key, so demo
-    // visitors never enter the time study and are never prompted.
-    scoutFetch('/api/timing/report', {
-      method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ player: (r.structured && r.structured.name) || r.label || '',
-        seconds_to_report: Math.max(toReport, 0.1), seconds_to_finish: Math.max(toFinish, toReport, 0.1),
-        finished_by: how, session_id: scoutSessionId() }),
-    }, { ask: false }).catch(() => {});
+    if (!r || !r.timing) return;
+    const pending = FVTiming.finish(r, how, performance.now(), numbers =>
+      scoutFetch('/api/timing/report', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ...numbers, session_id: scoutSessionId(),
+          player: (r.structured && r.structured.name) || r.label || '' }),
+      }, { ask: askForKey }));
+    redrawReports();            // shows "Saving…" while the request is out
+    await pending;
+    redrawReports();
   }
 
   function reviewedButton (r, ri) {
-    if (r._finished) {
-      return `<span data-reviewed style="font-size:.68rem;color:#4ade80;">✓ reviewed · ${r._minutes.toFixed(1)} min</span>`;
+    const t = r.timing;
+    if (!t) return '';
+    if (t.state === 'saved') {
+      return `<span data-reviewed style="font-size:.68rem;color:#4ade80;">✓ reviewed · ${FVTiming.reviewMinutes(r).toFixed(1)} min</span>`;
+    }
+    if (t.state === 'saving') {
+      return `<span style="font-size:.68rem;color:rgba(240,244,255,.5);">Saving time…</span>`;
+    }
+    if (t.state === 'failed') {
+      return `<span data-timing-error role="alert" style="font-size:.68rem;color:#fbbf24;">Not marked reviewed: the time was not saved (${escAudit(t.error)}).</span>
+              <button onclick="fvRetryTiming(${ri})"
+                style="padding:2px 9px;border-radius:5px;background:none;border:1px solid rgba(251,191,36,.45);
+                       color:#fbbf24;font-size:.66rem;cursor:pointer;">${t.needsKey ? 'Enter key and retry' : 'Retry'}</button>`;
     }
     return `<button onclick="fvMarkReviewed(${ri})" title="Stops the minutes-per-report clock for this player"
               style="padding:2px 9px;border-radius:5px;background:none;border:1px solid rgba(74,222,128,.35);
                      color:#4ade80;font-size:.66rem;cursor:pointer;">✓ Reviewed</button>`;
   }
 
-  window.fvMarkReviewed = function (ri) { finishReport(ri, 'reviewed'); redrawReports(); };
+  window.fvMarkReviewed = function (ri) { finishReport(ri, 'reviewed'); };
+  window.fvRetryTiming = function (ri) {
+    const t = lastResults[ri] && lastResults[ri].timing;
+    if (t) finishReport(ri, t.frozen ? t.frozen.how : 'reviewed', { askForKey: t.needsKey });
+  };
+  window.fvOpenReport = function (ri) {
+    const r = lastResults[ri];
+    if (!r) return;
+    r._open = true;
+    FVTiming.open(r, performance.now());
+    redrawReports();
+    const card = document.querySelector(`#fv-report-content [data-ri="${ri}"]`);
+    if (card) card.scrollIntoView({ block: 'nearest' });
+  };
+
+  // A batch report before it is opened: who it is and the grade, nothing to read yet.
+  function closedCard (r, ri) {
+    const s = r.structured, p = r.profile || {};
+    const name = (s && s.name) || p.name || r.label;
+    const grade = (s && s.grade) || p.grade || '?';
+    return `
+      <div style="margin-bottom:8px;" data-ri="${ri}" data-closed>
+        <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+          <span style="font-weight:700;font-size:.95rem;">${escAudit(name)}</span>
+          <span class="fv-grade-badge ${gradeClass(grade)}">${escAudit(grade)}</span>
+          ${s && s.position ? `<span style="font-size:.75rem;color:rgba(240,244,255,.4);">${escAudit(s.position)}</span>` : ''}
+          <button onclick="fvOpenReport(${ri})" style="margin-left:auto;padding:4px 12px;border-radius:5px;
+            background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.18);color:#f0f4ff;
+            font-size:.72rem;font-weight:600;cursor:pointer;">Open report</button>
+        </div>
+      </div>`;
+  }
 
   const REC_STYLE = {
     'Priority Follow': 'background:rgba(34,197,94,.15);color:#4ade80;border-color:rgba(34,197,94,.4);',
@@ -2191,6 +2231,7 @@ document.querySelectorAll('[data-topline]').forEach(line => {
 
   function redrawReports () {
     const html = lastResults.map((r, ri) => {
+      if (!r._open) return closedCard(r, ri);
       if (r.structured) return structuredCard(r, ri);
       const p = r.profile || {};
       const grade = p.grade || '?';
@@ -2211,8 +2252,12 @@ document.querySelectorAll('[data-topline]').forEach(line => {
         </div>`;
     }).join('<hr style="border:none;border-top:1px solid rgba(255,255,255,.07);margin:20px 0;">');
 
+    const batchNote = lastResults.length > 1
+      ? `<div style="font-size:.74rem;color:rgba(240,244,255,.45);margin-bottom:14px;">
+           ${lastResults.length} players. Open one report at a time: each player's review clock starts when you open their report.</div>`
+      : '';
     document.getElementById('fv-report-content').innerHTML =
-      `<div style="max-height:560px;overflow-y:auto;padding-right:4px;">${html}</div>`;
+      `<div style="max-height:560px;overflow-y:auto;padding-right:4px;">${batchNote}${html}</div>`;
   }
 
   // How good the Branch Rickey match was. Weak matches are named as weak and
@@ -2620,7 +2665,7 @@ document.querySelectorAll('[data-topline]').forEach(line => {
     const label = card.dataset.reportLabel;
     const ri = card.dataset.ri;
     const r = ri != null ? lastResults[+ri] : null;
-    if (ri != null) { finishReport(+ri, 'exported'); setTimeout(redrawReports, 0); }
+    if (ri != null) finishReport(+ri, 'exported');   // the export itself never waits on the save
 
     let body;
     if (r && r.structured) {

@@ -1,7 +1,9 @@
 """Decision log and timings on both storage backends.
 
-SQLite always runs. Postgres runs when FV_TEST_DATABASE_URL points at a
-throwaway database (CI starts one); otherwise those cases are skipped.
+SQLite always runs. Postgres runs only when FV_TEST_DATABASE_URL points at a
+throwaway database (CI starts one); otherwise those cases are skipped. The
+app's own DATABASE_URL is never used: tests/conftest.py removes it and refuses
+any other Postgres connection.
 """
 import importlib
 import os
@@ -34,8 +36,11 @@ def backend(request, tmp_path, monkeypatch):
 def test_backend_selection_and_description(backend):
     assert store.backend() == backend
     d = store.describe()
-    assert d["durable"] is True
-    assert d["storage"] == ("postgres" if backend == "postgres" else "sqlite-file")
+    if backend == "postgres":
+        assert d == {"storage": "postgres", "durable": True}
+    else:
+        # A configured SQLite path says where the file is, not that it survives.
+        assert d == {"storage": "sqlite-file", "durable": False}
 
 
 def test_overrides_round_trip_and_append_only(backend):
@@ -45,7 +50,7 @@ def test_overrides_round_trip_and_append_only(backend):
     log = audit.log(player="Cole Braddock")
     assert [e["scout_grade"] for e in log] == ["B+", "A-"]       # newest first, nothing overwritten
     assert audit.summary()["total_overrides"] == 2
-    assert audit.summary()["durable"] is True
+    assert audit.summary()["durable"] is (backend == "postgres")
 
 
 def test_records_survive_a_restart(backend):

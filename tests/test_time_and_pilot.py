@@ -31,11 +31,19 @@ def client():
 
 def test_timing_rejects_impossible_values():
     with pytest.raises(ValueError):
-        timing.record("A", 30, 20, "reviewed")          # finished before the report existed
+        timing.record("A", 0, 20, "reviewed")           # no model wait at all
+    with pytest.raises(ValueError):
+        timing.record("A", 30, -5, "reviewed")          # negative review time
     with pytest.raises(ValueError):
         timing.record("A", 30, 60, "walked away")       # unknown finish event
     with pytest.raises(ValueError):
         timing.record("A", 30, 5 * 3600, "exported")    # abandoned tab
+
+
+def test_review_time_may_be_shorter_than_the_model_wait():
+    """The clock starts when the report is opened, so a quick review beats a slow model."""
+    row = timing.record("A", 45, 20, "reviewed")
+    assert (row["seconds_to_report"], row["seconds_to_finish"]) == (45, 20)
 
 
 def test_summary_reports_nothing_from_no_rows_then_medians():
@@ -55,7 +63,7 @@ def test_timing_api_round_trip(client, monkeypatch):
     r = client.post("/api/timing/report", headers=h, json={"player": "Cole Braddock", "seconds_to_report": 25,
                                                            "seconds_to_finish": 190, "finished_by": "reviewed"})
     assert r.status_code == 200
-    assert client.post("/api/timing/report", headers=h, json={"seconds_to_report": 9, "seconds_to_finish": 3,
+    assert client.post("/api/timing/report", headers=h, json={"seconds_to_report": 9, "seconds_to_finish": 0,
                                                               "finished_by": "reviewed"}).status_code == 422
     assert client.get("/api/timing/log", headers=h).json()["rows"][0]["player"] == "Cole Braddock"
 
@@ -66,6 +74,13 @@ def test_time_study_never_counts_placeholder_rows():
     assert T.hand_minutes(rows) == [14.0]
     with pytest.raises(ValueError):
         T.hand_minutes([{"status": "measured", "minutes": "0"}])
+
+
+def test_app_minutes_charge_review_time_plus_the_whole_model_wait():
+    rows = [{"seconds_to_report": "30", "seconds_to_finish": "150"},     # 2.5 review + 0.5 wait
+            {"seconds_to_report": "30", "seconds_to_finish": "90"},      # same batch, same wait
+            {"seconds_to_report": "", "seconds_to_finish": ""}]          # header-only export
+    assert T.app_minutes(rows) == [3.0, 2.0]
 
 
 def test_time_study_comparison_math():
@@ -101,8 +116,18 @@ def test_baseball_is_the_focus_and_the_footer_names_both_sports():
     assert "Multi-Sport Scouting Intelligence" not in html
 
 
-def test_reviewed_button_and_export_stop_the_clock():
+def test_page_uses_the_per_player_clock():
+    """Behavior is tested in tests/js/report_timing.test.js; this checks the wiring."""
     html = (ROOT / "index.html").read_text()
-    assert "analysisStartedAt = performance.now()" in html
-    assert "finishReport(ri, 'reviewed')" in html
-    assert "finishReport(+ri, 'exported')" in html
+    assert '<script src="static/js/report_timing.js"></script>' in html
+    assert (ROOT / "static" / "js" / "report_timing.js").exists()
+    # A batch report's clock starts in fvOpenReport, not when results arrive.
+    open_fn = html[html.index("window.fvOpenReport"):html.index("function closedCard")]
+    assert "FVTiming.open(r, performance.now())" in open_fn
+    assert "if (results.length === 1) { r._open = true; FVTiming.open(r, readyAt); }" in html
+    assert "finishReport(ri, 'reviewed')" in html and "finishReport(+ri, 'exported')" in html
+    # The reviewed marker is drawn only from the saved state; failure offers a retry.
+    button = html[html.index("function reviewedButton"):html.index("window.fvMarkReviewed")]
+    assert button.index("t.state === 'saved'") < button.index("data-reviewed")
+    assert "data-timing-error" in button and "fvRetryTiming" in button
+    assert "_finished" not in html

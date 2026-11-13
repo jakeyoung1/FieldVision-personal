@@ -56,7 +56,7 @@ def analyze(
             # Retrieve once. Every hit goes back to the UI with its score and
             # band; only hits above the weak band reach the model, so a poor
             # match is shown as a poor match instead of being cited as evidence.
-            hits = rag.retrieve(text[:500])
+            hits = rag.retrieve(text[:rag.QUERY_CHARS])
             context = rag.format_context(hits)
 
             # Evidence Chain evaluation; legacy two-call path is the fallback.
@@ -92,7 +92,7 @@ def analyze(
                 "structured": structured,
                 "evidence_chain": structured is not None,
                 "context_used": bool(context),
-                "rickey": rag.match_summary(hits, text[:500]),
+                "rickey": rag.match_summary(hits, text[:rag.QUERY_CHARS]),
                 # Play-by-play notes: every outcome the report states is
                 # checked against the at-bats it came from.
                 "outcome_flags": play_by_play.check_report(report, text),

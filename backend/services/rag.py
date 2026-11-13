@@ -28,6 +28,9 @@ BASE_DIR = Path(__file__).resolve().parents[2]
 DATA_DIR  = BASE_DIR / "data"
 CSV_PATH  = DATA_DIR / "branch-rickey-scouting.csv"
 TOP_K     = 5
+# Only this much of a player's notes is used as the matching query. Disclosed
+# on /methods; a test keeps the page, the app, and the evaluation on one number.
+QUERY_CHARS = 500
 
 ROLE_PITCHER = "pitcher"
 ROLE_HITTER  = "hitter"      # any position player
@@ -75,7 +78,9 @@ _SPELLINGS = [
     (re.compile(r"\barm slots?\b|\bslots?\b"), "delivery angle"),
     (re.compile(r"\bbaserunn(er|ers|ing)\b"), r"base runn\1"),
     (re.compile(r"\bswing[\s-]and[\s-]miss\b|\bwhiffs?\b"), "strike out"),
-    (re.compile(r"\bpop\b(?!-)"), "power"),
+    # "pop" alone is power ("sneaky pop"). Followed by time, fly, up, or out it
+    # is a catcher's throw or a batted ball, and stays as written.
+    (re.compile(r"\bpop\b(?![- ](?:times?|fl(?:y|ies)|ups?|outs?)\b)(?!-)"), "power"),
 ]
 
 
