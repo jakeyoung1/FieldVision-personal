@@ -147,7 +147,7 @@
   <ol>
     <li>Use the ~10 players from the <a href="#pilot">pilot</a>, split into two comparable halves.</li>
     <li><strong>By hand:</strong> for one half, a staff member writes the report the usual way and times it with a stopwatch, from blank page to finished report. Minutes go in <code>evaluation/time_study/hand_baseline.csv</code>.</li>
-    <li><strong>With FieldVision:</strong> for the other half, the same staff member pastes or uploads the notes, reads and checks the report, overrides any grade they disagree with, then clicks <em>Reviewed</em> (or exports the Decision Report). The app logs the minutes from the Analyze click to that moment, so the time includes waiting for the model and reviewing, not just how fast the server is.</li>
+    <li><strong>With FieldVision:</strong> for the other half, the same staff member pastes or uploads the notes, reads and checks the report, overrides any grade they disagree with, then clicks <em>Reviewed</em> (or exports the Decision Report). The app logs two things: that player's review minutes, from opening their report to that click, and the model wait for the Analyze run. A batch of players shares one wait, so the clock for each player starts when their own report is opened. When the two methods are compared, each FieldVision report is charged its review time plus the whole wait.</li>
     <li>On the next batch, swap the halves, so each scout does both methods and individual speed cancels out.</li>
     <li>Compare medians and publish every individual time. With about ten reports per side, the raw times matter more than any average.</li>
   </ol>

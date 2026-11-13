@@ -7,7 +7,8 @@ Inputs
   time_study/hand_baseline.csv   one row per report a scout wrote the usual way,
                                  timed with a stopwatch (protocol: /methods#time)
   time_study/app_timings.csv     one row per report finished in FieldVision, as
-                                 logged by the app (/api/timing/log)
+                                 logged by the app (/api/timing/log): review
+                                 seconds for that player, and the model wait
 
 Rows still marked PLACEHOLDER are never counted. With no real rows on either
 side, the script says there is no measurement instead of printing a number.
@@ -49,7 +50,15 @@ def hand_minutes(rows: list[dict]) -> list[float]:
 
 
 def app_minutes(rows: list[dict]) -> list[float]:
-    return [float(r["seconds_to_finish"]) / 60 for r in rows if r.get("seconds_to_finish")]
+    """Minutes per FieldVision report: that player's review time plus the model wait.
+
+    The app logs review time per player (report opened to reviewed) and the
+    model wait per Analyze run. A batch shares one wait, but each report is
+    charged the whole wait here. That overstates FieldVision's time for
+    batches, which is the direction to err in when the claim is that it is faster.
+    """
+    return [(float(r["seconds_to_finish"]) + float(r.get("seconds_to_report") or 0)) / 60
+            for r in rows if r.get("seconds_to_finish")]
 
 
 def compare(hand: list[float], app: list[float]) -> dict:
