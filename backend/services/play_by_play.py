@@ -47,7 +47,16 @@ _SCORE_BEFORE = re.compile(
     r"trailed|trails?|trailing|score[ds]?|final|tied|ties?|beat|beats|beating|"
     r"defeated|defeats?|victory)\s+(?:[\w'.]+\s+){0,3}$", re.I)
 # "SMC fell 3-2" and "fell to CRE 3-2" are results; "fell behind 0-2" is a count.
-_SCORE_FELL = re.compile(r"\b(?:fell|falls?)\s+(?:to\s+[\w'.]+\s+)?$", re.I)
+# After "to" comes an opponent: one word in any case, or a capitalized name of
+# up to four words ("San Diego State", "the Gaels", "No. 5 Oregon State").
+# Requiring capitals for the longer form keeps "fell to one knee on a 1-2
+# slider" a count.
+_SCORE_FELL = re.compile(
+    r"\b(?i:fell|falls?)\s+"
+    r"(?:(?i:to)\s+(?:"
+    r"(?:(?i:the)\s+)?(?:(?:No\.?|#)\s*\d+\s+)?(?:[A-Z][\w'.&-]*\s+){1,4}"
+    r"|[\w'.]+\s+"
+    r"))?$")
 # A team that is up, down, ahead or behind is a score: "SMC up 2-1", "they
 # were down 3-0". Case-sensitive, so a team code is told from an ordinary word;
 # position and stat abbreviations are not teams.
@@ -77,7 +86,8 @@ def _counts_in(text: str) -> list[str]:
     """
     counts = []
     for m in _COUNT_RE.finditer(text):
-        before, after = text[max(0, m.start() - 40):m.start()], text[m.end():m.end() + 25]
+        # 60 characters back is enough for "fell to No. 5 North Carolina State ".
+        before, after = text[max(0, m.start() - 60):m.start()], text[m.end():m.end() + 25]
         if _COUNT_AFTER.match(after) or "count" in before[-25:].lower():
             is_count = True
         elif _TEAM_MARGIN.search(before):

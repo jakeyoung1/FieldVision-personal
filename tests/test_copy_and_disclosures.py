@@ -73,6 +73,15 @@ def test_methods_explains_the_four_to_three_mapping_with_both_counts():
     assert m["three_way_same"] == 18
 
 
+def test_readme_makes_the_same_qualified_claims_as_the_site():
+    readme = (ROOT / "README.md").read_text()
+    for phrase in ("Reports grounded in", "handwritten PDFs via", "handles messy handwriting"):
+        assert phrase not in readme, phrase
+    assert "has not been measured" in readme and "Image files are not accepted" in readme
+    assert "Most matches are weak" in readme and "withheld from the grade" in readme
+    assert "with scores" in readme
+
+
 def test_methods_lists_handwriting_and_matching_window_as_limitations():
     limits = METHODS[METHODS.index('id="limitations"'):]
     assert "Handwriting transcription is unmeasured" in limits

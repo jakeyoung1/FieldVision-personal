@@ -78,9 +78,10 @@ _SPELLINGS = [
     (re.compile(r"\barm slots?\b|\bslots?\b"), "delivery angle"),
     (re.compile(r"\bbaserunn(er|ers|ing)\b"), r"base runn\1"),
     (re.compile(r"\bswing[\s-]and[\s-]miss\b|\bwhiffs?\b"), "strike out"),
-    # "pop" alone is power ("sneaky pop"). Followed by time, fly, up, or out it
-    # is a catcher's throw or a batted ball, and stays as written.
-    (re.compile(r"\bpop\b(?![- ](?:times?|fl(?:y|ies)|ups?|outs?)\b)(?!-)"), "power"),
+    # "pop" alone is power ("sneaky pop"). Followed by time, fly, up, out, or
+    # foul, or preceded by "foul", it is a catcher's throw or a batted ball,
+    # and stays as written.
+    (re.compile(r"(?<!\bfoul[ -])\bpop\b(?![- ](?:times?|fl(?:y|ies)|ups?|outs?|fouls?)\b)(?!-)"), "power"),
 ]
 
 

@@ -147,6 +147,38 @@ def test_team_margins_and_results_are_still_scores(text):
     assert P._counts_in(text) == []
 
 
+@pytest.mark.parametrize("text", [
+    "fell to San Diego State 3-2",
+    "fell to UCLA 3-2",
+    "SMC fell to Cal State Fullerton 2-1",
+    "fell to the Gaels 3-2",
+    "The Gaels fell to No. 5 Oregon State 3-1",
+    "falls to Texas A&M 2-0",
+    "FELL TO SAN DIEGO STATE 3-2",
+])
+def test_fell_to_a_multi_word_opponent_is_a_score(text):
+    """Regression (Bugbot on PR #9): only one word was allowed after 'to', so a
+    loss to a multi-word opponent was read as a pitch count."""
+    assert P._counts_in(text) == []
+
+
+@pytest.mark.parametrize("text,count", [
+    ("popped up 2-2", "2-2"),
+    ("down 0-2", "0-2"),
+    ("ahead 2-0", "2-0"),
+    ("fell behind 0-2", "0-2"),
+    ("fell to one knee on a 1-2 slider", "1-2"),
+    ("fell to the ground on a 2-2 curve", "2-2"),
+])
+def test_count_idioms_survive_the_wider_fell_to_rule(text, count):
+    assert P._counts_in(text) == [count]
+
+
+def test_a_loss_to_a_multi_word_team_raises_no_false_flag():
+    """The false flag the bug produced: 'no plate appearance on a 3-2 count'."""
+    assert P.check_report("Sniffen struck out twice as SMC fell to San Diego State 3-2.", SOURCE) == []
+
+
 def test_a_dropped_count_no_longer_hides_a_wrong_claim():
     """With the bug, 'fell behind 0-1' gave no count, so this claim went unchecked."""
     flags = P.check_report("Sniffen fell behind 0-1 and struck out.", SOURCE)
