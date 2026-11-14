@@ -166,6 +166,18 @@
   <div class="scroll"><table id="bench-dev-table"></table></div>
   <p class="small" id="bench-defs"></p>
   <p class="small" id="bench-limits"></p>
+  <h4 id="pro-scale">The overall on the published pro scale: a calibration</h4>
+  <p id="cal-intro"></p>
+  <p id="cal-why"></p>
+  <div class="scroll"><table id="cal-test-table"></table></div>
+  <p id="cal-test-reading"></p>
+  <div class="scroll"><table id="cal-role-table"></table></div>
+  <details>
+    <summary>Development split, where the step sizes were chosen</summary>
+    <div class="scroll"><table id="cal-dev-table"></table></div>
+    <p class="small">The step sizes were picked on these players, so the improvement here was expected. The test split above is the check.</p>
+  </details>
+  <p class="small" id="cal-limits"></p>
 
   <h3>Grades: does the model grade like a coach?</h3>
   <div id="grades"></div>
@@ -522,6 +534,77 @@
       (emptyBoth.length ? `${list(emptyBoth).charAt(0).toUpperCase() + list(emptyBoth).slice(1)} has no comparable pairs in either split. ` : '') +
       `The notes are short excerpts (about ${ts.excerpt_chars_median} characters at the median), far less than a scout writes. ` +
       `Names are removed, but the model may still know some of these players from its training data.`;
+
+    // The calibrated overall. Every figure comes from benchmark_pro_scale_results.json,
+    // which evaluation/pro_benchmark/score_pro_scale.py builds from the committed grades.
+    const cal = pb.calibration;
+    if (cal) {
+      const rule = cal._meta.rule, CT = cal.test, CD = cal.dev, why = cal.why_two_step_sizes;
+      const roles = Object.values(CT.by_role);
+      const steps = n => `${n} ${n === 1 ? 'step' : 'steps'}`;
+      const signedTwo = v => (v > 0 ? '+' : '') + two(v);
+      const points = v => (v > 0 ? '+' : '') + Math.round(Number(v) * 100);
+      const held = CT.conditions.filter(c => c.held).length;
+      const side = v => v < 0 ? 'below' : 'above';
+      const pubGap = why.published_overall_minus_published_tools, ownGap = why.fieldvision_overall_minus_its_tools;
+      const rankSame = !(CT.paired_change.ci95.spearman[0] > 0) && !(CT.paired_change.ci95.spearman[1] < 0);
+
+      document.getElementById('cal-intro').textContent =
+        `Because the overall grade runs high, the app shows a second number beside the overall letter. ` +
+        `It is the letter converted to the ${rule.lowest}-${rule.highest} scale and lowered ` +
+        `${list(roles.map(r => `${steps(r.steps_down)} for a ${r.name}`))} (one step is ${rule.step_points} points). ` +
+        `The letter and the tool grades are not changed. This is a calibration: it moves the overall grade onto the scale the published grades use. It is not a second evaluation.`;
+      document.getElementById('cal-why').textContent =
+        `Why the step sizes differ: on the ${why.players} development players, the published overall grade sat ` +
+        `${list(Object.entries(CT.by_role).map(([key, r]) => `${one(Math.abs(pubGap[key].mean))} points ${side(pubGap[key].mean)} the average of the published tool grades for a ${r.name}`))}. ` +
+        `FieldVision's overall sat ${one(Math.abs(ownGap.all.mean))} points from the average of its own tool grades. The two overall grades mean different things. ` +
+        `The step sizes were chosen on the ${CD.players} development players and checked once on the ${CT.players} test players, against ${CT.conditions.length} conditions written down first. ` +
+        `${held === CT.conditions.length ? 'All of them held.' : `${held} of them held.`} ` +
+        `The steps have not been changed since, and the test players cannot be used to change them.`;
+
+      const calHead = `<thead><tr><th>Overall grade</th><th class="num">Players</th><th class="num">Average gap</th><th class="num">Bias</th>
+        <th class="num">Within ${rule.step_points} points</th><th class="num">Rank agreement</th></tr></thead>`;
+      const calRow = (label, m) => `<tr><td>${label}</td><td class="num">${m.n}</td><td class="num">${cell(m, 'mae', one)}</td>
+        <td class="num">${cell(m, 'bias', plus)}</td><td class="num">${cell(m, 'within_step', whole)}</td>
+        <td class="num">${cell(m, 'spearman', two)}</td></tr>`;
+      const changeRow = c => `<tr><td>Change, same players</td><td class="num"></td>
+        <td class="num">${plus(c.mae)}${range(c.ci95.mae, plus)}</td><td class="num"></td>
+        <td class="num">${points(c.within_step)}${range(c.ci95.within_step, points)} points</td>
+        <td class="num">${signedTwo(c.spearman)}${range(c.ci95.spearman, signedTwo)}</td></tr>`;
+      const calTable = res => calHead + `<tbody>${calRow('As graded', res.before)}${calRow('Calibrated', res.after)}${changeRow(res.paired_change)}</tbody>`;
+      document.getElementById('cal-test-table').innerHTML = calTable(CT);
+      document.getElementById('cal-dev-table').innerHTML = calTable(CD);
+
+      const gap = CT.paired_change.ci95.mae, same = CT.same_grade_for_everyone;
+      document.getElementById('cal-test-reading').textContent =
+        `On the test split the calibrated overall ${lean(CT.after)}; as graded it ${lean(CT.before)}. ` +
+        (gap[1] < 0 ? `The average gap fell from ${one(CT.before.mae)} to ${one(CT.after.mae)} points, and the interval on that change stays below zero. `
+                    : `The average gap went from ${one(CT.before.mae)} to ${one(CT.after.mae)} points, a change the interval does not separate from zero. `) +
+        (rankSame ? `It did not change how well the overall ranks players: rank agreement is ${two(CT.before.spearman)} as graded and ${two(CT.after.spearman)} calibrated. `
+                  : `Rank agreement went from ${two(CT.before.spearman)} to ${two(CT.after.spearman)}. `) +
+        (same.mae < CT.after.mae
+          ? `Giving every player the same grade of ${same.value} still has a smaller average gap (${one(same.mae)} points), because the published overall grades here take only ${CT.published_overall_values.length} values. ` +
+            `So the calibration re-centers the overall grade. It does not make it more informative.`
+          : `The calibrated overall has a smaller average gap than giving every player the same grade of ${same.value} (${one(same.mae)} points).`);
+
+      document.getElementById('cal-role-table').innerHTML =
+        `<thead><tr><th>Test split, by role</th><th class="num">Players</th><th class="num">Lowered</th><th class="num">Bias, as graded</th>
+          <th class="num">Bias, calibrated</th><th class="num">Average gap, as graded</th><th class="num">Average gap, calibrated</th></tr></thead><tbody>` +
+        roles.map(r => `<tr><td>${esc(r.name.charAt(0).toUpperCase() + r.name.slice(1))}s</td><td class="num">${r.players}</td>
+          <td class="num">${steps(r.steps_down)}</td><td class="num">${cell(r.before, 'bias', plus)}</td><td class="num">${cell(r.after, 'bias', plus)}</td>
+          <td class="num">${cell(r.before, 'mae', one)}</td><td class="num">${cell(r.after, 'mae', one)}</td></tr>`).join('') + `</tbody>`;
+
+      document.getElementById('cal-limits').textContent =
+        `What this does not show: the steps were fitted to ${ctx.sources.length === 1 ? "one outlet's" : "a few outlets'"} published grades for college draftees, ` +
+        `${CD.players} players to choose them and ${CT.players} to check them. Whether the same steps suit the players a college staff sees is not known, ` +
+        `and nothing here has been checked against a coach's grades. In the benchmark each player's role was known. In the app the role is read from the notes, ` +
+        `and when the notes do not make it clear, or name both roles, no calibrated number is shown. A scout's override of the overall letter does not change it.`;
+      document.getElementById('bench-limit-overall').textContent +=
+        ` The app also shows a calibrated overall beside the letter. On the test split it ${lean(CT.after)}` +
+        (rankSame ? `, and it ranks players no better than the letter does.` : `.`);
+    } else {
+      document.getElementById('cal-intro').textContent = 'The calibration results are not available on this server.';
+    }
   } else {
     document.getElementById('bench-run-intro').textContent = 'The pro benchmark results are not available on this server.';
   }

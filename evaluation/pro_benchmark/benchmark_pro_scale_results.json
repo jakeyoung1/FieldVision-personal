@@ -1,0 +1,555 @@
+{
+  "_meta": {
+    "what": "The overall grade calibrated to the published pro scale, scored against published overall grades.",
+    "rule": {
+      "steps_down": {
+        "pitcher": 2,
+        "hitter": 1
+      },
+      "step_points": 5,
+      "lowest": 20,
+      "highest": 80,
+      "applies_to": "the model's overall letter; tool grades and the letter itself are not changed",
+      "role_from": "the benchmark's role column"
+    },
+    "chosen_on": "dev",
+    "checked_on": "test",
+    "checked_once": "2026-11-14",
+    "frozen": "The test split was used once to check this rule. Nothing here may be used to adjust it.",
+    "inputs": [
+      "pro_benchmark.public.csv",
+      "fieldvision_grades_dev.json",
+      "fieldvision_grades_test.json"
+    ],
+    "model_calls": 0,
+    "draws": 2000,
+    "seed": 20261112
+  },
+  "dev": {
+    "players": 48,
+    "before": {
+      "n": 48,
+      "mae": 8.75,
+      "bias": 7.7083,
+      "within_step": 0.4583,
+      "spearman": 0.2031,
+      "ci95": {
+        "mae": [
+          6.9792,
+          10.5208
+        ],
+        "bias": [
+          5.625,
+          9.7917
+        ],
+        "within_step": [
+          0.3125,
+          0.6042
+        ],
+        "spearman": [
+          -0.09,
+          0.4567
+        ]
+      }
+    },
+    "after": {
+      "n": 48,
+      "mae": 5.0,
+      "bias": 0.2083,
+      "within_step": 0.75,
+      "spearman": 0.3505,
+      "ci95": {
+        "mae": [
+          3.9583,
+          6.1458
+        ],
+        "bias": [
+          -1.6667,
+          1.9792
+        ],
+        "within_step": [
+          0.625,
+          0.875
+        ],
+        "spearman": [
+          0.0523,
+          0.5857
+        ]
+      }
+    },
+    "paired_change": {
+      "mae": -3.75,
+      "within_step": 0.2917,
+      "spearman": 0.1474,
+      "ci95": {
+        "mae": [
+          -5.5208,
+          -1.6667
+        ],
+        "within_step": [
+          0.0833,
+          0.4792
+        ],
+        "spearman": [
+          0.0655,
+          0.242
+        ]
+      }
+    },
+    "by_role": {
+      "pitcher": {
+        "name": "pitcher",
+        "players": 24,
+        "steps_down": 2,
+        "before": {
+          "n": 24,
+          "mae": 11.6667,
+          "bias": 11.6667,
+          "within_step": 0.25,
+          "spearman": 0.4077,
+          "ci95": {
+            "mae": [
+              8.9583,
+              13.9583
+            ],
+            "bias": [
+              8.9583,
+              13.9583
+            ],
+            "within_step": [
+              0.0833,
+              0.4167
+            ],
+            "spearman": [
+              -0.0368,
+              0.7092
+            ]
+          }
+        },
+        "after": {
+          "n": 24,
+          "mae": 5.4167,
+          "bias": 1.6667,
+          "within_step": 0.7083,
+          "spearman": 0.4077,
+          "ci95": {
+            "mae": [
+              3.9583,
+              6.875
+            ],
+            "bias": [
+              -1.0417,
+              3.9583
+            ],
+            "within_step": [
+              0.5417,
+              0.875
+            ],
+            "spearman": [
+              -0.0368,
+              0.7092
+            ]
+          }
+        }
+      },
+      "hitter": {
+        "name": "position player",
+        "players": 24,
+        "steps_down": 1,
+        "before": {
+          "n": 24,
+          "mae": 5.8333,
+          "bias": 3.75,
+          "within_step": 0.6667,
+          "spearman": 0.3628,
+          "ci95": {
+            "mae": [
+              4.1667,
+              7.5
+            ],
+            "bias": [
+              1.25,
+              6.0417
+            ],
+            "within_step": [
+              0.4583,
+              0.8333
+            ],
+            "spearman": [
+              -0.0719,
+              0.6808
+            ]
+          }
+        },
+        "after": {
+          "n": 24,
+          "mae": 4.5833,
+          "bias": -1.25,
+          "within_step": 0.7917,
+          "spearman": 0.3628,
+          "ci95": {
+            "mae": [
+              2.9167,
+              6.4583
+            ],
+            "bias": [
+              -3.75,
+              1.0417
+            ],
+            "within_step": [
+              0.625,
+              0.9583
+            ],
+            "spearman": [
+              -0.0719,
+              0.6808
+            ]
+          }
+        }
+      }
+    },
+    "same_grade_for_everyone": {
+      "value": 45.0,
+      "n": 48,
+      "mae": 4.1667,
+      "bias": -0.2083,
+      "within_step": 0.875,
+      "spearman": null,
+      "ci95": {
+        "mae": [
+          3.3333,
+          5.0
+        ],
+        "bias": [
+          -1.7708,
+          1.1458
+        ],
+        "within_step": [
+          0.7708,
+          0.9583
+        ]
+      }
+    },
+    "published_overall_values": [
+      40.0,
+      45.0,
+      50.0,
+      55.0
+    ],
+    "conditions": [
+      {
+        "condition": "overall bias within half a step",
+        "held": true
+      },
+      {
+        "condition": "bias interval within one step of zero",
+        "held": true
+      },
+      {
+        "condition": "average gap smaller, interval on the change below zero",
+        "held": true
+      },
+      {
+        "condition": "more grades within one step, interval on the change above zero",
+        "held": true
+      },
+      {
+        "condition": "each role's bias within one step",
+        "held": true
+      },
+      {
+        "condition": "rank agreement not worse",
+        "held": true
+      }
+    ]
+  },
+  "test": {
+    "players": 48,
+    "before": {
+      "n": 48,
+      "mae": 10.0,
+      "bias": 9.1667,
+      "within_step": 0.3333,
+      "spearman": 0.2327,
+      "ci95": {
+        "mae": [
+          8.3333,
+          11.6667
+        ],
+        "bias": [
+          7.0833,
+          11.1458
+        ],
+        "within_step": [
+          0.2083,
+          0.4583
+        ],
+        "spearman": [
+          -0.0532,
+          0.4781
+        ]
+      }
+    },
+    "after": {
+      "n": 48,
+      "mae": 5.0,
+      "bias": 1.6667,
+      "within_step": 0.7292,
+      "spearman": 0.2257,
+      "ci95": {
+        "mae": [
+          3.75,
+          6.4583
+        ],
+        "bias": [
+          -0.2083,
+          3.5417
+        ],
+        "within_step": [
+          0.6042,
+          0.8542
+        ],
+        "spearman": [
+          -0.0497,
+          0.4724
+        ]
+      }
+    },
+    "paired_change": {
+      "mae": -5.0,
+      "within_step": 0.3958,
+      "spearman": -0.007,
+      "ci95": {
+        "mae": [
+          -6.5625,
+          -3.4375
+        ],
+        "within_step": [
+          0.25,
+          0.5417
+        ],
+        "spearman": [
+          -0.1251,
+          0.1017
+        ]
+      }
+    },
+    "by_role": {
+      "pitcher": {
+        "name": "pitcher",
+        "players": 24,
+        "steps_down": 2,
+        "before": {
+          "n": 24,
+          "mae": 11.875,
+          "bias": 11.875,
+          "within_step": 0.1667,
+          "spearman": 0.4908,
+          "ci95": {
+            "mae": [
+              9.7917,
+              14.1667
+            ],
+            "bias": [
+              9.7917,
+              14.1667
+            ],
+            "within_step": [
+              0.0417,
+              0.3333
+            ],
+            "spearman": [
+              0.1537,
+              0.746
+            ]
+          }
+        },
+        "after": {
+          "n": 24,
+          "mae": 3.9583,
+          "bias": 1.875,
+          "within_step": 0.7917,
+          "spearman": 0.4908,
+          "ci95": {
+            "mae": [
+              2.5,
+              5.625
+            ],
+            "bias": [
+              -0.2083,
+              4.1667
+            ],
+            "within_step": [
+              0.625,
+              0.9583
+            ],
+            "spearman": [
+              0.1537,
+              0.746
+            ]
+          }
+        }
+      },
+      "hitter": {
+        "name": "position player",
+        "players": 24,
+        "steps_down": 1,
+        "before": {
+          "n": 24,
+          "mae": 8.125,
+          "bias": 6.4583,
+          "within_step": 0.5,
+          "spearman": 0.0361,
+          "ci95": {
+            "mae": [
+              5.8333,
+              10.625
+            ],
+            "bias": [
+              3.3333,
+              9.5833
+            ],
+            "within_step": [
+              0.2917,
+              0.7083
+            ],
+            "spearman": [
+              -0.3517,
+              0.3989
+            ]
+          }
+        },
+        "after": {
+          "n": 24,
+          "mae": 6.0417,
+          "bias": 1.4583,
+          "within_step": 0.6667,
+          "spearman": 0.0361,
+          "ci95": {
+            "mae": [
+              3.9583,
+              8.125
+            ],
+            "bias": [
+              -1.6667,
+              4.5833
+            ],
+            "within_step": [
+              0.4583,
+              0.8333
+            ],
+            "spearman": [
+              -0.3517,
+              0.3989
+            ]
+          }
+        }
+      }
+    },
+    "same_grade_for_everyone": {
+      "value": 45.0,
+      "n": 48,
+      "mae": 3.9583,
+      "bias": 0.4167,
+      "within_step": 0.9375,
+      "spearman": null,
+      "ci95": {
+        "mae": [
+          3.125,
+          4.8958
+        ],
+        "bias": [
+          -1.0417,
+          1.6667
+        ],
+        "within_step": [
+          0.8542,
+          1.0
+        ]
+      }
+    },
+    "published_overall_values": [
+      40.0,
+      45.0,
+      50.0,
+      55.0,
+      60.0
+    ],
+    "conditions": [
+      {
+        "condition": "overall bias within half a step",
+        "held": true
+      },
+      {
+        "condition": "bias interval within one step of zero",
+        "held": true
+      },
+      {
+        "condition": "average gap smaller, interval on the change below zero",
+        "held": true
+      },
+      {
+        "condition": "more grades within one step, interval on the change above zero",
+        "held": true
+      },
+      {
+        "condition": "each role's bias within one step",
+        "held": true
+      },
+      {
+        "condition": "rank agreement not worse",
+        "held": true
+      }
+    ]
+  },
+  "why_two_step_sizes": {
+    "split": "dev",
+    "players": 48,
+    "published_overall_minus_published_tools": {
+      "all": {
+        "mean": -6.1128,
+        "ci95": [
+          -7.6042,
+          -4.5799
+        ]
+      },
+      "pitcher": {
+        "mean": -8.4757,
+        "ci95": [
+          -10.1042,
+          -6.6944
+        ]
+      },
+      "hitter": {
+        "mean": -3.75,
+        "ci95": [
+          -5.9583,
+          -1.625
+        ]
+      }
+    },
+    "fieldvision_overall_minus_its_tools": {
+      "all": {
+        "mean": -0.6736,
+        "ci95": [
+          -1.7396,
+          0.4861
+        ]
+      },
+      "pitcher": {
+        "mean": 0.625,
+        "ci95": [
+          -1.0521,
+          2.2569
+        ]
+      },
+      "hitter": {
+        "mean": -1.9722,
+        "ci95": [
+          -3.2188,
+          -0.6007
+        ]
+      }
+    }
+  }
+}
