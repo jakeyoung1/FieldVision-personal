@@ -6,6 +6,16 @@
     # 2) Score the independent set once Jake has filled labeling_sheet.csv
     python retrieval_bootstrap.py independent
 
+    # 3) Recall and wrong-role rates for the same set (retrieval_bootstrap_extra.json)
+    python retrieval_bootstrap.py extra
+
+In the repo the labeling sheet is local only (it quotes the notes). Both modes
+then read labels_public.csv, which holds the same labels without the text, so
+the committed result files can be rebuilt from committed inputs:
+
+    python -m evaluation.independent.retrieval_bootstrap --write out.json independent
+    python -m evaluation.independent.retrieval_bootstrap --write out.json extra
+
 Relevance scale for labeling_sheet.csv (column `relevance`):
   2 = clearly relevant: the Rickey report evaluates a player with the same
       role and the same headline tools/traits as the modern note
@@ -25,6 +35,11 @@ import random
 from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
+# The full sheet quotes the notes and is gitignored; the public copy has the
+# same labels by query_id and asset. Use whichever exists, full sheet first.
+SHEET = HERE / "labeling_sheet.csv"
+if not SHEET.exists():
+    SHEET = HERE / "labels_public.csv"
 SEED = 20261112
 DRAWS = 2000
 K = 5
@@ -121,17 +136,93 @@ def independent(sheet: Path, key: Path) -> dict:
     return out
 
 
+# ── mode 3: recall and wrong-role rates (retrieval_bootstrap_extra.json) ────
+EXTRA_DEFINITIONS = {
+    "recall_at_5": "relevant (label>=1) in top 5 / all relevant (label>=1) among the query's labeled "
+                   "candidate pool; queries with zero relevant candidates excluded",
+    "recall_at_5_strict": "same, relevant = label 2 only",
+    "wrong_role_at_5": "share of the top 5 whose doc_role_rule_based != query_role "
+                       "(mixed and unknown count as differing)",
+    "wrong_role_at_5_opposite_only": "sensitivity: only pitcher-vs-hitter mismatches count; "
+                                     "mixed/unknown not counted as wrong",
+}
+EXTRA_BOOTSTRAP = ("resample queries with replacement; paired difference resamples the same queries "
+                   "for both systems; percentile 95% CI")
+
+
+def extra(sheet: Path, key: Path) -> dict:
+    """Recall@5 (both thresholds) and wrong-role rate@5 (both definitions).
+
+    Written 2026-11-14 to rebuild retrieval_bootstrap_extra.json, which was
+    computed by a one-off and had no script. Same seed, draws, and bootstrap
+    as the other modes. Recall is per query and leaves out queries with no
+    relevant candidate, so the paired difference uses only queries that have
+    a value for both systems.
+    """
+    labels, query_role, rows = {}, {}, 0
+    with sheet.open(newline="", encoding="utf-8") as f:
+        for r in csv.DictReader(f):
+            rows += 1
+            v = r["relevance"].strip()
+            if v not in ("0", "1", "2"):
+                raise ValueError(f"extra needs every pair labeled 0, 1, or 2; {r['query_id']}/{r['asset']} is {v!r}")
+            labels[(r["query_id"], r["asset"])] = int(v)
+            query_role[r["query_id"]] = r["query_role"]
+    doc_role, ranks = {}, {}
+    with key.open(newline="", encoding="utf-8") as f:
+        for r in csv.DictReader(f):
+            doc_role[(r["query_id"], r["asset"])] = r["doc_role_rule_based"]
+            for system in ("production", "bm25"):
+                if r[f"{system}_rank"]:
+                    ranks.setdefault(system, {}).setdefault(r["query_id"], []).append((int(r[f"{system}_rank"]), r["asset"]))
+    qids = sorted(query_role)
+    per = {}
+    for system, by_q in ranks.items():
+        m = {name: {} for name in EXTRA_DEFINITIONS}
+        for q in qids:
+            top = [a for _, a in sorted(by_q.get(q, []))][:K]
+            for name, threshold in (("recall_at_5", 1), ("recall_at_5_strict", 2)):
+                relevant = {a for (qq, a), v in labels.items() if qq == q and v >= threshold}
+                if relevant:
+                    m[name][q] = sum(a in relevant for a in top) / len(relevant)
+            m["wrong_role_at_5"][q] = sum(doc_role[(q, a)] != query_role[q] for a in top) / K
+            m["wrong_role_at_5_opposite_only"][q] = sum(
+                {doc_role[(q, a)], query_role[q]} == {"pitcher", "hitter"} for a in top) / K
+        per[system] = m
+    out = {"source_sheet": f"{sheet.name} ({rows} rows, labels unchanged)", "draws": DRAWS, "seed": SEED, "k": K,
+           "definitions": EXTRA_DEFINITIONS, "bootstrap": EXTRA_BOOTSTRAP,
+           "systems": {}, "paired_production_minus_bm25": {}, "excluded_queries": {}}
+    for system in ("production", "bm25"):
+        out["systems"][system] = {name: {"mean": round(sum(v.values()) / len(v), 4), "ci95": ci(list(v.values())),
+                                         "n_queries": len(v)}
+                                  for name, v in per[system].items()}
+    for name in EXTRA_DEFINITIONS:
+        both = [q for q in qids if q in per["production"][name] and q in per["bm25"][name]]
+        a = [per["production"][name][q] for q in both]
+        b = [per["bm25"][name][q] for q in both]
+        out["paired_production_minus_bm25"][name] = {"mean_diff": round(sum(x - y for x, y in zip(a, b)) / len(a), 4),
+                                                     "ci95": paired_ci(a, b), "n_queries": len(both)}
+        left_out = [q for q in qids if q not in both]
+        if left_out:
+            out["excluded_queries"][name] = left_out
+    return out
+
+
 def main():
     ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     sub = ap.add_subparsers(dest="mode", required=True)
     e = sub.add_parser("existing")
     e.add_argument("--results", required=True)
-    i = sub.add_parser("independent")
-    i.add_argument("--sheet", default=str(HERE / "labeling_sheet.csv"))
-    i.add_argument("--key", default=str(HERE / "candidates_key.csv"))
+    for mode in ("independent", "extra"):
+        m = sub.add_parser(mode)
+        m.add_argument("--sheet", default=str(SHEET))
+        m.add_argument("--key", default=str(HERE / "candidates_key.csv"))
     ap.add_argument("--write", help="write JSON to this path")
     a = ap.parse_args()
-    r = existing(Path(a.results)) if a.mode == "existing" else independent(Path(a.sheet), Path(a.key))
+    if a.mode == "existing":
+        r = existing(Path(a.results))
+    else:
+        r = (independent if a.mode == "independent" else extra)(Path(a.sheet), Path(a.key))
     text = json.dumps(r, indent=2)
     print(text)
     if a.write:
