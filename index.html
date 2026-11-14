@@ -2200,6 +2200,7 @@ document.querySelectorAll('[data-topline]').forEach(line => {
         <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
           <span style="font-weight:700;font-size:.95rem;">${escAudit(name)}</span>
           <span class="fv-grade-badge ${gradeClass(grade)}">${escAudit(grade)}</span>
+          ${proScalePill(s)}
           ${s && s.position ? `<span style="font-size:.75rem;color:rgba(240,244,255,.4);">${escAudit(s.position)}</span>` : ''}
           <button onclick="fvOpenReport(${ri})" style="margin-left:auto;padding:4px 12px;border-radius:5px;
             background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.18);color:#f0f4ff;
@@ -2219,6 +2220,18 @@ document.querySelectorAll('[data-topline]').forEach(line => {
   function confPill (c) {
     return `<span style="font-size:.66rem;font-weight:700;padding:1px 8px;border-radius:99px;
       border:1px solid ${CONF_COLOR[c]}55;color:${CONF_COLOR[c]};">confidence: ${c}</span>`;
+  }
+
+  // The overall letter on the published pro scale. The server computes it
+  // (backend/services/pro_scale.py) and it is a calibration: shown beside the
+  // letter, never in place of it. Reports saved before it existed, and notes
+  // with no clear role, have no value and show nothing.
+  function proScalePill (s) {
+    const c = s && s.pro_scale;
+    if (!c || c.value == null) return '';
+    return `<span class="fv-pro-scale" title="${escAudit(c.basis)}" style="font-size:.66rem;font-weight:700;padding:1px 8px;
+      border-radius:99px;border:1px dashed rgba(240,244,255,.3);color:rgba(240,244,255,.6);cursor:help;">
+      ${escAudit(c.label)} ${escAudit(c.value)} · ${escAudit(c.kind)}</span>`;
   }
 
   function overrideBadge (r, key) {
@@ -2376,6 +2389,7 @@ document.querySelectorAll('[data-topline]').forEach(line => {
         <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px;flex-wrap:wrap;">
           <span style="font-weight:700;font-size:1rem;">${name}</span>
           <span class="fv-grade-badge ${gradeClass(s.grade)}">${s.grade}</span>
+          ${proScalePill(s)}
           ${overrideBadge(r, '__overall__')}
           ${s.position ? `<span style="font-size:.75rem;color:rgba(240,244,255,.4);">${s.position}</span>` : ''}
           ${confPill(s.confidence)}
@@ -2734,6 +2748,7 @@ document.querySelectorAll('[data-topline]').forEach(line => {
       <div class="meta">${s.position || ''} · Generated ${now.toLocaleDateString()} ${now.toLocaleTimeString()} · FieldVision · Overall confidence: ${s.confidence}</div>
       <div class="rec">${(overall ? overall.grade : s.grade)} · ${s.recommendation}</div>
       ${overall ? `<div class="ovr">Scout override of overall grade (AI said ${s.grade})${overall.note ? `: ${overall.note}` : ''}</div>` : ''}
+      ${s.pro_scale && s.pro_scale.value != null ? `<div class="meta" id="fv-pro-scale-line" style="margin:6px 0 10px;"><strong>${escAudit(s.pro_scale.label)} (${escAudit(s.pro_scale.kind)} of the AI overall ${escAudit(s.pro_scale.from_grade)}): ${escAudit(s.pro_scale.value)}</strong> on the ${escAudit(s.pro_scale.scale)} scale. ${escAudit(s.pro_scale.basis)}</div>` : ''}
       <p>${s.summary}</p>
       <h2>Tools</h2>
       <table><thead><tr><th>Tool</th><th>AI Grade</th><th>Scout Override</th><th>Confidence</th></tr></thead>
