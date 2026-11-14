@@ -1,0 +1,300 @@
+{
+  "split": "test",
+  "players_scored": 21,
+  "draws": 2000,
+  "seed": 20261112,
+  "step_points": 5,
+  "by_tool": {
+    "hit": {
+      "n": 6,
+      "mae": 5.0,
+      "bias": 3.3333,
+      "within_step": 0.6667,
+      "spearman": 0.7542,
+      "ci95": {
+        "mae": [
+          1.6667,
+          8.3333
+        ],
+        "bias": [
+          -0.8333,
+          7.5
+        ],
+        "within_step": [
+          0.3333,
+          1.0
+        ],
+        "spearman": [
+          0.3162,
+          1.0
+        ]
+      }
+    },
+    "power": {
+      "n": 7,
+      "mae": 7.8571,
+      "bias": 3.5714,
+      "within_step": 0.4286,
+      "spearman": 0.6543,
+      "ci95": {
+        "mae": [
+          5.7143,
+          10.0
+        ],
+        "bias": [
+          -2.1429,
+          8.5714
+        ],
+        "within_step": [
+          0.0,
+          0.8571
+        ],
+        "spearman": [
+          0.0,
+          0.9661
+        ]
+      }
+    },
+    "run": {
+      "n": 1,
+      "mae": 5.0,
+      "bias": -5.0,
+      "within_step": 1.0,
+      "spearman": null,
+      "ci95": {}
+    },
+    "arm": {
+      "n": 0,
+      "mae": null,
+      "bias": null,
+      "within_step": null,
+      "spearman": null,
+      "ci95": {}
+    },
+    "field": {
+      "n": 2,
+      "mae": 5.0,
+      "bias": -5.0,
+      "within_step": 1.0,
+      "spearman": null,
+      "ci95": {
+        "mae": [
+          5.0,
+          5.0
+        ],
+        "bias": [
+          -5.0,
+          -5.0
+        ],
+        "within_step": [
+          1.0,
+          1.0
+        ]
+      }
+    },
+    "fastball": {
+      "n": 14,
+      "mae": 6.4286,
+      "bias": 5.0,
+      "within_step": 0.5714,
+      "spearman": 0.4569,
+      "ci95": {
+        "mae": [
+          3.5714,
+          9.2857
+        ],
+        "bias": [
+          1.4286,
+          8.2143
+        ],
+        "within_step": [
+          0.2857,
+          0.8571
+        ],
+        "spearman": [
+          -0.0894,
+          0.8418
+        ]
+      }
+    },
+    "slider": {
+      "n": 5,
+      "mae": 6.0,
+      "bias": 4.0,
+      "within_step": 0.8,
+      "spearman": 0.5162,
+      "ci95": {
+        "mae": [
+          2.0,
+          11.0
+        ],
+        "bias": [
+          -2.0,
+          10.0
+        ],
+        "within_step": [
+          0.4,
+          1.0
+        ],
+        "spearman": [
+          -0.3953,
+          1.0
+        ]
+      }
+    },
+    "curveball": {
+      "n": 4,
+      "mae": 5.0,
+      "bias": 2.5,
+      "within_step": 0.75,
+      "spearman": 0.9487,
+      "ci95": {
+        "mae": [
+          1.25,
+          8.75
+        ],
+        "bias": [
+          -2.5,
+          7.5
+        ],
+        "within_step": [
+          0.25,
+          1.0
+        ],
+        "spearman": [
+          0.8165,
+          1.0
+        ]
+      }
+    },
+    "changeup": {
+      "n": 4,
+      "mae": 3.75,
+      "bias": 1.25,
+      "within_step": 0.75,
+      "spearman": 0.7379,
+      "ci95": {
+        "mae": [
+          0.0,
+          7.5
+        ],
+        "bias": [
+          -3.75,
+          7.5
+        ],
+        "within_step": [
+          0.25,
+          1.0
+        ],
+        "spearman": [
+          -1.0,
+          1.0
+        ]
+      }
+    },
+    "cutter": {
+      "n": 2,
+      "mae": 10.0,
+      "bias": -5.0,
+      "within_step": 0.5,
+      "spearman": null,
+      "ci95": {
+        "mae": [
+          5.0,
+          15.0
+        ],
+        "bias": [
+          -15.0,
+          5.0
+        ],
+        "within_step": [
+          0.0,
+          1.0
+        ]
+      }
+    },
+    "splitter": {
+      "n": 0,
+      "mae": null,
+      "bias": null,
+      "within_step": null,
+      "spearman": null,
+      "ci95": {}
+    },
+    "control": {
+      "n": 6,
+      "mae": 4.1667,
+      "bias": 2.5,
+      "within_step": 0.6667,
+      "spearman": 0.6866,
+      "ci95": {
+        "mae": [
+          0.8333,
+          8.3333
+        ],
+        "bias": [
+          -1.6667,
+          7.5
+        ],
+        "within_step": [
+          0.3333,
+          1.0
+        ],
+        "spearman": [
+          -0.3162,
+          1.0
+        ]
+      }
+    },
+    "overall": {
+      "n": 21,
+      "mae": 10.9524,
+      "bias": 10.9524,
+      "within_step": 0.2381,
+      "spearman": 0.631,
+      "ci95": {
+        "mae": [
+          8.8095,
+          13.0952
+        ],
+        "bias": [
+          8.8095,
+          13.0952
+        ],
+        "within_step": [
+          0.0476,
+          0.4286
+        ],
+        "spearman": [
+          0.2401,
+          0.8573
+        ]
+      }
+    },
+    "_pooled": {
+      "n": 51,
+      "mae": 5.8824,
+      "bias": 2.7451,
+      "within_step": 0.6471,
+      "spearman": 0.6967,
+      "ci95": {
+        "mae": [
+          4.375,
+          7.449
+        ],
+        "bias": [
+          0.0926,
+          5.4167
+        ],
+        "within_step": [
+          0.4909,
+          0.7907
+        ],
+        "spearman": [
+          0.5213,
+          0.8421
+        ]
+      }
+    }
+  }
+}
