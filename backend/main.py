@@ -21,7 +21,7 @@ from fastapi.responses import FileResponse, JSONResponse, PlainTextResponse
 from fastapi.staticfiles import StaticFiles
 from starlette.exceptions import HTTPException as StarletteHTTPException
 
-from backend.routes import (analyze, audit, basketball, chat, compare, methods, timing,
+from backend.routes import (analyze, audit, basketball, chat, compare, demo_pack, methods, timing,
                             trackman, trackman_viz)
 
 # ── App ───────────────────────────────────────────────────────────────────────
@@ -81,6 +81,7 @@ app.include_router(trackman_viz.router, prefix="/api")
 app.include_router(compare.router, prefix="/api")
 app.include_router(audit.router, prefix="/api")
 app.include_router(timing.router, prefix="/api")
+app.include_router(demo_pack.router, prefix="/api")   # empty unless FV_DEMO_PACK=1
 app.include_router(methods.router)   # /methods page + /api/methods data
 
 

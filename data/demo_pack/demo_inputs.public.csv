@@ -1,0 +1,17 @@
+id,role,position,level,publisher,source_url,report_date,date_checked
+demo01,pitcher,RHP,pro prospect (drafted out of high school),MLB Pipeline (MLB.com),https://www.mlb.com/milb/prospects/top100,not shown,2026-11-12
+demo02,pitcher,RHP,pro prospect (drafted out of high school),MLB Pipeline (MLB.com),https://www.mlb.com/milb/prospects/top100,not shown,2026-11-12
+demo03,pitcher,RHP,pro prospect (drafted out of college),MLB Pipeline (MLB.com),https://www.mlb.com/milb/prospects/top100,not shown,2026-11-12
+demo04,pitcher,RHP,pro prospect (international signee; no draft record on page),MLB Pipeline (MLB.com),https://www.mlb.com/milb/prospects/top100,not shown,2026-11-12
+demo05,pitcher,RHP,pro prospect (drafted out of college),MLB Pipeline (MLB.com),https://www.mlb.com/milb/prospects/rays,not shown,2026-11-12
+demo06,pitcher,RHP,pro prospect (international signee; no draft record on page),MLB Pipeline (MLB.com),https://www.mlb.com/milb/prospects/rays,not shown,2026-11-12
+demo07,pitcher,RHP,pro prospect (international signee; no draft record on page),MLB Pipeline (MLB.com),https://www.mlb.com/milb/prospects/rays,not shown,2026-11-12
+demo08,pitcher,RHP,pro prospect (drafted out of college),MLB Pipeline (MLB.com),https://www.mlb.com/milb/prospects/rays,not shown,2026-11-12
+demo09,hitter,SS,pro prospect (international signee; no draft record on page),MLB Pipeline (MLB.com),https://www.mlb.com/milb/prospects/top100,not shown,2026-11-12
+demo10,hitter,SS,pro prospect (drafted out of high school),MLB Pipeline (MLB.com),https://www.mlb.com/milb/prospects/top100,not shown,2026-11-12
+demo11,hitter,SS,pro prospect (international signee; no draft record on page),MLB Pipeline (MLB.com),https://www.mlb.com/milb/prospects/top100,not shown,2026-11-12
+demo12,hitter,C,pro prospect (international signee; no draft record on page),MLB Pipeline (MLB.com),https://www.mlb.com/milb/prospects/top100,not shown,2026-11-12
+demo13,hitter,OF,pro prospect (drafted out of college),MLB Pipeline (MLB.com),https://www.mlb.com/milb/prospects/rays,not shown,2026-11-12
+demo14,hitter,SS,pro prospect (drafted out of high school),MLB Pipeline (MLB.com),https://www.mlb.com/milb/prospects/rays,not shown,2026-11-12
+demo15,hitter,SS,pro prospect (drafted out of high school),MLB Pipeline (MLB.com),https://www.mlb.com/milb/prospects/rays,not shown,2026-11-12
+demo16,hitter,OF,pro prospect (drafted out of college),MLB Pipeline (MLB.com),https://www.mlb.com/milb/prospects/rays,not shown,2026-11-12

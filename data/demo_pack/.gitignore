@@ -1,0 +1,3 @@
+# MLB Pipeline text stays on the local machine. Only the public files and the
+# rewritten notes are committed; evaluation/public_guard.py checks this folder.
+*.local.*

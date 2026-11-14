@@ -1,0 +1,126 @@
+{
+ "_meta": {
+  "DEMO_ONLY": "Never use for evaluation, cutoff tuning, retrieval tuning, or the Rickey corpus.",
+  "what": "16 demo scouting notes rewritten in original wording, one per demo id. Facts come from the scrubbed source notes in demo_inputs.local.json; no sentence is carried over.",
+  "status": "Rewritten 2026-11-14. Jake reported that the audit against the local excerpts passed before this file was committed. Shown in the app only when FV_DEMO_PACK=1.",
+  "written_by": "Claude Code",
+  "written_on": "2026-11-14",
+  "rules": "Fresh sentences; no player names; no grade words or grade numbers (same rules as scripts/scrub.py); every claim traces to the source note; 200 to 330 characters.",
+  "n": 16,
+  "fabricated_rows": 0
+ },
+ "notes": [
+  {
+   "id": "demo01",
+   "role": "pitcher",
+   "position": "RHP",
+   "level": "pro prospect (drafted out of high school)",
+   "scouting_text": "Right-hander drafted as a high schooler. Both of his breaking balls spin at a high rate. The slider is the more recent addition and comes in firm. The curveball drops straight down, 12-to-6, with sharp break close to the plate, and its spin has been measured as high as 3,000 rpm."
+  },
+  {
+   "id": "demo02",
+   "role": "pitcher",
+   "position": "RHP",
+   "level": "pro prospect (drafted out of high school)",
+   "scouting_text": "Right-handed pitcher drafted as a prep player. Two secondary pitches drew many swings and misses for him a year ago. One is a kick-change that dives and fades sharply. The other is a slider that moves across and down; its shape is sweeper-like, not gyro-like."
+  },
+  {
+   "id": "demo03",
+   "role": "pitcher",
+   "position": "RHP",
+   "level": "pro prospect (drafted out of college)",
+   "scouting_text": "College-drafted right-hander. His fastball works at 95 to 97 mph, has reached 100, and gets both carry and arm-side movement; the way he delivers the ball makes it tougher to hit than the radar says. He has two sliders. The conventional one, mid-80s, moves sideways. The sweeper is slower, low 80s, with very large break."
+  },
+  {
+   "id": "demo04",
+   "role": "pitcher",
+   "position": "RHP",
+   "level": "pro prospect (international signee; no draft record on page)",
+   "scouting_text": "Right-hander signed internationally. Fastball and changeup were the two pitches behind his dominance of the California League. The fastball runs 92 to 95 mph, peaks at 97, enters the zone on a flat plane, and both rides and tails to his arm side. The changeup comes in at 83 to 85 mph, dropping as it fades."
+  },
+  {
+   "id": "demo05",
+   "role": "pitcher",
+   "position": "RHP",
+   "level": "pro prospect (drafted out of college)",
+   "scouting_text": "Right-handed pitcher drafted from a college program. Fastball and slider are his main weapons, and right-handed batters have a hard time with them. The changeup trails both pitches, and its speed is close to the slider's. Against left-handed batters he made do with the fastball-slider pair as well."
+  },
+  {
+   "id": "demo06",
+   "role": "pitcher",
+   "position": "RHP",
+   "level": "pro prospect (international signee; no draft record on page)",
+   "scouting_text": "Right-hander who signed as an international amateur in 2023. At his first showcases and club workouts he threw just 88 to 90 mph. Shortly before signing, that climbed to 94 to 98. His strikeout rate has gone up. The changeup has worked for him in spots, though he rarely throws it."
+  },
+  {
+   "id": "demo07",
+   "role": "pitcher",
+   "position": "RHP",
+   "level": "pro prospect (international signee; no draft record on page)",
+   "scouting_text": "Right-handed pitcher signed internationally. The fastball is his headline pitch: in the Fall League it hovered near 98 mph and peaked at 100.1. He has also thrown a sinker and a changeup, which gives him the pitch variety a starter needs. The changeup plainly trails his fastball and his breaking pitches."
+  },
+  {
+   "id": "demo08",
+   "role": "pitcher",
+   "position": "RHP",
+   "level": "pro prospect (drafted out of college)",
+   "scouting_text": "College-drafted right-hander. He throws his fastball more than anything else. It lives in the mid-90s with lively movement, and he can reach the upper 90s when he wants more. His pitch mix has changed over time: his cutter/slider has become his lead secondary, while the curveball has usually been his finishing pitch."
+  },
+  {
+   "id": "demo09",
+   "role": "hitter",
+   "position": "SS",
+   "level": "pro prospect (international signee; no draft record on page)",
+   "scouting_text": "Shortstop signed internationally. Over 115 games at three levels a season ago he batted .285/.379/.413 with 40 hits for extra bases, six of them home runs, and stole 47 bags. He produced almost equally against left- and right-handed pitching that year. The homer count is modest, but his raw power keeps rising as he matures."
+  },
+  {
+   "id": "demo10",
+   "role": "hitter",
+   "position": "SS",
+   "level": "pro prospect (drafted out of high school)",
+   "scouting_text": "High school draftee at shortstop who had been recruited to play at Oklahoma. He plays with a high motor. He uses his speed to push for the next base again and again, whether by stretching a base hit or by trying to steal."
+  },
+  {
+   "id": "demo11",
+   "role": "hitter",
+   "position": "SS",
+   "level": "pro prospect (international signee; no draft record on page)",
+   "scouting_text": "Shortstop signed internationally. Splitting 96 games between two full-season affiliates, he posted a .270/.335/.422 line with nine home runs and 44 stolen bases. He is fast, and he runs the bases with energy and an attacking mindset. He is seldom thrown out when he tries to steal."
+  },
+  {
+   "id": "demo12",
+   "role": "hitter",
+   "position": "C",
+   "level": "pro prospect (international signee; no draft record on page)",
+   "scouting_text": "Catcher signed as an international amateur. After returning to full health he wasted little time displaying his raw power and bat speed again, and the exit velocity readings backed it up time after time. His year ended with an Arizona Fall League stint in which he homered four times within three games."
+  },
+  {
+   "id": "demo13",
+   "role": "hitter",
+   "position": "OF",
+   "level": "pro prospect (drafted out of college)",
+   "scouting_text": "Outfielder drafted out of college who bats left-handed. Scouts think his 6-foot build and his swing hold some power. To this point his game has been contact and pressure instead: he sprays the ball around, makes pitchers work for outs, reaches base however he can, and then relies on his legs."
+  },
+  {
+   "id": "demo14",
+   "role": "hitter",
+   "position": "SS",
+   "level": "pro prospect (drafted out of high school)",
+   "scouting_text": "Shortstop drafted as a prep player. Opinions on him were divided: some evaluators liked another player's bat better, while others favored this shortstop for his broader range of tools and for what he adds on defense. His quickness and speed leave his long-term position open, with second base or third base as possible homes."
+  },
+  {
+   "id": "demo15",
+   "role": "hitter",
+   "position": "SS",
+   "level": "pro prospect (drafted out of high school)",
+   "scouting_text": "Shortstop taken out of high school who hits right-handed. He knows the strike zone and keeps his swing in check instead of chasing home runs; more power is expected as he fills out and gets stronger. On defense he plays with confidence and aggression, showing a strong arm, range, sure hands, and clean actions."
+  },
+  {
+   "id": "demo16",
+   "role": "hitter",
+   "position": "OF",
+   "level": "pro prospect (drafted out of college)",
+   "scouting_text": "College-drafted outfielder. He pairs strength with athleticism, hits with a grown-up plan, and understands what he does well and what he does not. Since he hurt his hand, his raw power has not fully shown up in games. Either way, the bulk of his power goes to the pull side."
+  }
+ ]
+}
