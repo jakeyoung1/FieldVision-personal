@@ -111,3 +111,60 @@ def test_extra_refuses_unlabeled_pairs(tmp_path):
         w.writerows(rows)
     with pytest.raises(ValueError, match="every pair labeled"):
         rb.extra(broken, KEY)
+
+
+# ── What /methods says about the candidates ─────────────────────────────────
+def _methods_candidates(monkeypatch, tmp_path):
+    import importlib
+
+    from fastapi.testclient import TestClient
+
+    from backend.main import app
+    from backend.services import audit
+    monkeypatch.setenv("FV_AUDIT_DB", str(tmp_path / "audit.db"))
+    importlib.reload(audit)
+    return TestClient(app).get("/api/methods").json()["independent"]["candidates"]
+
+
+def test_methods_cutoff_figures_match_a_recount(monkeypatch, tmp_path):
+    from backend.services import rag
+    c = _methods_candidates(monkeypatch, tmp_path)
+    with KEY.open(newline="", encoding="utf-8") as f:
+        hits = [r for r in csv.DictReader(f) if r["production_rank"]]
+    with LABELS.open(newline="", encoding="utf-8") as f:
+        label = {(r["query_id"], r["asset"]): int(r["relevance"]) for r in csv.DictReader(f)}
+    p = c["production"]
+    assert p["hits"] == len(hits) == 200 and c["depth"] == 10
+    scores = [float(r["production_score"]) for r in hits]
+    assert p["highest_score"] == max(scores) < rag.WEAK_SCORE          # every match is below the usable line
+    assert p["by_band"] == {"strong": 0, "moderate": 0, "weak": 200}
+    assert p["labeled_relevant"] == sum(label[(r["query_id"], r["asset"])] >= 1 for r in hits)
+    assert p["labeled_clearly_relevant"] == sum(label[(r["query_id"], r["asset"])] == 2 for r in hits)
+    assert c["cutoffs"] == {"usable_from": rag.WEAK_SCORE, "strong_from": rag.STRONG_SCORE}
+
+
+def test_bands_follow_the_apps_cutoffs_not_the_stored_column(monkeypatch, tmp_path):
+    """If the cutoff moves, the page must describe the new one."""
+    from backend.services import rag
+    monkeypatch.setattr(rag, "WEAK_SCORE", 0.10)
+    p = _methods_candidates(monkeypatch, tmp_path)["production"]
+    assert p["by_band"]["moderate"] > 0 and sum(p["by_band"].values()) == 200
+
+
+def test_methods_gap_figures_match_the_pinned_counts(monkeypatch, tmp_path):
+    g = _methods_candidates(monkeypatch, tmp_path)["bm25_gaps"]
+    assert (g["notes"], g["total"], g["in_top_5"]) == (9, 11, 5)
+    assert g["cause"] == "duplicate transcriptions"
+
+
+def test_methods_page_renders_both_findings_from_data():
+    html = (ROOT / "methods.html").read_text()
+    assert 'id="independent-cutoff"' in html and 'id="independent-duplicates"' in html
+    script = html[html.index("const C = ind.candidates;"):html.index("// Plain-language versions")]
+    for ref in ("P.hits", "P.highest_score", "P.labeled_relevant", "P.labeled_clearly_relevant",
+                "cut.usable_from", "B.total", "B.in_top_5", "B.notes"):
+        assert ref in script, ref
+    for typed in ("107", "0.1439", "0.144", "200 of", "11 times"):
+        assert typed not in html, typed
+    limits = html[html.index('id="limitations"'):]
+    assert "The match cutoff is tuned to synthetic notes." in limits
