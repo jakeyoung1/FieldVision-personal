@@ -12,7 +12,7 @@ report text (used by chat context and PDF export) in sync with the JSON.
 import json
 import re
 
-from backend.services import claude
+from backend.services import claude, pro_scale
 
 SYSTEM_STRUCTURED = claude.SYSTEM_SCOUT + """
 
@@ -131,10 +131,14 @@ def finalize(data: dict, notes: str, had_measurement: bool) -> dict:
         })
 
     rec = data.get("recommendation")
+    grade = data.get("grade") if data.get("grade") in GRADE_SCALE else "C"
     return {
         "name": data.get("name"),
         "position": data.get("position"),
-        "grade": data.get("grade") if data.get("grade") in GRADE_SCALE else "C",
+        "grade": grade,
+        # Added beside the letter, never in place of it: a calibration to the
+        # published pro scale. The rule is frozen; see backend/services/pro_scale.py.
+        "pro_scale": pro_scale.calibrate(grade, notes, data.get("position")),
         "summary": str(data.get("summary", ""))[:600],
         "tools": tools,
         "strengths": [str(s)[:120] for s in (data.get("strengths") or [])][:6],
@@ -200,4 +204,7 @@ def to_markdown(s: dict) -> str:
         lines += [f"- {x}" for x in s["what_would_change"]]
     lines.append("")
     lines.append(f"## Recommendation & Grade\n{s['grade']} — {s['recommendation']}")
+    calibrated = pro_scale.markdown_line(s.get("pro_scale"))
+    if calibrated:
+        lines.append(calibrated)
     return "\n".join(lines)
