@@ -128,12 +128,20 @@
 
   <h2 id="evaluation">Evaluation</h2>
   <div class="card warn"><strong>Read this first.</strong> <span id="eval-caveat">Loading…</span></div>
-  <h3>Retrieval: does it find the right Rickey reports?</h3>
-  <p>Each test note was written from one randomly drawn Rickey report and labeled with the reports on that same player. A system scores when those reports appear in its top five.</p>
+  <h3 id="synthetic">Matching, test 1: synthetic notes</h3>
+  <p>Each test note was written from one randomly drawn Rickey report and labeled with the reports on that same player. A system scores when those reports appear in its top five. This test is circular by construction: the notes were written from the reports they are supposed to find.</p>
   <div class="scroll"><table id="retrieval-table"></table></div>
   <p class="small" id="retrieval-note"></p>
   <h3>How score relates to correctness</h3>
   <div class="scroll"><table id="calibration-table"></table></div>
+  <h3 id="independent">Matching, test 2: real notes, labeled by a person</h3>
+  <p id="independent-intro">Loading…</p>
+  <div class="scroll"><table id="independent-table"></table></div>
+  <p id="independent-reading"></p>
+  <p class="small" id="independent-defs"></p>
+  <p class="small" id="independent-sources"></p>
+  <p class="small">What this test does not show: it has one labeler, so there is no check on his judgment. Its notes are professional write-ups of college draftees, not a college staff's own notes. Only reports that one of the two systems ranked in its top 10 were labeled, so recall is measured against that pool, not the whole archive. Role is judged by the app's own role rules, not by hand. The notes themselves are not published here; the links above lead to the source pages.</p>
+
   <h3>Grades: does the model grade like a coach?</h3>
   <div id="grades"></div>
   <h3 id="decision-mapping">Four recommendations, three decisions</h3>
@@ -186,7 +194,8 @@
     <li><strong>Fictional demo players.</strong> Cole Braddock, Danny Vasquez, and every player in the demo Trackman file are invented. The demo files tag them with the SMC team code, but they are not Saint Mary's players.</li>
     <li><strong>Handwriting transcription is unmeasured.</strong> Scanned and handwritten PDFs are transcribed by Claude Vision before anything else happens. No test here measures how accurately it reads handwriting, and a misread name or number flows into the report. Image files (JPG, PNG) are not accepted.</li>
     <li><strong>Matching reads only the opening of the notes.</strong> The first 500 characters decide which Rickey reports are shown (<a href="#first-500">details</a>).</li>
-    <li><strong>Small, synthetic test sets.</strong> The retrieval test has <span class="n-gold">37</span> notes. All of them are synthetic, and their labels were drafted by AI and have not been checked by a person. A difference of a few points between systems is noise.</li>
+    <li><strong>Small, synthetic test sets.</strong> The first matching test has <span class="n-gold">37</span> notes. All of them are synthetic, written from the reports they should find, and their labels were drafted by AI and have not been checked by a person. On it, a difference of a few points between systems is noise.</li>
+    <li><strong>One labeler, one source.</strong> The second matching test uses <span class="n-independent">a small number of</span> real notes, all from one outlet and all labeled by one person. It is small, and nobody has double-checked the labels (<a href="#independent">details</a>).</li>
     <li><strong>No coach grades yet.</strong> The grade comparison has the model's side only. Until a coach grades the same notes, there is no evidence the model grades the way a coach does.</li>
     <li><strong>The model varies between runs.</strong> Given the same notes twice, it gives the same letter grade <span class="same-letter">about two times in three</span>. A one-step difference from a coach is within that noise.</li>
     <li><strong>Grade scale.</strong> The app grades on letters. Comparing with the 20-80 scouting scale uses an assumed conversion (C = 40, five points per step). Rank correlation and Take/Follow/Hold agreement don't depend on it; the average gap does.</li>
@@ -223,6 +232,8 @@
         <td>${b.season} season, downloaded ${esc(b.fetched)}</td><td class="num">${Object.values(b.pitch_types)[0].pitchers.toLocaleString()} pitchers (fastball)</td></tr>
     <tr><td>Basketball-Reference</td><td>NBA per-game stats, for basketball comparisons</td>
         <td>${seasons.join(', ')}</td><td class="num">${bb.player_seasons.toLocaleString()} player-seasons</td></tr>
+    ${d.independent ? `<tr><td>MLB Pipeline draft prospect pages</td><td>Real scouting notes for the second matching test. The text is not stored in this project; only links, labels, and results are.</td>
+        <td>Checked ${esc(d.independent.notes.date_checked)}</td><td class="num">${d.independent.notes.count} notes</td></tr>` : ''}
     <tr><td>Your notes and Trackman files</td><td>What every report is built from</td><td>As uploaded</td><td class="num">n/a</td></tr>`;
   document.querySelectorAll('.yr-range').forEach(el => el.textContent = `${c.first_year} to ${c.last_year}`);
   document.getElementById('rickey-years').innerHTML =
@@ -240,10 +251,12 @@
       <div class="small" style="margin-top:6px;">Set from the calibration table in the evaluation below, on the same test set it is reported on.</div>`;
     const g = r.gold;
     document.querySelectorAll('.n-gold').forEach(el => el.textContent = g.queries);
+    const indep = d.independent;
     document.getElementById('eval-caveat').textContent =
-      `The retrieval test uses ${g.queries} synthetic notes (fictional players, written by AI from real Rickey reports). ` +
-      `Labels are ${g.label_status === 'ai_drafted_unaudited' ? 'AI-drafted and not yet checked by a person' : g.label_status}. ` +
-      `No coach has graded anything yet. Treat every number below as provisional.`;
+      `Matching is tested two ways below. Test 1 uses ${g.queries} synthetic notes (fictional players, written by AI from real Rickey reports); ` +
+      `its labels are ${g.label_status === 'ai_drafted_unaudited' ? 'AI-drafted and not yet checked by a person' : g.label_status}. ` +
+      (indep ? `Test 2 uses ${indep.notes.count} real notes labeled by one person. ` : '') +
+      `No coach has graded anything yet, so nothing here shows the model's grades are right. Treat every number as provisional.`;
     const names = { random: 'Random', bm25: 'BM25 (standard word-match baseline)', tfidf_before: 'FieldVision before fixes',
       'tfidf_before + role filter': '+ role filter only', 'tfidf_before + vocabulary': '+ shared vocabulary only', production: 'FieldVision now' };
     document.getElementById('retrieval-table').innerHTML = `
@@ -260,6 +273,91 @@
       <thead><tr><th>Score</th><th class="num">Matches</th><th class="num">Was a labeled report</th><th class="num">Right role</th></tr></thead>
       <tbody>${r.calibration.map(x => `<tr><td>${x.score_from.toFixed(2)} to ${x.score_to.toFixed(2)}</td><td class="num">${x.hits}</td>
         <td class="num">${pct(x.labeled_report_rate)}</td><td class="num">${pct(x.role_compatible_rate)}</td></tr>`).join('')}</tbody>`;
+  }
+
+  // Independent matching test. Every figure comes from the two committed
+  // bootstrap files; the verdict in the last column is computed from each
+  // interval, not written by hand.
+  const ind = d.independent;
+  if (ind) {
+    const R = ind.results, X = ind.extra, L = ind.labels, N = ind.notes;
+    document.querySelectorAll('.n-independent').forEach(e => e.textContent = N.count);
+    const who = L.labelers.length ? L.labelers.join(' and ') : 'one person';
+    const rel = L.by_relevance;
+    document.getElementById('independent-intro').textContent =
+      `${N.count} real scouting notes on college draftees (${N.pitchers} pitchers, ${N.position_players} position players), ` +
+      `${N.written_from_rickey_reports === 0 ? 'none of them written from a Rickey report' : `${N.written_from_rickey_reports} written from Rickey reports`}. ` +
+      `For each note, the top 10 Rickey reports from FieldVision and from BM25 were pooled, giving ${L.pairs} note-report pairs. ` +
+      `${who} labeled every pair${L.labeled_on.length ? ` on ${L.labeled_on.join(', ')}` : ''} without seeing which system had returned it: ` +
+      `clearly relevant (${rel['2'] || 0} pairs), partly relevant (${rel['1'] || 0}), or not relevant (${rel['0'] || 0}). ` +
+      `Brackets are 95% intervals from ${R.draws.toLocaleString()} bootstrap resamples of the notes.`;
+
+    // Two decimals, unless that would round a non-zero bound to 0.00 and make
+    // an interval look like it includes zero when it does not.
+    const ci = c => {
+      if (!c) return '';
+      const digits = c.some(v => v !== 0 && Math.abs(v) < 0.005) ? 3 : 2;
+      return `[${Number(c[0]).toFixed(digits)}, ${Number(c[1]).toFixed(digits)}]`;
+    };
+    const signed = v => (v > 0 ? '+' : '') + Number(v).toFixed(3);
+    // [label, file, key, higher is better, name used in the summary sentence]
+    const metrics = [
+      ['Precision@5 (partly or clearly relevant)', R, 'precision_at_5', true, 'precision@5'],
+      ['Precision@5, strict (clearly relevant only)', R, 'precision_at_5_strict', true, 'strict precision@5'],
+      ['Recall@5 (partly or clearly relevant)', X, 'recall_at_5', true, 'recall@5'],
+      ['Recall@5, strict (clearly relevant only)', X, 'recall_at_5_strict', true, 'strict recall@5'],
+      ['MRR@10', R, 'mrr_at_10', true, 'MRR@10'],
+      ['nDCG@10', R, 'ndcg_at_10', true, 'nDCG@10'],
+      ['Any relevant report in the top 10', R, 'any_relevant_in_top10', true, 'having any relevant report in the top 10'],
+      ['Wrong role in top 5, literal', X, 'wrong_role_at_5', false, 'wrong-role rate (literal)'],
+      ['Wrong role in top 5, pitcher vs hitter only', X, 'wrong_role_at_5_opposite_only', false, 'wrong-role rate (pitcher vs hitter only)'],
+    ];
+    function reading (diff, higherIsBetter) {
+      const lo = diff.ci95[0], hi = diff.ci95[1];
+      if (lo <= 0 && hi >= 0) return { verdict: 'tie', text: 'Tie: the interval includes 0' };
+      const fieldvision = higherIsBetter ? lo > 0 : hi < 0;
+      const margin = Math.min(Math.abs(lo), Math.abs(hi)) / (hi - lo);
+      const barely = margin < 0.1;
+      return { verdict: fieldvision ? 'fieldvision' : 'bm25', barely,
+               text: (fieldvision ? 'FieldVision better' : 'BM25 better') + (barely ? ', barely' : '') };
+    }
+    const ahead = [], ties = [], behind = [];
+    const body = metrics.map(([label, file, key, higher, name]) => {
+      const fv = file.systems.production[key], bm = file.systems.bm25[key], diff = file.paired_production_minus_bm25[key];
+      if (!fv || !bm || !diff) return '';
+      const r = reading(diff, higher);
+      const short = name + (r.barely ? ' (barely)' : '');
+      (r.verdict === 'tie' ? ties : r.verdict === 'fieldvision' ? ahead : behind).push(short);
+      const fewer = fv.n_queries < N.count ? ` <span class="small">(${fv.n_queries} of ${N.count} notes)</span>` : '';
+      return `<tr><td>${esc(label)}${fewer}${higher ? '' : ' <span class="small">(lower is better)</span>'}</td>
+        <td class="num">${f3(fv.mean)} <span class="small">${ci(fv.ci95)}</span></td>
+        <td class="num">${f3(bm.mean)} <span class="small">${ci(bm.ci95)}</span></td>
+        <td class="num">${signed(diff.mean_diff)} <span class="small">${ci(diff.ci95)}</span></td>
+        <td>${esc(r.text)}</td></tr>`;
+    }).join('');
+    document.getElementById('independent-table').innerHTML = `
+      <thead><tr><th>Metric</th><th class="num">FieldVision</th><th class="num">BM25</th><th class="num">Difference</th><th>Reading</th></tr></thead>
+      <tbody>${body}</tbody>`;
+    const list = xs => xs.length > 1 ? xs.slice(0, -1).join(', ') + ' and ' + xs[xs.length - 1] : xs[0];
+    document.getElementById('independent-reading').textContent =
+      (ahead.length ? `FieldVision is measurably better than BM25 on ${list(ahead)}. ` : '') +
+      (ties.length ? `No measurable difference on ${list(ties)}. ` : '') +
+      (behind.length ? `BM25 is measurably better on ${list(behind)}. ` : '') +
+      `"Measurably" means the 95% interval for the difference leaves out 0; "barely" means it clears 0 by a hair.`;
+    // Plain-language versions of the definitions stored in the extra results file.
+    const excluded = (X.excluded_queries || {}).recall_at_5_strict || [];
+    document.getElementById('independent-defs').textContent =
+      `Precision@5 is the share of a system's top 5 that the labeler called relevant. ` +
+      `Recall@5 is the share of a note's relevant reports that made the top 5. ` +
+      `"Strict" counts only clearly relevant reports` +
+      (excluded.length ? `; strict recall leaves out ${excluded.length} notes that have no clearly relevant report among those labeled. ` : '. ') +
+      `MRR@10 rewards putting the first relevant report near the top, and nDCG@10 rewards putting the more relevant reports higher. ` +
+      `Wrong role, literal: the share of the top 5 whose role, by the app's rules, is not the note's role, counting reports the rules call mixed or unknown as wrong. ` +
+      `Wrong role, pitcher vs hitter only: counts only a pitcher's note matched with a position player's report, or the reverse.`;
+    document.getElementById('independent-sources').innerHTML = 'Notes come from: ' +
+      N.sources.map(x => `<a href="${esc(x.url).replace(/"/g, '&quot;')}" target="_blank" rel="noopener">${esc(x.source)}</a> (${x.notes})`).join('; ') + '.';
+  } else {
+    document.getElementById('independent-intro').textContent = 'The independent test results are not available on this server.';
   }
 
   // Grades
