@@ -1,0 +1,129 @@
+{
+  "queries_total": 20,
+  "queries_fully_labeled": 20,
+  "draws": 2000,
+  "seed": 20261112,
+  "systems": {
+    "bm25": {
+      "precision_at_5": {
+        "mean": 0.36,
+        "ci95": [
+          0.27,
+          0.46
+        ],
+        "n_queries": 20
+      },
+      "precision_at_5_strict": {
+        "mean": 0.1,
+        "ci95": [
+          0.04,
+          0.17
+        ],
+        "n_queries": 20
+      },
+      "mrr_at_10": {
+        "mean": 0.6008,
+        "ci95": [
+          0.4492,
+          0.7458
+        ],
+        "n_queries": 20
+      },
+      "ndcg_at_10": {
+        "mean": 0.4276,
+        "ci95": [
+          0.3422,
+          0.5078
+        ],
+        "n_queries": 20
+      },
+      "any_relevant_in_top10": {
+        "mean": 0.95,
+        "ci95": [
+          0.85,
+          1.0
+        ],
+        "n_queries": 20
+      }
+    },
+    "production": {
+      "precision_at_5": {
+        "mean": 0.56,
+        "ci95": [
+          0.46,
+          0.65
+        ],
+        "n_queries": 20
+      },
+      "precision_at_5_strict": {
+        "mean": 0.15,
+        "ci95": [
+          0.08,
+          0.22
+        ],
+        "n_queries": 20
+      },
+      "mrr_at_10": {
+        "mean": 0.7937,
+        "ci95": [
+          0.6438,
+          0.925
+        ],
+        "n_queries": 20
+      },
+      "ndcg_at_10": {
+        "mean": 0.6444,
+        "ci95": [
+          0.5648,
+          0.7164
+        ],
+        "n_queries": 20
+      },
+      "any_relevant_in_top10": {
+        "mean": 1.0,
+        "ci95": [
+          1.0,
+          1.0
+        ],
+        "n_queries": 20
+      }
+    }
+  },
+  "paired_production_minus_bm25": {
+    "precision_at_5": {
+      "mean_diff": 0.2,
+      "ci95": [
+        0.12,
+        0.28
+      ]
+    },
+    "precision_at_5_strict": {
+      "mean_diff": 0.05,
+      "ci95": [
+        -0.02,
+        0.12
+      ]
+    },
+    "mrr_at_10": {
+      "mean_diff": 0.1929,
+      "ci95": [
+        0.0021,
+        0.3942
+      ]
+    },
+    "ndcg_at_10": {
+      "mean_diff": 0.2168,
+      "ci95": [
+        0.1007,
+        0.3327
+      ]
+    },
+    "any_relevant_in_top10": {
+      "mean_diff": 0.05,
+      "ci95": [
+        0.0,
+        0.15
+      ]
+    }
+  }
+}

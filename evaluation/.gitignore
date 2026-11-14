@@ -1,0 +1,10 @@
+# MLB Pipeline scouting text stays on Jake's machine (decision 2026-11-12).
+# Only the *.public.* copies, labels, results, and scripts are committed.
+# tests/test_public_eval_data.py fails if a file carrying that text is tracked
+# or staged under these folders.
+pro_benchmark/pro_benchmark.csv
+pro_benchmark/pro_benchmark.json
+pro_benchmark/fieldvision_outputs*.csv
+independent/queries.json
+independent/labeling_sheet.csv
+*.local.*

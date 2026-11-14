@@ -1,0 +1,126 @@
+{
+  "source_sheet": "labeling_sheet.csv (329 rows, labels unchanged)",
+  "draws": 2000,
+  "seed": 20261112,
+  "k": 5,
+  "definitions": {
+    "recall_at_5": "relevant (label>=1) in top 5 / all relevant (label>=1) among the query's labeled candidate pool; queries with zero relevant candidates excluded",
+    "recall_at_5_strict": "same, relevant = label 2 only",
+    "wrong_role_at_5": "share of the top 5 whose doc_role_rule_based != query_role (mixed and unknown count as differing)",
+    "wrong_role_at_5_opposite_only": "sensitivity: only pitcher-vs-hitter mismatches count; mixed/unknown not counted as wrong"
+  },
+  "bootstrap": "resample queries with replacement; paired difference resamples the same queries for both systems; percentile 95% CI",
+  "systems": {
+    "production": {
+      "recall_at_5": {
+        "mean": 0.4202,
+        "ci95": [
+          0.3376,
+          0.5118
+        ],
+        "n_queries": 20
+      },
+      "recall_at_5_strict": {
+        "mean": 0.4622,
+        "ci95": [
+          0.2867,
+          0.6289
+        ],
+        "n_queries": 15
+      },
+      "wrong_role_at_5": {
+        "mean": 0.21,
+        "ci95": [
+          0.13,
+          0.3
+        ],
+        "n_queries": 20
+      },
+      "wrong_role_at_5_opposite_only": {
+        "mean": 0.0,
+        "ci95": [
+          0.0,
+          0.0
+        ],
+        "n_queries": 20
+      }
+    },
+    "bm25": {
+      "recall_at_5": {
+        "mean": 0.2448,
+        "ci95": [
+          0.181,
+          0.3101
+        ],
+        "n_queries": 20
+      },
+      "recall_at_5_strict": {
+        "mean": 0.3089,
+        "ci95": [
+          0.14,
+          0.4933
+        ],
+        "n_queries": 15
+      },
+      "wrong_role_at_5": {
+        "mean": 0.41,
+        "ci95": [
+          0.29,
+          0.54
+        ],
+        "n_queries": 20
+      },
+      "wrong_role_at_5_opposite_only": {
+        "mean": 0.26,
+        "ci95": [
+          0.17,
+          0.36
+        ],
+        "n_queries": 20
+      }
+    }
+  },
+  "paired_production_minus_bm25": {
+    "recall_at_5": {
+      "mean_diff": 0.1754,
+      "ci95": [
+        0.08,
+        0.2866
+      ],
+      "n_queries": 20
+    },
+    "recall_at_5_strict": {
+      "mean_diff": 0.1533,
+      "ci95": [
+        -0.1133,
+        0.4067
+      ],
+      "n_queries": 15
+    },
+    "wrong_role_at_5": {
+      "mean_diff": -0.2,
+      "ci95": [
+        -0.29,
+        -0.11
+      ],
+      "n_queries": 20
+    },
+    "wrong_role_at_5_opposite_only": {
+      "mean_diff": -0.26,
+      "ci95": [
+        -0.36,
+        -0.17
+      ],
+      "n_queries": 20
+    }
+  },
+  "excluded_queries": {
+    "recall_at_5_strict": [
+      "iq06",
+      "iq10",
+      "iq13",
+      "iq15",
+      "iq20"
+    ]
+  }
+}
