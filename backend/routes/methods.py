@@ -172,8 +172,9 @@ def _pro_benchmark() -> dict | None:
     files passed through unchanged. `context` holds what the page needs to
     describe them (how many players carry the grade-word flag, the range of
     published grades, where the letter scale tops out, how the run went), read
-    from the committed benchmark, scorer, and run record. Nothing is computed
-    here that changes a result.
+    from the committed benchmark, scorer, and run record. `calibration` is the
+    committed result file for the calibrated overall. Nothing is computed here
+    that changes a result.
     """
     files = {"dev": "benchmark_dev_results.json", "test": "benchmark_test_results.json",
              "test_no_grade_words": "benchmark_test_no_grade_words_results.json"}
@@ -204,8 +205,12 @@ def _pro_benchmark() -> dict | None:
 
     run_path = PRO_BENCHMARK / "benchmark_run_results.json"
     run = json.loads(run_path.read_text()) if run_path.exists() else {}
+    # The calibrated overall (backend/services/pro_scale.py), scored by
+    # evaluation/pro_benchmark/score_pro_scale.py. Passed through unchanged.
+    calibration_path = PRO_BENCHMARK / "benchmark_pro_scale_results.json"
     return {
         **{key: json.loads((PRO_BENCHMARK / name).read_text()) for key, name in files.items()},
+        "calibration": json.loads(calibration_path.read_text()) if calibration_path.exists() else None,
         "context": {
             "splits": {split: split_context(split) for split in ("dev", "test")},
             # "MLB Pipeline 2024 Draft Top 250, pre-draft report" -> "MLB Pipeline"
