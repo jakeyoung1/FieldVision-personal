@@ -35,6 +35,9 @@
     h1 { font-size: clamp(2rem, 5vw, 2.8rem); letter-spacing: -.03em; line-height: 1.15; margin: 8px 0 14px; }
     h2 { font-size: 1.45rem; letter-spacing: -.02em; margin: 56px 0 12px; scroll-margin-top: 80px; }
     h3 { font-size: 1.02rem; margin: 26px 0 6px; }
+    h4 { font-size: .9rem; margin: 20px 0 4px; color: rgba(240,244,255,.85); }
+    details { margin: 10px 0; }
+    summary { cursor: pointer; font-size: .86rem; color: var(--muted); }
     p, li { color: var(--muted); }
     .lede { font-size: 1.08rem; color: var(--muted); max-width: 680px; }
     .toc { display: flex; flex-wrap: wrap; gap: 8px; margin: 26px 0 0; padding: 0; list-style: none; }
@@ -144,6 +147,26 @@
   <p class="small" id="independent-sources"></p>
   <p class="small">What this test does not show: it has one labeler, so there is no check on his judgment. Its notes are professional write-ups of college draftees, not a college staff's own notes. Only reports that one of the two systems ranked in its top 10 were labeled, so recall is measured against that pool, not the whole archive. Role is judged by the app's own role rules, not by hand. The notes themselves are not published here; the links above lead to the source pages.</p>
 
+  <h3 id="pro-benchmark">Grades: against published pro grades</h3>
+  <p id="bench-run-intro">Loading…</p>
+  <h4>Test split (the headline)</h4>
+  <div class="scroll"><table id="bench-test-table"></table></div>
+  <p id="bench-test-reading"></p>
+  <details>
+    <summary>Each tool, test split</summary>
+    <div class="scroll"><table id="bench-test-tools"></table></div>
+    <p class="small" id="bench-test-tools-note"></p>
+  </details>
+  <h4>Test split, without notes that state a grade</h4>
+  <p id="bench-flag-intro"></p>
+  <div class="scroll"><table id="bench-filtered-table"></table></div>
+  <p id="bench-filtered-reading"></p>
+  <h4>Development split</h4>
+  <p class="small">Shown separately. Any future tuning will use these players, so they are not the headline.</p>
+  <div class="scroll"><table id="bench-dev-table"></table></div>
+  <p class="small" id="bench-defs"></p>
+  <p class="small" id="bench-limits"></p>
+
   <h3>Grades: does the model grade like a coach?</h3>
   <div id="grades"></div>
   <h3 id="decision-mapping">Four recommendations, three decisions</h3>
@@ -199,6 +222,9 @@
     <li><strong>Small, synthetic test sets.</strong> The first matching test has <span class="n-gold">37</span> notes. All of them are synthetic, written from the reports they should find, and their labels were drafted by AI and have not been checked by a person. On it, a difference of a few points between systems is noise.</li>
     <li><strong>The match cutoff is tuned to synthetic notes.</strong> On the real notes of test 2, it marks every FieldVision match as weak, including many the labeler judged relevant, so reports built from real notes get no Rickey context (<a href="#independent-cutoff">details</a>).</li>
     <li><strong>One labeler, one source.</strong> The second matching test uses <span class="n-independent">a small number of</span> real notes, all from one outlet and all labeled by one person. It is small, and nobody has double-checked the labels (<a href="#independent">details</a>).</li>
+    <li><strong>Overall grades run high.</strong> <span id="bench-limit-overall">See the comparison with published pro grades.</span> (<a href="#pro-benchmark">details</a>)</li>
+    <li><strong>Letter grades top out.</strong> The app grades in letters, and the conversion to the 20-80 scale stops at an A. It cannot express a 75 or an 80 (<a href="#pro-benchmark">details</a>).</li>
+    <li><strong>One outlet's grades, short notes.</strong> The pro benchmark compares against one outlet's published opinions, read from short excerpts, on a few dozen players per split. Published grades are not ground truth.</li>
     <li><strong>No coach grades yet.</strong> The grade comparison has the model's side only. Until a coach grades the same notes, there is no evidence the model grades the way a coach does.</li>
     <li><strong>The model varies between runs.</strong> Given the same notes twice, it gives the same letter grade <span class="same-letter">about two times in three</span>. A one-step difference from a coach is within that noise.</li>
     <li><strong>Grade scale.</strong> The app grades on letters. Comparing with the 20-80 scouting scale uses an assumed conversion (C = 40, five points per step). Rank correlation and Take/Follow/Hold agreement don't depend on it; the average gap does.</li>
@@ -259,7 +285,10 @@
       `Matching is tested two ways below. Test 1 uses ${g.queries} synthetic notes (fictional players, written by AI from real Rickey reports); ` +
       `its labels are ${g.label_status === 'ai_drafted_unaudited' ? 'AI-drafted and not yet checked by a person' : g.label_status}. ` +
       (indep ? `Test 2 uses ${indep.notes.count} real notes labeled by one person. ` : '') +
-      `No coach has graded anything yet, so nothing here shows the model's grades are right. Treat every number as provisional.`;
+      (d.pro_benchmark
+        ? `Grades are tested against one outlet's published grades for ${d.pro_benchmark.test.players_scored + d.pro_benchmark.dev.players_scored} college draftees; no coach has graded anything yet. `
+        : `No coach has graded anything yet, so nothing here shows the model's grades are right. `) +
+      `Treat every number as provisional.`;
     const names = { random: 'Random', bm25: 'BM25 (standard word-match baseline)', tfidf_before: 'FieldVision before fixes',
       'tfidf_before + role filter': '+ role filter only', 'tfidf_before + vocabulary': '+ shared vocabulary only', production: 'FieldVision now' };
     document.getElementById('retrieval-table').innerHTML = `
@@ -391,6 +420,110 @@
       N.sources.map(x => `<a href="${esc(x.url).replace(/"/g, '&quot;')}" target="_blank" rel="noopener">${esc(x.source)}</a> (${x.notes})`).join('; ') + '.';
   } else {
     document.getElementById('independent-intro').textContent = 'The independent test results are not available on this server.';
+  }
+
+  // Pro benchmark. Every figure comes from the three committed result files
+  // (dev, test, test without grade words) or from the context beside them.
+  const pb = d.pro_benchmark;
+  if (pb) {
+    const ctx = pb.context, scale = ctx.letter_scale, run = ctx.run;
+    const one = v => Number(v).toFixed(1);
+    const two = v => Number(v).toFixed(2);
+    const whole = v => Math.round(Number(v) * 100) + '%';
+    const plus = v => (v > 0 ? '+' : '') + one(v);
+    const range = (c, f) => c ? ` <span class="small">[${f(c[0])}, ${f(c[1])}]</span>` : '';
+    const cell = (m, key, f) => m[key] == null ? 'n/a' : f(m[key]) + range((m.ci95 || {})[key], f);
+    const toolName = k => k === 'overall' ? 'Overall grade' : k === '_pooled' ? 'All tools, pooled' : k.charAt(0).toUpperCase() + k.slice(1);
+    const head = res => `<thead><tr><th>Grade</th><th class="num">Pairs</th><th class="num">Average gap</th><th class="num">Bias</th>
+      <th class="num">Within ${res.step_points} points</th><th class="num">Rank agreement</th></tr></thead>`;
+    const row = (res, key) => {
+      const m = res.by_tool[key];
+      return `<tr><td>${esc(toolName(key))}</td><td class="num">${m.n}</td><td class="num">${cell(m, 'mae', one)}</td>
+        <td class="num">${cell(m, 'bias', plus)}</td><td class="num">${cell(m, 'within_step', whole)}</td>
+        <td class="num">${cell(m, 'spearman', two)}</td></tr>`;
+    };
+    const summary = res => head(res) + `<tbody>${row(res, 'overall')}${row(res, '_pooled')}</tbody>`;
+    // One sentence per row, decided by the intervals, not written by hand.
+    const lean = m => {
+      const c = (m.ci95 || {}).bias;
+      if (!c) return 'has too few pairs to say which way it leans';
+      if (c[0] > 0) return `runs high, by ${one(m.bias)} points on average`;
+      if (c[1] < 0) return `runs low, by ${one(Math.abs(m.bias))} points on average`;
+      return 'shows no measurable lean high or low';
+    };
+    const order = m => {
+      const c = (m.ci95 || {}).spearman;
+      if (!c) return 'has too few pairs to judge ranking';
+      return c[0] > 0 ? 'ranks players in a measurably similar order to the published grades'
+                      : 'does not rank players in a measurably similar order to the published grades';
+    };
+    const reading = res => {
+      const o = res.by_tool.overall, t = res.by_tool._pooled;
+      return `FieldVision's overall grade ${lean(o)}, lands within ${res.step_points} points of the published grade ${whole(o.within_step)} of the time, and ${order(o)}. ` +
+        `Its tool grades, pooled, ${lean(t).replace('runs', 'run').replace('shows', 'show')}, land within ${res.step_points} points ${whole(t.within_step)} of the time, and ${order(t).replace('ranks', 'rank').replace('does not', 'do not')}.`;
+    };
+
+    const T = pb.test, D = pb.dev, F = pb.test_no_grade_words, ts = ctx.splits.test, ds = ctx.splits.dev;
+    document.getElementById('bench-run-intro').textContent =
+      `${ds.players + ts.players} college draftees from the ${ctx.draft_years[0]} to ${ctx.draft_years[ctx.draft_years.length - 1]} drafts, each with 20-80 grades published by ${ctx.sources.join(' and ')}. ` +
+      `They were split into ${ds.players} development players and ${ts.players} test players before anything was graded. ` +
+      `FieldVision graded each player once (${run.api_attempts} calls, ${run.retries} retries) from a short excerpt of the published report with the player's name removed` +
+      `${run.trackman === 'none' ? ' and no Trackman data' : ''}. Its letter grades were converted to 20-80 and compared with the published ones. ` +
+      `Brackets are 95% intervals from ${T.draws.toLocaleString()} bootstrap resamples of the players.`;
+    document.getElementById('bench-test-table').innerHTML = summary(T);
+    document.getElementById('bench-test-reading').textContent = reading(T);
+    const tools = Object.keys(T.by_tool).filter(k => k !== 'overall' && k !== '_pooled');
+    document.getElementById('bench-test-tools').innerHTML = head(T) + `<tbody>${tools.filter(k => T.by_tool[k].n).map(k => row(T, k)).join('')}</tbody>`;
+    const empty = res => Object.keys(res.by_tool).filter(k => res.by_tool[k].n === 0).map(k => toolName(k).toLowerCase());
+    const list = xs => xs.length > 1 ? xs.slice(0, -1).join(', ') + ' and ' + xs[xs.length - 1] : xs[0];
+    document.getElementById('bench-test-tools-note').textContent =
+      (empty(T).length ? `Not shown: ${list(empty(T))}, with no comparable pairs. ` : '') +
+      `A pair exists only when the outlet published a grade for that tool and FieldVision also graded it. Rows with a handful of pairs say very little.`;
+
+    const flagged = ts.with_grade_words;
+    document.getElementById('bench-flag-intro').textContent =
+      `Some excerpts give part of the answer away. The benchmark flags a note when it contains one of the words plus, average, above-average, below-average, or fringy, or any number from 20 to 85 that ends in 0 or 5. ` +
+      `The number rule is blunt: it also catches a velocity or a home run total, so some flagged notes state no grade. ` +
+      `For the rest, grading is partly reading the grade back. ${flagged} of the ${ts.players} test players are flagged. This run scores only the other ${F.players_scored}.`;
+    document.getElementById('bench-filtered-table').innerHTML = summary(F);
+    // Does any figure differ from the full test split by more than its interval allows?
+    const apart = [];
+    for (const key of ['overall', '_pooled']) {
+      for (const [metric, label] of [['mae', 'average gap'], ['bias', 'bias'], ['within_step', 'share within range'], ['spearman', 'rank agreement']]) {
+        const a = (F.by_tool[key].ci95 || {})[metric], b = (T.by_tool[key].ci95 || {})[metric];
+        if (a && b && (a[0] > b[1] || b[0] > a[1])) apart.push(`${toolName(key).toLowerCase()} ${label}`);
+      }
+    }
+    document.getElementById('bench-filtered-reading').textContent = reading(F) +
+      ` With ${F.players_scored} players the intervals are wide. ` +
+      (apart.length ? `These differ from the full test split by more than the intervals allow: ${list(apart)}.`
+                    : `Every interval in this table overlaps its counterpart for the full test split, so this run does not show that leaving out the flagged notes changes the result.`);
+    document.getElementById('bench-dev-table').innerHTML = summary(D);
+    const o = T.by_tool.overall, pooled = T.by_tool._pooled;
+    document.getElementById('bench-limit-overall').textContent =
+      `Against published pro grades on the test split, FieldVision's overall grade ${lean(o)}, and it ${order(o)}. ` +
+      (pooled.mae < o.mae ? `Its tool grades are closer: an average gap of ${one(pooled.mae)} points against ${one(o.mae)} for the overall grade.`
+                          : `Its tool grades are no closer.`);
+
+    document.getElementById('bench-defs').textContent =
+      `Average gap is the mean distance between FieldVision's grade and the published grade, in 20-80 points. ` +
+      `Bias is the mean signed gap: above zero means FieldVision grades higher. ` +
+      `Rank agreement is Spearman's rho: 1 means the same order as the published grades, 0 means no relationship. It does not depend on the letter conversion.`;
+    const above = ts.published_above_letter_cap + ds.published_above_letter_cap;
+    const top = Math.max(ts.published_highest_any_tool, ds.published_highest_any_tool);
+    const emptyBoth = empty(T).filter(k => empty(D).includes(k));
+    document.getElementById('bench-limits').textContent =
+      `What this test does not show: the published grades are ${ctx.sources.length === 1 ? "one outlet's" : "a few outlets'"} opinion, not ground truth and not future performance. ` +
+      `Overall grades run high, as the tables show; published overall grades here run from ${Math.min(ts.published_overall_lowest, ds.published_overall_lowest)} to ${Math.max(ts.published_overall_highest, ds.published_overall_highest)}. ` +
+      `FieldVision grades in letters, and the conversion tops out at ${scale.highest} for an A, so it cannot express a 75 or an 80. ` +
+      (above === 0 ? `No published grade in this benchmark is above ${top}, so that ceiling did not affect these numbers, but it would for a better class of player. `
+                   : `${above} published grades in this benchmark are above that ceiling, and each one adds to the gap. `) +
+      `Each split has ${ts.players} players, and single tools rest on far fewer pairs. ` +
+      (emptyBoth.length ? `${list(emptyBoth).charAt(0).toUpperCase() + list(emptyBoth).slice(1)} has no comparable pairs in either split. ` : '') +
+      `The notes are short excerpts (about ${ts.excerpt_chars_median} characters at the median), far less than a scout writes. ` +
+      `Names are removed, but the model may still know some of these players from its training data.`;
+  } else {
+    document.getElementById('bench-run-intro').textContent = 'The pro benchmark results are not available on this server.';
   }
 
   // Grades

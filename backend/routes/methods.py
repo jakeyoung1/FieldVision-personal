@@ -7,6 +7,7 @@ what the evaluations actually produced.
 """
 import csv
 import json
+import re
 from collections import Counter
 from pathlib import Path
 
@@ -19,6 +20,7 @@ ROOT = Path(__file__).resolve().parents[2]
 RESULTS = ROOT / "evaluation" / "results"
 BASKETBALL = ROOT / "data" / "basketball"
 INDEPENDENT = ROOT / "evaluation" / "independent"
+PRO_BENCHMARK = ROOT / "evaluation" / "pro_benchmark"
 PAGE = ROOT / "methods.html"
 
 router = APIRouter()
@@ -163,6 +165,61 @@ def _independent() -> dict | None:
     }
 
 
+def _pro_benchmark() -> dict | None:
+    """The pro benchmark: FieldVision's grades against published 20-80 grades.
+
+    `dev`, `test`, and `test_no_grade_words` are the three committed result
+    files passed through unchanged. `context` holds what the page needs to
+    describe them (how many players carry the grade-word flag, the range of
+    published grades, where the letter scale tops out, how the run went), read
+    from the committed benchmark, scorer, and run record. Nothing is computed
+    here that changes a result.
+    """
+    files = {"dev": "benchmark_dev_results.json", "test": "benchmark_test_results.json",
+             "test_no_grade_words": "benchmark_test_no_grade_words_results.json"}
+    public = PRO_BENCHMARK / "pro_benchmark.public.csv"
+    if not public.exists() or not all((PRO_BENCHMARK / name).exists() for name in files.values()):
+        return None
+    from evaluation.pro_benchmark import score_pro_benchmark as scorer
+
+    with public.open(newline="", encoding="utf-8-sig") as f:
+        players = list(csv.DictReader(f))
+    grade_columns = [c for c in players[0] if c.startswith("pub_")]
+
+    def split_context(split: str) -> dict:
+        rows = [r for r in players if r["split"] == split]
+        published = [float(r[c]) for r in rows for c in grade_columns if r[c].strip()]
+        overall = [float(r["pub_overall"]) for r in rows if r["pub_overall"].strip()]
+        excerpt = sorted(int(r["excerpt_chars"]) for r in rows if r["excerpt_chars"].strip())
+        return {
+            "players": len(rows),
+            "pitchers": sum(r["role"] == rag.ROLE_PITCHER for r in rows),
+            "position_players": sum(r["role"] == rag.ROLE_HITTER for r in rows),
+            "with_grade_words": sum(r["excerpt_has_grade_words"] == "True" for r in rows),
+            "published_overall_lowest": min(overall), "published_overall_highest": max(overall),
+            "published_highest_any_tool": max(published),
+            "published_above_letter_cap": sum(v > max(scorer.LETTER_TO_2080.values()) for v in published),
+            "excerpt_chars_median": excerpt[len(excerpt) // 2], "excerpt_chars_longest": excerpt[-1],
+        }
+
+    run_path = PRO_BENCHMARK / "benchmark_run_results.json"
+    run = json.loads(run_path.read_text()) if run_path.exists() else {}
+    return {
+        **{key: json.loads((PRO_BENCHMARK / name).read_text()) for key, name in files.items()},
+        "context": {
+            "splits": {split: split_context(split) for split in ("dev", "test")},
+            # "MLB Pipeline 2024 Draft Top 250, pre-draft report" -> "MLB Pipeline"
+            "sources": sorted({re.split(r"\s+\d{4}\b", r["source"])[0] for r in players}),
+            "draft_years": sorted({r["draft_year"] for r in players}),
+            "date_checked": sorted({r["date_checked"] for r in players})[-1],
+            "letter_scale": {"highest": max(scorer.LETTER_TO_2080.values()),
+                             "lowest": min(scorer.LETTER_TO_2080.values()), "step": scorer.STEP},
+            "run": {k: run.get(k) for k in ("players_requested", "players_successful", "api_attempts", "retries")}
+                   | {k: run.get("_meta", {}).get(k) for k in ("model", "trackman")},
+        },
+    }
+
+
 def methods_data() -> dict:
     return {
         "retrieval": _strip_per_query(_read("retrieval_eval.json")),
@@ -171,6 +228,7 @@ def methods_data() -> dict:
         "benchmarks": mlb_benchmarks.describe(),
         "basketball": _basketball(),
         "independent": _independent(),
+        "pro_benchmark": _pro_benchmark(),
         "decision_mapping": _decision_mapping(),
         "matching_characters": rag.QUERY_CHARS,
         "time_study": _read("time_study.json"),
