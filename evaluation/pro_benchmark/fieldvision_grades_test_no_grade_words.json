@@ -1,0 +1,441 @@
+{
+  "_meta": {
+    "base_commit": "09ae234d7660a5164c19dff3209d16dc14086487",
+    "model": "claude-sonnet-5",
+    "pipeline": "backend.services.scout_report.evaluate",
+    "retrieval": "backend.services.rag.context_block(note_for_app[:500])",
+    "trackman": "none",
+    "workers": 4,
+    "sdk_max_retries": 0,
+    "max_attempts_per_player": 2,
+    "retry_only_on_error": true,
+    "source_sha256": "01d426e234271f98a4505f94c051efdd99ed26e8c07b7ca7776194ad45382714",
+    "code_sha256": {
+      "backend/services/scout_report.py": "be895f8dc221b6c2e8b070cd37c087ed7e28700ef085276334e617ace2b4a88c",
+      "backend/services/claude.py": "896c08976e21ca25d6ebac8cd94bbe3e14bf38d0968f3a9e1dc267e85d89569c",
+      "backend/services/rag.py": "81181b3868b83191d72fbe9ffe71b2f10aa3d6144b9ce8f0c7d81e34d985aa98",
+      "evaluation/pro_benchmark/score_pro_benchmark.py": "02bae80aa853fee95f13529a59aa8c2df1510e3f2f98c0ccaac69f0cd6bf9760"
+    },
+    "packages": {
+      "anthropic": "2.8.0",
+      "scikit-learn": "1.9.1",
+      "numpy": "2.4.6"
+    },
+    "runner_sha256": "8f01dc7b72c7cef6d414ef6232c215b7f26df048199c13e2bf7b55c6ae7690bd",
+    "generated_at": "2026-11-14T08:22:04.028655+00:00",
+    "split": "test",
+    "filter": {
+      "exclude_flag": "excerpt_has_grade_words",
+      "excluded_ids": [
+        "pb001",
+        "pb003",
+        "pb004",
+        "pb005",
+        "pb008",
+        "pb016",
+        "pb023",
+        "pb024",
+        "pb025",
+        "pb026",
+        "pb037",
+        "pb038",
+        "pb045",
+        "pb046",
+        "pb047",
+        "pb053",
+        "pb058",
+        "pb064",
+        "pb065",
+        "pb067",
+        "pb072",
+        "pb074",
+        "pb078",
+        "pb080",
+        "pb082",
+        "pb085",
+        "pb089"
+      ],
+      "parent_grades_sha256": "cbb55ea8eb386bac996f1beb01f9275ad3fde1d57d71b8ee7471db4225b5951b"
+    }
+  },
+  "grades": [
+    {
+      "id": "pb011",
+      "grade": "B",
+      "tools": [
+        {
+          "name": "Power",
+          "grade": "B+"
+        },
+        {
+          "name": "Hit",
+          "grade": "B"
+        },
+        {
+          "name": "Field",
+          "grade": "C+"
+        }
+      ]
+    },
+    {
+      "id": "pb014",
+      "grade": "B-",
+      "tools": [
+        {
+          "name": "Power",
+          "grade": "C+"
+        },
+        {
+          "name": "Hit",
+          "grade": "C"
+        },
+        {
+          "name": "Makeup",
+          "grade": "B+"
+        }
+      ]
+    },
+    {
+      "id": "pb018",
+      "grade": "B+",
+      "tools": [
+        {
+          "name": "Fastball",
+          "grade": "A-"
+        },
+        {
+          "name": "Changeup",
+          "grade": "A-"
+        },
+        {
+          "name": "Curveball",
+          "grade": "B+"
+        },
+        {
+          "name": "Arm",
+          "grade": "B+"
+        }
+      ]
+    },
+    {
+      "id": "pb021",
+      "grade": "C+",
+      "tools": [
+        {
+          "name": "Fastball",
+          "grade": "C+"
+        },
+        {
+          "name": "Cutter",
+          "grade": "C"
+        },
+        {
+          "name": "Changeup",
+          "grade": "C"
+        },
+        {
+          "name": "Command",
+          "grade": "C-"
+        },
+        {
+          "name": "Makeup/Role",
+          "grade": "B-"
+        }
+      ]
+    },
+    {
+      "id": "pb022",
+      "grade": "C+",
+      "tools": [
+        {
+          "name": "Fastball",
+          "grade": "B-"
+        },
+        {
+          "name": "Slider",
+          "grade": "B-"
+        },
+        {
+          "name": "Curveball",
+          "grade": "C+"
+        },
+        {
+          "name": "Changeup",
+          "grade": "C-"
+        }
+      ]
+    },
+    {
+      "id": "pb032",
+      "grade": "B+",
+      "tools": [
+        {
+          "name": "Fastball",
+          "grade": "A-"
+        },
+        {
+          "name": "Command",
+          "grade": "B+"
+        },
+        {
+          "name": "Field/Build",
+          "grade": "B"
+        }
+      ]
+    },
+    {
+      "id": "pb042",
+      "grade": "C+",
+      "tools": [
+        {
+          "name": "Hit",
+          "grade": "B"
+        },
+        {
+          "name": "Power",
+          "grade": "C-"
+        },
+        {
+          "name": "Field",
+          "grade": "C-"
+        }
+      ]
+    },
+    {
+      "id": "pb044",
+      "grade": "B-",
+      "tools": [
+        {
+          "name": "Power",
+          "grade": "B+"
+        },
+        {
+          "name": "Speed",
+          "grade": "B"
+        },
+        {
+          "name": "Hit",
+          "grade": "C+"
+        },
+        {
+          "name": "Makeup",
+          "grade": "B-"
+        }
+      ]
+    },
+    {
+      "id": "pb048",
+      "grade": "C+",
+      "tools": [
+        {
+          "name": "Power",
+          "grade": "B+"
+        }
+      ]
+    },
+    {
+      "id": "pb049",
+      "grade": "B+",
+      "tools": [
+        {
+          "name": "Fastball",
+          "grade": "A-"
+        },
+        {
+          "name": "Arm",
+          "grade": "A-"
+        }
+      ]
+    },
+    {
+      "id": "pb051",
+      "grade": "A-",
+      "tools": [
+        {
+          "name": "Fastball",
+          "grade": "A-"
+        },
+        {
+          "name": "Slider",
+          "grade": "A-"
+        }
+      ]
+    },
+    {
+      "id": "pb057",
+      "grade": "B+",
+      "tools": [
+        {
+          "name": "Fastball",
+          "grade": "B+"
+        },
+        {
+          "name": "Deception",
+          "grade": "B+"
+        },
+        {
+          "name": "Command",
+          "grade": "B"
+        }
+      ]
+    },
+    {
+      "id": "pb060",
+      "grade": "C+",
+      "tools": [
+        {
+          "name": "Fastball",
+          "grade": "B-"
+        },
+        {
+          "name": "Slider",
+          "grade": "C+"
+        },
+        {
+          "name": "Curveball",
+          "grade": "C"
+        }
+      ]
+    },
+    {
+      "id": "pb061",
+      "grade": "B-",
+      "tools": [
+        {
+          "name": "Fastball",
+          "grade": "B+"
+        },
+        {
+          "name": "Movement",
+          "grade": "B+"
+        },
+        {
+          "name": "Deception",
+          "grade": "B"
+        }
+      ]
+    },
+    {
+      "id": "pb075",
+      "grade": "B+",
+      "tools": [
+        {
+          "name": "Hit",
+          "grade": "A-"
+        },
+        {
+          "name": "Power",
+          "grade": "B"
+        },
+        {
+          "name": "Plate Discipline",
+          "grade": "B+"
+        }
+      ]
+    },
+    {
+      "id": "pb077",
+      "grade": "B-",
+      "tools": [
+        {
+          "name": "Hit",
+          "grade": "B"
+        },
+        {
+          "name": "Power",
+          "grade": "B-"
+        },
+        {
+          "name": "Makeup",
+          "grade": "B"
+        }
+      ]
+    },
+    {
+      "id": "pb084",
+      "grade": "B+",
+      "tools": [
+        {
+          "name": "Fastball",
+          "grade": "A-"
+        },
+        {
+          "name": "Slider",
+          "grade": "A-"
+        },
+        {
+          "name": "Cutter",
+          "grade": "B+"
+        }
+      ]
+    },
+    {
+      "id": "pb086",
+      "grade": "B+",
+      "tools": [
+        {
+          "name": "Curveball",
+          "grade": "A-"
+        },
+        {
+          "name": "Slider",
+          "grade": "B+"
+        },
+        {
+          "name": "Fastball",
+          "grade": "B+"
+        },
+        {
+          "name": "Command",
+          "grade": "B"
+        }
+      ]
+    },
+    {
+      "id": "pb091",
+      "grade": "B-",
+      "tools": [
+        {
+          "name": "Fastball",
+          "grade": "C+"
+        },
+        {
+          "name": "Changeup",
+          "grade": "B+"
+        },
+        {
+          "name": "Command",
+          "grade": "B-"
+        }
+      ]
+    },
+    {
+      "id": "pb094",
+      "grade": "B+",
+      "tools": [
+        {
+          "name": "Fastball",
+          "grade": "A-"
+        }
+      ]
+    },
+    {
+      "id": "pb096",
+      "grade": "B",
+      "tools": [
+        {
+          "name": "Fastball",
+          "grade": "A-"
+        },
+        {
+          "name": "Command",
+          "grade": "C"
+        },
+        {
+          "name": "Arm",
+          "grade": "B+"
+        }
+      ]
+    }
+  ]
+}
