@@ -7,6 +7,8 @@ been run on the benchmark players; no benchmark result exists yet.
 import csv
 import json
 
+import pytest
+
 from evaluation import grade_validation as G
 from evaluation.pro_benchmark import score_pro_benchmark as s
 
@@ -63,6 +65,27 @@ def test_ai_json_tool_mapping(tmp_path):
                                          "tools": {"Fastball": "B+", "Breaking Ball": "B", "Command": "C+", "Makeup": "A"}}]}))
     out = s.load_outputs_ai_json(p, TOY_BENCH)["toy3"]
     assert out["fastball"] == 60 and out["slider"] == 55 and out["control"] == 45 and out["overall"] == 45
+
+
+def test_ai_json_rejects_unknown_benchmark_id(tmp_path):
+    path = tmp_path / "ai.json"
+    path.write_text(json.dumps({"grades": [{"id": "unknown-toy-id", "grade": "B"}]}))
+    with pytest.raises(ValueError, match="unknown benchmark id 'unknown-toy-id'"):
+        s.load_outputs_ai_json(path, TOY_BENCH)
+
+
+@pytest.mark.parametrize("tools", [{}, {"Hit": None, "Power": None}, [{"name": "Hit", "grade": None}]])
+def test_ai_json_does_not_store_or_score_ungraded_players(tmp_path, tools):
+    path = tmp_path / "ai.json"
+    path.write_text(json.dumps({"grades": [
+        {"id": "toy1", "grade": None, "tools": tools},
+        {"id": "toy2", "grade": "C", "tools": {}},
+    ]}))
+    outputs = s.load_outputs_ai_json(path, TOY_BENCH)
+    assert set(outputs) == {"toy2"}
+    result = s.score(outputs, TOY_BENCH, draws=10)
+    assert result["players_scored"] == 1
+    assert result["by_tool"]["overall"]["n"] == 1
 
 
 def test_no_outputs_reports_nothing():

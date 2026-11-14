@@ -113,7 +113,9 @@ def protected_windows() -> set[str] | None:
     windows = set()
     for text in filter(None, texts):
         flat = _normalize(text)
-        windows |= {flat[i:i + WINDOW] for i in range(0, max(1, len(flat) - WINDOW), 10)}
+        last_start = max(0, len(flat) - WINDOW)
+        windows |= {flat[i:i + WINDOW] for i in range(0, last_start + 1, 10)}
+        windows.add(flat[last_start:last_start + WINDOW])  # include an unaligned tail too
     return windows
 
 

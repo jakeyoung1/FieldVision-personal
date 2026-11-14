@@ -131,7 +131,7 @@ def load_outputs_ai_json(path: Path, bench: dict) -> dict[str, dict]:
     for g in data.get("grades", []):
         pid = g["id"]
         if pid not in bench:
-            continue
+            raise ValueError(f"unknown benchmark id {pid!r}")
         pub = bench[pid]["published"]
         grades = {k: None for k in ALL_KEYS}
         grades["overall"] = to_2080(g.get("grade"))
@@ -142,7 +142,8 @@ def load_outputs_ai_json(path: Path, bench: dict) -> dict[str, dict]:
             key = map_tool(name, pub)
             if key and grades.get(key) is None:   # first mention wins (e.g. Command vs Control)
                 grades[key] = to_2080(letter)
-        out[pid] = grades
+        if any(v is not None for v in grades.values()):
+            out[pid] = grades
     return out
 
 

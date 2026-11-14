@@ -5,7 +5,7 @@
     "seed": 20261112,
     "n": 20,
     "disjoint_from_pro_benchmark": true,
-    "relevance_labels": "none yet; see labeling_sheet.csv",
+    "relevance_labels": "329 labels by Jake on 2026-11-12",
     "public_copy": "MLB Pipeline text removed; full text kept locally (gitignored)."
   },
   "queries": [

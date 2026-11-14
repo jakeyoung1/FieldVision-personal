@@ -142,6 +142,26 @@ def test_excerpt_scan_finds_a_stretch_of_protected_text(tmp_path):
     assert guard.excerpt_hits(clean, windows) == 0
 
 
+@pytest.mark.parametrize("prefix_length", [20, 23])
+def test_excerpt_scan_catches_a_leak_only_in_the_final_window(tmp_path, monkeypatch, prefix_length):
+    """Cover both step-aligned and unaligned tails with synthetic text only."""
+    tail = "abcdefghijklmnopqrstuvwxyz0123456789tail"
+    assert len(tail) == guard.WINDOW
+    bench = tmp_path / "evaluation/pro_benchmark/pro_benchmark.json"
+    queries = tmp_path / "evaluation/independent/queries.json"
+    bench.parent.mkdir(parents=True)
+    queries.parent.mkdir(parents=True)
+    bench.write_text(json.dumps({"players": [{"excerpt": "p" * prefix_length + tail}]}))
+    queries.write_text(json.dumps({"queries": []}))
+    monkeypatch.setattr(guard, "ROOT", tmp_path)
+    leak = tmp_path / "leak.csv"
+    leak.write_text("id,comment\ntoy1," + tail + "\n")
+
+    windows = guard.protected_windows()
+    assert tail in windows
+    assert guard.excerpt_hits(leak, windows) == 1
+
+
 def test_local_full_files_have_no_player_name_in_the_note():
     """pb030's note kept the surname because the source lists it as 'Colleran Jr.'.
     Runs where the full file exists (never in CI); it must hold before the benchmark is run."""
