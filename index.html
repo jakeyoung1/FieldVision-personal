@@ -4043,6 +4043,7 @@ window.fvStreamFetch = async function (url, payload, onDelta) {
         window.onPasteInput(txt);
         ta.scrollIntoView({ block: 'center' });
       });
+      injectDemoPack(document.getElementById('fv-demo-notes-btn'));
     }
     const focus = document.getElementById('fv-trackman-focus');
     if (focus && !document.getElementById('fv-demo-tm-btn')) {
@@ -4057,6 +4058,60 @@ window.fvStreamFetch = async function (url, payload, onDelta) {
         window.handleTrackmanSelect(file);
       });
     }
+  }
+
+  // ── Demo pack: a supplement to the demo notes above ─────────────────────
+  // The server sends the pack only when it runs with FV_DEMO_PACK=1. Otherwise
+  // it answers { enabled: false } and nothing below is added to the page.
+  // Every count, label, grade, and link here comes from /api/demo-pack.
+  async function injectDemoPack (anchor) {
+    let pack;
+    try { pack = await (await fetch('/api/demo-pack')).json(); } catch (e) { return; }
+    if (!pack || !pack.enabled || !Array.isArray(pack.prospects) || !pack.prospects.length) return;
+    const fill = text => {
+      const ta = document.getElementById('fv-paste-input');
+      ta.style.display = 'block';
+      ta.value = text;
+      window.onPasteInput(text);
+      ta.scrollIntoView({ block: 'center' });
+    };
+    const el = (tag, style, text) => {
+      const node = document.createElement(tag);
+      if (style) node.style.cssText = style;
+      if (text != null) node.textContent = text;     // pack text is never parsed as HTML
+      return node;
+    };
+    const btn = el('button', anchor.style.cssText + 'margin-left:8px;', `⚡ Load demo pack (${pack.count} prospects)`);
+    btn.id = 'fv-demo-pack-btn';
+    btn.type = 'button';
+    btn.addEventListener('click', () => fill(pack.notes_text));
+    anchor.insertAdjacentElement('afterend', btn);
+
+    const panel = el('details', 'margin-top:8px;font-size:.74rem;line-height:1.5;color:rgba(240,244,255,.6);');
+    panel.id = 'fv-demo-pack-panel';
+    panel.appendChild(el('summary', 'cursor:pointer;', `Demo pack: ${pack.count} real prospects and their published grades`));
+    panel.appendChild(el('p', 'margin:6px 0;',
+      'Demo comparison, not an evaluation. Each note is a rewritten summary with the name and all grades left out. ' +
+      'The published grades belong to the outlet linked on each row. Analyzing the whole pack makes one model call per prospect.'));
+    pack.prospects.forEach(p => {
+      const row = el('div', 'display:flex;flex-wrap:wrap;gap:4px 10px;align-items:baseline;padding:5px 0;border-top:1px solid rgba(240,244,255,.08);');
+      const one = el('button', 'padding:2px 8px;border-radius:5px;background:transparent;border:1px solid rgba(200,16,46,.35);color:#f07080;font-size:.72rem;cursor:pointer;', 'Load');
+      one.type = 'button';
+      one.setAttribute('aria-label', `Load ${p.label}`);
+      one.addEventListener('click', () => fill(p.block));
+      row.appendChild(one);
+      row.appendChild(el('strong', 'color:rgba(240,244,255,.85);', p.label));
+      row.appendChild(el('span', '', `${p.published.player}. ${p.published.grades_line}`));
+      if (/^https:\/\//.test(p.published.source_url)) {
+        const link = el('a', 'color:#a5b4fc;', p.published.publisher);
+        link.href = p.published.source_url;
+        link.target = '_blank';
+        link.rel = 'noopener';
+        row.appendChild(link);
+      }
+      panel.appendChild(row);
+    });
+    btn.insertAdjacentElement('afterend', panel);
   }
 
   // ── Trackman charts: wrap the existing file-select handler ──────────────

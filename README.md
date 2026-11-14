@@ -104,6 +104,8 @@ Tests: `.venv/bin/pip install -r requirements-dev.txt && .venv/bin/python -m pyt
 
 Deploy: `render.yaml` blueprint included. Point Render at this repo and set `ANTHROPIC_API_KEY` and `FV_SCOUT_KEY` in the dashboard. Set `DATABASE_URL` to a Postgres database to keep overrides and timings across restarts; see `.env.example`.
 
+Demo pack: `FV_DEMO_PACK=1` adds a second demo button that loads the prospects in `data/demo_pack/` next to the built-in demo notes. It is off by default, and those prospects are for demonstration only, never for evaluation.
+
 ## Project structure
 
 ```
