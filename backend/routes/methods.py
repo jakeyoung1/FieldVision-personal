@@ -5,6 +5,7 @@ count, and benchmark comes from this endpoint, which reads the committed
 evaluation output and the data files directly, so the page cannot drift from
 what the evaluations actually produced.
 """
+import csv
 import json
 from collections import Counter
 from pathlib import Path
@@ -17,6 +18,7 @@ from backend.services import mlb_benchmarks, rag, timing
 ROOT = Path(__file__).resolve().parents[2]
 RESULTS = ROOT / "evaluation" / "results"
 BASKETBALL = ROOT / "data" / "basketball"
+INDEPENDENT = ROOT / "evaluation" / "independent"
 PAGE = ROOT / "methods.html"
 
 router = APIRouter()
@@ -71,6 +73,96 @@ def _decision_mapping() -> dict | None:
     }
 
 
+def _candidates(labels: list[dict]) -> dict | None:
+    """What the pooled candidates show beyond the bootstrap files.
+
+    Read from candidates_key.csv (each system's rank and score per report) and
+    the labels. Two findings come from here: how FieldVision's matches on real
+    notes sit against the app's confidence cutoffs, and the gaps in BM25's
+    ranks where a duplicate transcription was dropped.
+    """
+    path = INDEPENDENT / "candidates_key.csv"
+    if not path.exists():
+        return None
+    with path.open(newline="", encoding="utf-8") as f:
+        key = list(csv.DictReader(f))
+    label = {(r["query_id"], r["asset"]): int(r["relevance"]) for r in labels if r["relevance"].strip()}
+    hits = [r for r in key if r["production_rank"]]
+    # Bands are recomputed with the app's current cutoffs, not read from the
+    # key, so the page always describes the thresholds the app actually uses.
+    bands = Counter(rag.confidence_band(float(r["production_score"])) for r in hits)
+    relevant = [r for r in hits if label.get((r["query_id"], r["asset"]), 0) >= 1]
+    bm25: dict[str, set[int]] = {}
+    for r in key:
+        if r["bm25_rank"]:
+            bm25.setdefault(r["query_id"], set()).add(int(r["bm25_rank"]))
+    depth = max((int(r["production_rank"]) for r in hits), default=0)
+    gaps = {q: sorted(set(range(1, depth + 1)) - ranks) for q, ranks in bm25.items() if len(ranks) < depth}
+    return {
+        "depth": depth,
+        "production": {
+            "hits": len(hits),
+            "notes": len({r["query_id"] for r in hits}),
+            "by_band": {band: bands.get(band, 0) for band in ("strong", "moderate", "weak")},
+            "highest_score": round(max(float(r["production_score"]) for r in hits), 4) if hits else None,
+            "labeled_relevant": len(relevant),
+            "labeled_clearly_relevant": sum(label[(r["query_id"], r["asset"])] == 2 for r in relevant),
+            "notes_with_a_relevant_hit": len({r["query_id"] for r in relevant}),
+        },
+        "cutoffs": {"usable_from": rag.WEAK_SCORE, "strong_from": rag.STRONG_SCORE},
+        "bm25_gaps": {
+            "notes": len(gaps),
+            "total": sum(len(g) for g in gaps.values()),
+            "in_top_5": sum(rank <= 5 for g in gaps.values() for rank in g),
+            # Established by rerunning BM25 locally on the notes, which are not in
+            # the repo; tests/test_independent_reproducible.py pins the counts.
+            "cause": "duplicate transcriptions",
+            "checked_on": "2026-11-14",
+        },
+    }
+
+
+def _independent() -> dict | None:
+    """The independent matching test, exactly as committed.
+
+    `results` and `extra` are the two bootstrap files passed through unchanged.
+    The counts beside them (pairs, labeler, dates, notes by source) are read
+    from the label and query files, so nothing about this test is typed into
+    the page by hand. The notes' text is not in the repo; only links are.
+    """
+    files = {name: INDEPENDENT / name for name in (
+        "retrieval_bootstrap_results.json", "retrieval_bootstrap_extra.json",
+        "queries.public.json", "labels_public.csv")}
+    if not all(path.exists() for path in files.values()):
+        return None
+    queries = json.loads(files["queries.public.json"].read_text())
+    with files["labels_public.csv"].open(newline="", encoding="utf-8") as f:
+        labels = list(csv.DictReader(f))
+    by_source: dict[tuple[str, str], int] = Counter(
+        (q["source"], q["source_url"]) for q in queries["queries"])
+    return {
+        "candidates": _candidates(labels),
+        "results": json.loads(files["retrieval_bootstrap_results.json"].read_text()),
+        "extra": json.loads(files["retrieval_bootstrap_extra.json"].read_text()),
+        "labels": {
+            "pairs": len(labels),
+            "notes": len({r["query_id"] for r in labels}),
+            "labelers": sorted({r["labeler"] for r in labels if r["labeler"]}),
+            "labeled_on": sorted({r["labeled_on"] for r in labels if r["labeled_on"]}),
+            "by_relevance": dict(sorted(Counter(r["relevance"] for r in labels).items())),
+        },
+        "notes": {
+            "count": len(queries["queries"]),
+            "pitchers": sum(q["role"] == rag.ROLE_PITCHER for q in queries["queries"]),
+            "position_players": sum(q["role"] == rag.ROLE_HITTER for q in queries["queries"]),
+            "written_from_rickey_reports": sum(bool(q["written_from_rickey_report"]) for q in queries["queries"]),
+            "date_checked": queries["_meta"]["date_checked"],
+            "sources": [{"source": source, "url": url, "notes": n}
+                        for (source, url), n in sorted(by_source.items())],
+        },
+    }
+
+
 def methods_data() -> dict:
     return {
         "retrieval": _strip_per_query(_read("retrieval_eval.json")),
@@ -78,6 +170,7 @@ def methods_data() -> dict:
         "corpus": _corpus(),
         "benchmarks": mlb_benchmarks.describe(),
         "basketball": _basketball(),
+        "independent": _independent(),
         "decision_mapping": _decision_mapping(),
         "matching_characters": rag.QUERY_CHARS,
         "time_study": _read("time_study.json"),
