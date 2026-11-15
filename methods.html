@@ -54,7 +54,9 @@
     td.num, th.num { text-align: right; font-family: "Fira Code", monospace; white-space: nowrap; }
     tr.hl td { color: var(--text); font-weight: 600; }
     .small { font-size: .82rem; color: var(--faint); }
-    code { font-family: "Fira Code", monospace; font-size: .84em; background: rgba(255,255,255,.06); padding: 1px 5px; border-radius: 4px; }
+    /* A file path has no spaces to break at. Without this a long one is wider than a phone
+       and the whole page scrolls sideways. */
+    code { font-family: "Fira Code", monospace; font-size: .84em; background: rgba(255,255,255,.06); padding: 1px 5px; border-radius: 4px; overflow-wrap: anywhere; }
     footer { border-top: 1px solid var(--line); padding: 28px 16px; text-align: center; font-size: .8rem; color: var(--faint); }
     footer a { color: var(--muted); margin: 0 8px; }
     @media (max-width: 560px) { nav .links { gap: 14px; } nav .links .opt { display: none; } }
