@@ -57,3 +57,15 @@ def test_nav_and_footer_link_to_methods():
     footer = home[home.index("<footer"):home.index("</footer>")]
     assert 'href="/methods"' in nav
     assert 'href="/methods"' in footer
+
+
+def test_page_does_not_scroll_sideways_on_a_phone():
+    """Two things can push the page wider than a phone: a long file path with nowhere
+    to break, and a wide table. Paths may wrap; every table scrolls inside its own box."""
+    import re
+    html = client.get("/methods").text
+    code_rule = re.search(r"\n\s*code\s*\{([^}]*)\}", html).group(1)
+    assert "overflow-wrap: anywhere" in code_rule
+    scroll_rule = re.search(r"\.scroll\s*\{([^}]*)\}", html).group(1)
+    assert "overflow-x: auto" in scroll_rule
+    assert html.count("<table") == html.count('<div class="scroll"><table') > 0
