@@ -1,6 +1,6 @@
 # FieldVision: Baseball Scouting Intelligence
 
-AI-assisted scouting platform built around a principle pro evaluators actually care about: **show your evidence**. Every grade traces back to the exact note sentences and Trackman numbers that produced it, confidence is computed from evidence availability (never self-reported by the model), the system flags when notes and data disagree — and the human scout owns the final evaluation.
+AI-assisted scouting platform built around a principle pro evaluators actually care about: **show your evidence**. Every grade traces back to the exact note sentences and Trackman numbers that produced it, confidence is computed from evidence availability (never self-reported by the model), the system flags when notes and data disagree, and the human scout owns the final evaluation.
 
 **Live:** https://fieldvision-personal.onrender.com · **Methods and limitations:** [/methods](https://fieldvision-personal.onrender.com/methods) · Baseball capstone origin: Saint Mary's College of California
 
@@ -15,28 +15,28 @@ Every scouting report separates four epistemic layers, per tool:
 | Layer | Example |
 |---|---|
 | **Observation** | *"Fastball played with late life up in the zone"* (verbatim note quote) |
-| **Measurement** | 94.2 mph avg, 2,390 rpm — from session Trackman data |
+| **Measurement** | 94.2 mph avg, 2,390 rpm, from session Trackman data |
 | **Interpretation** | Above-average riding fastball |
 | **Projection** | Potential bat-missing weapon if command holds *(most uncertain layer, hedged)* |
 
 Plus, per tool and overall:
-- **Computed confidence** (High/Medium/Low) — derived server-side from evidence count + measurement availability, not model self-assessment
-- **Conflict detection** — ⚠️ flags when notes and Trackman data genuinely disagree
-- **Scout override** — the scout can correct any grade with a reason; AI assessment and scout override display side by side
-- **Decision audit trail** — every override is appended to a server-side log (player, tool, AI grade, scout grade, reason, UTC timestamp). Revising a grade appends rather than overwrites, so a changed mind stays on the record. The **Decision Log** tab shows every point where a human overruled the model and why
-- **Take / Follow / Hold recommendation** and **"What would change this evaluation?"** — the information-gap section
-- **Player Decision Report** — exports as a front-office-style artifact: tools table, evidence, risk, overrides, sources, timestamps
+- **Computed confidence** (High/Medium/Low): derived server-side from evidence count + measurement availability, not model self-assessment
+- **Conflict detection**: ⚠️ flags when notes and Trackman data genuinely disagree
+- **Scout override**: the scout can correct any grade with a reason; AI assessment and scout override display side by side
+- **Decision audit trail**: every override is appended to a server-side log (player, tool, AI grade, scout grade, reason, UTC timestamp). Revising a grade appends rather than overwrites, so a changed mind stays on the record. The **Decision Log** tab shows every point where a human overruled the model and why
+- **Take / Follow / Hold recommendation** and **"What would change this evaluation?"**: the information-gap section
+- **Player Decision Report**: exports as a front-office-style artifact: tools table, evidence, risk, overrides, sources, timestamps
 
 ## Baseball features
 
-- **Scouting Notes** — PDF/TXT/MD upload or pasted text; `---` separates players. Typed files are read directly. Scanned or handwritten PDFs go through a pdfplumber → pypdf → Claude Vision fallback chain. How accurately that reads handwriting has not been measured, so check names and numbers against the page. Image files are not accepted.
-- **Branch Rickey comparisons** — each report lists its five closest matches from **1,919 Branch Rickey scouting reports (1951–1964)**, with scores (TF-IDF word overlap). Most matches are weak. Weak matches are labeled and withheld from the grade, so most grades rest on the scout's notes and Trackman numbers alone.
-- **Trackman** — instant pitch charts, zero LLM cost: MLB percentile sliders (velo + spin vs approximate league distributions — labeled as approximations), movement plot (IVB/HB, catcher's view), plate location with strike zone; AI interpretation on demand
-- **Compare** — head-to-head AI verdict on any two scouted players: category edges, risk profiles, who to take first
-- **Players** — session talent pool with grade badges, search, filters; **persists across refreshes** (localStorage)
-- **Decision Log** — the override record, plus aggregate disagreement stats: how often scouts raised vs lowered the model's grades, and which tools get overridden most
-- **Combined Chat** — session-wide Q&A, **streamed word-by-word** (SSE)
-- **One-click demo data** everywhere — the platform demos with zero files
+- **Scouting Notes**: PDF/TXT/MD upload or pasted text; `---` separates players. Typed files are read directly. Scanned or handwritten PDFs go through a pdfplumber → pypdf → Claude Vision fallback chain. How accurately that reads handwriting has not been measured, so check names and numbers against the page. Image files are not accepted.
+- **Branch Rickey comparisons**: each report lists its five closest matches from **1,919 Branch Rickey scouting reports (1951–1964)**, with scores (TF-IDF word overlap). Most matches are weak. Weak matches are labeled and withheld from the grade, so most grades rest on the scout's notes and Trackman numbers alone.
+- **Trackman**: instant pitch charts, zero LLM cost: MLB percentile sliders (velo + spin vs approximate league distributions, labeled as approximations), movement plot (IVB/HB, catcher's view), plate location with strike zone; AI interpretation on demand
+- **Compare**: head-to-head AI verdict on any two scouted players: category edges, risk profiles, who to take first
+- **Players**: session talent pool with grade badges, search, filters; **persists across refreshes** (localStorage)
+- **Decision Log**: the override record, plus aggregate disagreement stats: how often scouts raised vs lowered the model's grades, and which tools get overridden most
+- **Combined Chat**: session-wide Q&A, **streamed word-by-word** (SSE)
+- **One-click demo data** everywhere: the platform demos with zero files
 
 ![Pitch Arsenal](static/readme/readme-pitcharsenal.png)
 ![Scouting report](static/readme/readme-scouting.png)
@@ -45,7 +45,7 @@ Plus, per tool and overall:
 
 ## Basketball module: a generalization test
 
-The same pipeline (notes → RAG comps → structured report → coaching chat) was ported to basketball to test sport-agnosticism, plus one sport-specific showpiece: **Play Maker** — drag five dots on an SVG half court, describe each player's strengths, and the AI designs a set play the dots then run as an animation with live coaching captions.
+The same pipeline (notes → RAG comps → structured report → coaching chat) was ported to basketball to test sport-agnosticism, plus one sport-specific showpiece, **Play Maker**. Drag five dots on an SVG half court, describe each player's strengths, and the AI designs a set play the dots then run as an animation with live coaching captions.
 
 ![Play Maker demo](static/readme/playmaker-demo.gif)
 
@@ -59,11 +59,11 @@ Also: box score CSV analysis (PPG/RPG/APG/TS%), a four-mode coaching assistant, 
 |---|---|
 | Frontend | Single-page HTML / Tailwind / vanilla JS + SVG; SSE streaming reader |
 | Backend | FastAPI (Python 3.11) |
-| AI | Anthropic Claude Sonnet 5 (text and Vision OCR) with adaptive thinking, effort tuned per call — `high` for scouting reports and comparisons, `medium` for chat. Structured JSON extraction runs on Haiku 4.5, a fifth the cost for a task that only reformats text the reasoning model already produced. Structured-JSON evaluations with server-side validation, evidence verification against source text, and computed confidence |
+| AI | Anthropic Claude Sonnet 5 (text and Vision OCR) with adaptive thinking, effort tuned per call: `high` for scouting reports and comparisons, `medium` for chat. Structured JSON extraction runs on Haiku 4.5, a fifth the cost for a task that only reformats text the reasoning model already produced. Structured-JSON evaluations with server-side validation, evidence verification against source text, and computed confidence |
 | RAG | scikit-learn TF-IDF, dual indexes (deliberate zero-heavy-dependency choice for fast cold starts; see design notes below) |
 | Guardrails | Per-IP rate limiting, size caps, env-driven CORS |
 | Audit | Append-only decision log and report timings: Postgres when `DATABASE_URL` is set, otherwise SQLite (`FV_AUDIT_DB`). Writes need the staff scout key (`FV_SCOUT_KEY`) |
-| CI | GitHub Actions — ruff + pytest on every push |
+| CI | GitHub Actions: ruff + pytest on every push |
 | Tests | 161 pytest cases (4 run only against Postgres; CI starts one), all runnable without an API key |
 
 ### Design notes
